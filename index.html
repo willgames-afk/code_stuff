@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Code Stuff</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link href='/default.css' rel='stylesheet'>
+</head>
+
+<body>
+    <div class='mainbox'>
+        <h1>WILL'S CODE STUFF</h1>
+        <p id='localhost?'>Not locally hosted</p>
+        <script src='localhostdetector.js'></script>
+        <div class='buttons'>
+            <h2>Projects:</h2>
+            <button onclick="window.open('consoleQuest/consoleQ.html')">Console Quest</button>
+            <button onclick="window.open('noms/noms.html')">Nom Simulations</button>
+            <button onclick="window.open('BEN/ben.html')">BEN</button>
+            <button onclick="window.open('Motorcycle/incomplete.html')">Motorcycle Game</button>
+            <button onclick="window.open('minceraft/mindex.html')">Minceraft</button>
+            <button onclick="window.open('fractals/fractals.html')">Fractals</button>
+            <br>
+            <label for="colorInput">Click Me</label>
+            <input id='colorInput' type='color'
+                onChange="buttons = document.getElementsByTagName('BUTTON');for (i=buttons.length;i>0,i--;) {buttons[i].style['background-color'] = document.getElementById('colorInput').value}"
+                value='#1c76fd'>
+        </div>
+        <br>
+        <h2>About</h2>
+        <p>Welcome to my website. This is THE PLACE to find all of my games, programs, animations, and other assorted
+            assortements.</p>
+    </div>
+    <canvas id="dotcanvas">
+        <script src="noms/nom.js"></script>
+        <script>
+            for (i = 0; i < 30; i++) {
+                things.make(Math.random() * canvas.width, Math.random() * canvas.height, things.rgbify(Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)));
+            };
+            requestAnimationFrame(things.main)
+        </script>
+    </canvas>
+</body>
+
+</html>

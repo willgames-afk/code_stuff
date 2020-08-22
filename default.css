@@ -1,0 +1,30 @@
+body {
+    font-family: 'ubuntu'
+}
+
+button {
+    border: none;
+    background-color: #1c76fd;
+    text-align: center;
+    display: inline-flex;
+    padding: 15px 32px;
+    font-size: 16px;
+    margin: 3px;
+    font-family: 'ubuntu'
+}
+
+.mainbox {
+    background-color: rgba(100, 100, 100, 0.88);
+    padding: 10px;
+    margin: 0px;
+}
+
+#dotcanvas {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: gray;
+    z-index: -1
+}

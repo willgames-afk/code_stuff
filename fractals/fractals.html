@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>FRACTALS</title>
+    </head>
+    <body>
+        <style>
+            @font-face {
+                font-family: 'ubuntu';
+                src: url(Ubuntu-Regular.ttf);
+            }
+            body{
+                font-family: 'ubuntu'
+            }
+            #canvas {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                background-color: gray;
+                z-index: -1
+        }
+        </style>
+        <h1>FRACTALS!</h1>
+        <canvas id='canvas'></canvas>
+        <script src='fractals.js'></script>
+        <script src='fracMain.js'></script>
+    </body>
+</html>
