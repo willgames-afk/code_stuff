@@ -15,15 +15,16 @@
 }*/
 
 function click(e) {
-    things.make(e.clientX,e.clientY,things.randomColor())
+    things.make(e.clientX,e.clientY)
 }
 
-//window.addEventListener("mousedown", click, false)
-//for (i=0;i<10;i++) {
-//    things.make(undefined,undefined,things.randomColor())
-//}
-things.make(20, 20, 'rgb(0,0,0)',1,0)
-things.make(50,20,things.randomColor(),0,0)
+window.addEventListener("mousedown", click, false)
+for (i=0;i<10;i++) {
+    things.make(undefined,undefined,things.randomColor())
+}
+//things.make(20, 20, 'rgb(0,0,0)',1,0)
+//things.make(50,20,'rgb(255,0,0)',-1,0)
+//things.make(60,20,'rgb(0,255,0)',0,0)
 
 window.onload = function(){requestAnimationFrame(things.main)}
 /*for (k=0;k<20;k++) {
