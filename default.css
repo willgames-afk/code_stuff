@@ -28,3 +28,22 @@ button {
     background-color: gray;
     z-index: -1
 }
+
+.menu {
+    display: flex;
+}
+
+.menu * {
+    padding-inline-end: 1em;
+    margin: 0px;
+    padding: 0px 20px 0px 0px;
+    vertical-align: baseline;
+}
+
+a {
+    padding-block-start: 1em;
+    padding-bottom: 1em;
+}
+a:visited {
+    color: black;
+}

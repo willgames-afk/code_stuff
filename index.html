@@ -5,21 +5,23 @@
     <title>Code Stuff</title>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
     <link href='/default.css' rel='stylesheet'>
+    <style></style>
 </head>
 
 <body>
     <div class='mainbox'>
         <h1>WILL'S CODE STUFF</h1>
-        <p id='localhost?'>Not locally hosted</p>
-        <script src='localhostdetector.js'></script>
+        <div class='menu'>
+            <p id='localhost?'>Not locally hosted</p>
+            <script src='localhostdetector.js'></script>
+        </div>
         <div class='buttons'>
             <h2>Projects:</h2>
             <button onclick="window.open('consoleQuest/consoleQ.html')">Console Quest</button>
             <button onclick="window.open('noms/noms.html')">Nom Simulations</button>
             <button onclick="window.open('BEN/ben.html')">BEN</button>
-            <button onclick="window.open('Motorcycle/incomplete.html')">Motorcycle Game</button>
-            <button onclick="window.open('minceraft/mindex.html')">Minceraft</button>
-            <button onclick="window.open('fractals/fractals.html')">Fractals</button>
+            <button onclick="window.location.href = '/minceraft'">Minceraft</button>
+            <button onclick="window.location.href = '/fractals'">Fractals</button>
             <button onclick="window.location.href = '/MiniGames'">Mini Games</button>
             <br>
             <label for="colorInput">Click Me</label>
