@@ -146,15 +146,16 @@ things = {
     },
     resize(){
         //resize handler
+        //console.log('resize detected')
         if (document.body.scrollWidth > window.innerWidth) {
-            canvas.width = document.body.scrollWidth
+            canvas.width = document.body.scrollWidth 
         } else {
             canvas.width = window.innerWidth
         }
         if (document.body.scrollHeight > window.innerHeight) {
-            canvas.height = document.body.scrollHeight
+            canvas.height = document.body.scrollHeight 
         } else {
-            canvas.width = window.innerWidth
+            canvas.height = window.innerHeight
         }
     },
 }
@@ -163,4 +164,4 @@ canvas = document.getElementById('dotcanvas')
 ctx = canvas.getContext("2d")
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight
-window.addEventListener('resize',things.resize)
+window.onresize = things.resize
