@@ -31,14 +31,14 @@ class Tilemap {
                 } else {
                     this.ctx.fillStyle = 'rgb(0,0,0)'
                 }
-                console.log(x+' ,'+y)
-                console.log(this.size)
+                //console.log(x+' ,'+y)
+                //console.log(this.size)
                 this.ctx.fillRect(x * this.size, y * this.size, this.size, this.size)
             }
         }
     }
-    setTile(x, y, value) {
-        if (value && typeof value == 'number' && value < 3 && value > -1) {
+    setTile(x = 0, y = 0, value = 0) {
+        if (typeof value == 'number' && value < 3 && value >= 0 && x < this.width && x >= 0 && y < this.width && y >= 0) {
             this.tileArray[x][y] = value
             return value
         } else {
