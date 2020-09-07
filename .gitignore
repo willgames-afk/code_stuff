@@ -3,5 +3,5 @@
 consoleQuest/.DS_Store
 
 .DS_Store
-.DS_Store
+*.DS_Store
 *.code-workspace
