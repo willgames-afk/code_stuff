@@ -11,7 +11,7 @@ class Tilemap {
         this.c.height = this.height * size
 
         this.tileArray = []
-        var i = 0, k = 0, column = []
+        var i = 0, k = 0
         for (k = 0; k < width; k++) {
             this.tileArray[k] = []
             for (i = 0; i < height; i++) {
@@ -44,5 +44,15 @@ class Tilemap {
         } else {
             return false
         }
+    }
+    clear() {
+        this.tileArray = [];
+        var i = 0, k = 0
+        for (k = 0; k < this.width; k++) {
+            this.tileArray[k] = []
+            for (i = 0; i < this.height; i++) {
+                this.tileArray[k].push(0)
+            }
+        }    
     }
 }
