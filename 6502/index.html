@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>6502 things</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link href='/default.css' rel='stylesheet'>
+</head>
+
+<body>
+    <div class='mainbox'>
+        <h1>6502 things</h1>
+        <div class='menu'>
+            <p id='localhost?'>Not locally hosted</p>
+            <script src='/localhostdetector.js'></script>
+            <a href='/'>Homepage</a>
+        </div>
+
+        <div class='about'>
+            <h2>About</h2>
+            <p>Here, you can find links to the tools I use to develop for my own 6502 computer, the w-0, as well as some
+                programs I've made.</p>
+            <p>For those who don't know, the 6502 is a 40-year-old that kick-started the home computer industry. Many
+                retro computers and consoles run off the 6502 or a 6502 variant, including the NES, Atari 8-bit family,
+                Commodore 64, BBC Micro, and Apple II, as well as many others. A modern version is still manufactured
+                today, and enthusiasts like <a href='https://youtube.com/watch?v=ayh0qebfD2g'>The 8-Bit Guy</a> are
+                STILL making computers based around it and writing code for those old systems.</p>
+        </div>
+        <div class='links'>
+            <h2>Links</h2>
+            <button onclick='window.location.href= "/doesntExistYet.html"'>w-1 Dev Environment</button>
+            <button onclick='window.location.href= "assembler/index.html"'>Standalone 6502 Assembler</button>
+            <button onclick='window.location.href = "/doesntExistYet.html"'>Standalone w-1 Emulator</button>
+        </div>
+
+
+    </div>
+    <canvas id="dotcanvas">
+        <script src="/noms/nom.js"></script>
+        <script>
+            for (i = 0; i < 30; i++) {
+                things.make(Math.random() * canvas.width, Math.random() * canvas.height, things.rgbify(Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)));
+            };
+            requestAnimationFrame(things.main)
+        </script>
+    </canvas>
+</body>
+
+</html>
