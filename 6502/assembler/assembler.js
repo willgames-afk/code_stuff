@@ -84,10 +84,6 @@ class Assembler {
             var noComments = lines[i].split(';')[0]; //only keeps what's before the first ; in a line
             lines[i] = noComments.replace(/^\s+/, "").replace(/\s+$/, ""); //deletes all leading and trailing spaces
             if ((/=/).test(lines[i])) {
-                if (lines[i].search(/=/) > 1) {
-                    console.error('Syntax Error: Invalid label at line '+(i+1)+'\nonly one label allowed per line')
-                    return false
-                }
                 var nameArray = lines[i].match(/\w+(?= *=)/);//Left side of equals sign without including spaces and anything before 
                 var valueArray = lines[i].match(/(?<== *)\S+/);//Right sign of equals without including spaces
                 if (!nameArray) {
@@ -99,19 +95,21 @@ class Assembler {
                     return false
                 }
                 name = nameArray[0];
-                valueString = valueArray[0];
+                var valueString = valueArray[0];
 
 
 
-                console.log(name+': '+value)
+                console.log(name+': '+valueString)
                 console.log(valueString)
-                if (!(/[a-zA-Z]/).test(name) || this.opcodes.includes(name) || !this.labels[name]) {
+                if ((!(/[a-zA-Z]/).test(name)) || (this.opcodes.includes(name)) || (this.labels[name])) {
                     console.error('Syntax Error: Invalid Label at Line '+(i+1)+'\nLabels reqire at least one letter and do not accept symbols');
                     console.log(name)
                     return false
                 } //Labels can't be opcodes and have to contain at least one letter
-                if (!valueString || !parseInt(valueString)) {
+                if (typeof parseInt(valueString) == 'undefined') {
                     console.error('Syntax Error: Invalid Value at Line '+(i+1)+'\nnumber expected')
+                    console.log(valueString)
+                    console.log(typeof valueString)
                     return false
                 } else {
                     var value = parseInt(valueString)
@@ -120,7 +118,7 @@ class Assembler {
             }
         }
         console.log(lines)
-        console.log(labels)
+        console.log(this.labels)
 
 
 
