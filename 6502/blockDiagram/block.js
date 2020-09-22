@@ -5,7 +5,14 @@ var ctx = canvas.getContext("2d");
 var mouse = { x: 0, y: 0, rightClick: false, leftClick: false, };
 var blocks = [];
 var cwb = {};// current working block
-var state = 0 
+var state = 0
+var gui = {
+    visible: false,
+}
+var config = {
+    textColor: "rgb(200,200,200)",
+    blockColor: "rgb(20,20,20)",
+}
 
 //configing
 resize()
@@ -23,6 +30,7 @@ function resize() {
     } else {
         canvas.height = window.innerHeight;
     };
+    render()
 }
 function mouseMove(e) {
     //mouse move handler
@@ -34,13 +42,15 @@ function mouseClick(e) {
     console.log('click')
     if (e.button == 0) {
         mouse.leftClick = true;
+        if (detectBlockCollision(mouse.x, mouse.y).length == 1) {
+            
+        }
     } else if (e.button == 2) {
         if (state == 0) {
             state = 1;
             createNewBlock(mouse.x, mouse.y);
         } else if (state == 1) {
             finishNewBlock(mouse.x, mouse.y);
-            state = 0;
         }
     }
 }
@@ -53,31 +63,69 @@ function mouseUnclick(e) {
     }
 }
 function finishNewBlock(x, y) {
-    blocks.push(new Block(cwb.x1, cwb.y1, x, y))
+    if (detectBlockCollision(x,y).length == 0) {
+        blocks.push(new Block(cwb.x1, cwb.y1, x, y))
+        state = 0;
+    } else {
+        console.log(detectBlockCollision(x, y))
+        console.error("Cannot create blocks inside blocks.")
+    }
 }
 function createNewBlock(x, y) {
     //generates a new block
-    cwb = new Block(x, y, false, false, 0)
-    startRenderLoop();
+    if (detectBlockCollision(x, y).length == 0) {
+        cwb = new Block(x, y, false, false, 0)
+        startRenderLoop();
+    } else {
+        console.log(detectBlockCollision(x, y))
+        console.error("Cannot create blocks inside blocks.")
+    }
 }
 function render() {
-    
+    //Renders the screen
+
+    //draw current working block
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     if (state == 1) {
-        ctx.fillStyle = 'rgb(20,20,20)'
-        ctx.fillRect(cwb.x1, cwb.y1, mouse.x-cwb.x1, mouse.y-cwb.y1)
-        ctx.fillStyle ='rgb(80,80,80)';
-        ctx.fillText(cwb.name,cwb.x1,cwb.y1)
+        //draw block
+        ctx.fillStyle = config.blockColor
+        ctx.fillRect(cwb.x1, cwb.y1, cwb.width, cwb.height)
+        //draw block name
+        ctx.fillStyle = config.textColor
+        ctx.fillText(
+            cwb.name,
+            cwb.x1 + cwb.width / 2 - (ctx.measureText(cwb.name).width / 2),
+            cwb.y1 + (cwb.height / 2)
+        )
     }
     for (var i = 0; i < blocks.length; i++) {
-        ctx.fillStyle = 'rgb(20,20,20)'
+        //draw the block
+        ctx.fillStyle = config.blockColor
         ctx.fillRect(blocks[i].x1, blocks[i].y1, blocks[i].width, blocks[i].height)
-        ctx.fillStyle ='rgb(80,80,80)';
-        ctx.fillText(blocks[i].name,blocks[i].x1,blocks[i].y1)
+
+        //draw the block's name
+        ctx.fillStyle = config.textColor
+        ctx.fillText(
+            blocks[i].name,
+            blocks[i].x1 + (blocks[i].width / 2) - (ctx.measureText(blocks[i].name).width / 2),
+            //X-pos of block + offset to get the x of the text center - 1/2 of text's length to get the text centered
+            blocks[i].y1 + (blocks[i].height / 2)
+        )
     }
     if (!state == 0) {
         requestAnimationFrame(render)
     }
+}
+function detectBlockCollision(x, y) {
+    //checks if a given point intersects with any block and returns a list of indexes of all the blocks it collides with.
+    var outArray = []
+    for (var i = 0; i < blocks.length; i++) {
+        if (x > blocks[i].x1 && x < blocks[i].x2 && y > blocks[i].y1 && y < blocks[i].y2) {
+            outArray.push(i)
+            console.log('collision')
+        }
+    }
+    return outArray
 }
 function startRenderLoop() {
     render();
@@ -101,16 +149,53 @@ class Block {
         this.connections = connections;
     }
     get width() {
-        return this.x2 - this.x1
+        if (this.state == 0) {
+            return mouse.x - this.x1
+        } else {
+            return this.x2 - this.x1
+        }
     }
     set width(value) {
         this.x2 = this.x1 + value
     }
 
     get height() {
-        return this.y2 - this.y1
+        if (this.state == 0) {
+            return mouse.y - this.y1
+        } else {
+            return this.y2 - this.y1
+        }
     }
     set height(value) {
         this.y2 = this.y1 + value
     }
+}
+
+class GUI {
+    constructor(
+        x = 0,
+        y = 0,
+        x2 = 0,
+        y2 = 0,
+        state = 1,
+        name = 'GUI',
+        elements = {
+            delete: {name: 'Delete Block', type: 'bool'}
+            name: {name: 'New Block', type: 'text'}
+        },
+    ) {
+        this.state = state
+        this.x1 = x
+        this.y1 = y
+        this.x2 = x2
+        this.y2 = y2
+        this.name = name
+        this.elements = elements;
+        this.visible = false
+    }
+    get width() {return this.x2 - this.x1}
+    set width(value) {this.x2 = this.x1 + value}
+    get height() {return this.y2 - this.y1}
+    set height(value) {this.y2 = this.y1 + value}
+    
 }
