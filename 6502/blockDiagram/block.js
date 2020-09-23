@@ -5,7 +5,14 @@ var ctx = canvas.getContext("2d");
 var mouse = { x: 0, y: 0, rightClick: false, leftClick: false, };
 var blocks = [];
 var cwb = {};// current working block
-var state = 0
+var state = 0 
+/*STATE TABLE:
+-1: Invisible but otherwise same as state 1
+ 0: Being Created.
+ 1: Stable. 
+ 2: Being Edited
+ 3: Being Deleted
+*/
 var gui = {
     visible: false,
 }
@@ -98,6 +105,8 @@ function render() {
             cwb.y1 + (cwb.height / 2)
         )
     }
+
+    //draw all other blocks
     for (var i = 0; i < blocks.length; i++) {
         //draw the block
         ctx.fillStyle = config.blockColor
@@ -111,7 +120,14 @@ function render() {
             //X-pos of block + offset to get the x of the text center - 1/2 of text's length to get the text centered
             blocks[i].y1 + (blocks[i].height / 2)
         )
+
+        //draw connection labels (not implemented)
     }
+    
+    //draw connections (not implemented)
+
+
+
     if (!state == 0) {
         requestAnimationFrame(render)
     }
@@ -180,7 +196,7 @@ class GUI {
         state = 1,
         name = 'GUI',
         elements = {
-            delete: {name: 'Delete Block', type: 'bool'}
+            delete: {name: 'Delete Block', type: 'bool'},
             name: {name: 'New Block', type: 'text'}
         },
     ) {
