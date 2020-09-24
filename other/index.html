@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Other</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link href='/default.css' rel="stylesheet">
+    <style>
+        textarea {
+            width: 50ch;
+            height: 30ch;
+        }
+    </style>
+</head>
+
+<body>
+    <div class='mainbox'>
+        <h1>Other Stuff</h1>
+        <div class='menu'>
+            <p id='localhost?'>Not locally hosted</p>
+            <script src='/localhostdetector.js'></script>
+            <a href='/'>Homepage</a>
+        </div>
+        <p>This is the place to find assorted and usually unuseful stuff that doesn't belong anywhere else.</p>
+
+        <h2>KeyDetector</h2>
+        <p>Detects Keypresses and logs them to the console</p>
+        <button id ='keydetectortoggle'onclick='toggleKeyDetector()'>Activate</button>
+        <script src='/other/keydetector.js'></script>
+
+        <h2>Binary Viewer</h2>
+        <p>Allows you to view binary files.</p>
+        <input type="file" id='fileIn' onchange="processFile()">
+        <input type="button" id='toggle' onclick='toggleHexMode()' value='View in Hexadecimal'>
+        <input type="button" id='download' onclick='downloadFile()' value='Download File'>
+        <br>
+        <textarea readonly id='out'></textarea>
+        <script src='/other/binaryviewer.js'></script>
+
+    </div>
+    <canvas id="dotcanvas">
+        <script src="/noms/nom.js"></script>
+        <script>
+            for (i = 0; i < 30; i++) {
+                things.make(Math.random() * canvas.width, Math.random() * canvas.height, things.rgbify(Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)));
+            };
+            requestAnimationFrame(things.main)
+        </script>
+    </canvas>
+</body>
+
+</html>
