@@ -53,3 +53,6 @@ canvas {
     opacity: 1;
 }
 
+ul{
+    list-style-type: none;
+}
