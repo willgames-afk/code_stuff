@@ -67,6 +67,20 @@ class Assembler {
         for (var i=0;i<this.opcodeLookup.length;i++) {
             this.opcodes.push(this.opcodeLookup[i][0]); //Just the opcode
         }
+        this.addressingModes = [
+            '#$N',
+            '$N',
+            '$N,x',
+            '$N,y',
+            '$L',
+            '$L,x',
+            '$L,y',
+            '($L)',
+            '($N,x)',
+            '($N),y',
+            '',
+            '$N',
+        ]
         this.labels = {};
     }
     assemble(code) {
@@ -93,21 +107,43 @@ class Assembler {
             }
             //Replace all the numbers with $N for values under 255 (8 bits or 2 Hexadec digits) and $L for values 256-65535 (2 byte 4 hexadec)
             var value = 0
-            if ((/(?<=\$)[\da-fA-F]+/).test(lines[i])) {
-                value = parseInt(lines[i].match(/(?<=\$)[\da-fA-F]+/)[0].toUpperCase(),16)
-            } else if ((/(?<!\$)\d+/).test(lines[i])) {
-                value = parseInt(lines[i].match(/(?<!\$)\d+/)[0])
+            var type = ''
+            if ((/(?<=\$)[\da-fA-F]+/g).test(lines[i])) {
+                value = parseInt(lines[i].match(/(?<=\$)[\da-fA-F]+/g)[0].toUpperCase(),16)
+                type = 'hexadec'
+            } else if ((/\d+/g).test(lines[i])) {
+                value = parseInt(lines[i].match(/\d+/g)[0])
+                console.log(lines[i].match(/\d+/g))
+                type = 'dec'
             }
-            if (value >=0 && value < 255) {
-                lines[i] = lines[i].replace(/\$[\da-fA-F]+/,'$N')
+            console.log(type)
+            if (value >=0 && value < 256) {
+                if (type == 'hexadec') {
+                    lines[i] = lines[i].replace(/\$[\da-fA-F]+/g,'$N')
+                } else if (type == 'dec') {
+                    lines[i] = lines[i].replace(/\d+/g,'$N')
+                }
             } else if (value < 65536) {
-                lines[i] = lines[i].replace(/\$[\da-fA-F]+/,'$L')
+                if (type == 'hexadec') {
+                    lines[i] = lines[i].replace(/\$[\da-fA-F]+/g,'$L')
+                } else if (type == 'dec') {
+                    lines[i] = lines[i].replace(/\d+/g,'$L')
+                }
             } else {
                 console.error('Invalid Value '+value+' at line '+i+'.')
                 return false
             }
             console.log(value)
-            //fugure out addressing mode
+
+            //figure out addressing mode
+            var info = lines[i].substr(4)
+            var opByte = null
+            console.log(info)
+            var addrMode = this.addressingModes.findIndex((value) => {
+                return info == value
+            })+1
+            console.log(addrMode)
+
 
             //figure out bytes
 
