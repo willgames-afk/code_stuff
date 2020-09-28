@@ -92,15 +92,16 @@ class Assembler {
         console.log('Cleaning and Formatting code...')
         var lines = this.sanitize(code)
         var bytes = [];
-        var binary = '';
 
         console.log('Assembling...');
         for (var i=0;i<lines.length;i++) {
             //Now that it's formatted the first 3 chars should make up an opcode name
             var opName = lines[i].substring(0,3).toUpperCase()
-            var opCode = this.opcodeLookup.find((value) => {
+            var opCodeNum = this.opcodeLookup.findIndex((value) => {
                 return (value[0] == opName)
             },this)
+            var opCode = this.opcodeLookup[opCodeNum]
+            console.log(opCode)
             if (!opCode) {
                 console.error('Unsupported OpCode at Line '+i+':'+opName)
                 return false
@@ -108,6 +109,7 @@ class Assembler {
             //Replace all the numbers with $N for values under 255 (8 bits or 2 Hexadec digits) and $L for values 256-65535 (2 byte 4 hexadec)
             var value = 0
             var type = ''
+            var isSingleByte = undefined
             if ((/(?<=\$)[\da-fA-F]+/g).test(lines[i])) {
                 value = parseInt(lines[i].match(/(?<=\$)[\da-fA-F]+/g)[0].toUpperCase(),16)
                 type = 'hexadec'
@@ -117,18 +119,20 @@ class Assembler {
                 type = 'dec'
             }
             console.log(type)
-            if (value >=0 && value < 256) {
+            if (value >= 0 && value < 256) {
                 if (type == 'hexadec') {
                     lines[i] = lines[i].replace(/\$[\da-fA-F]+/g,'$N')
                 } else if (type == 'dec') {
                     lines[i] = lines[i].replace(/\d+/g,'$N')
                 }
+                isSingleByte = true
             } else if (value < 65536) {
                 if (type == 'hexadec') {
                     lines[i] = lines[i].replace(/\$[\da-fA-F]+/g,'$L')
                 } else if (type == 'dec') {
                     lines[i] = lines[i].replace(/\d+/g,'$L')
                 }
+                isSingleByte = false
             } else {
                 console.error('Invalid Value '+value+' at line '+i+'.')
                 return false
@@ -137,22 +141,45 @@ class Assembler {
 
             //figure out addressing mode
             var info = lines[i].substr(4)
-            var opByte = null
             console.log(info)
             var addrMode = this.addressingModes.findIndex((value) => {
                 return info == value
-            })+1
+            })+1 // <<<<<THERE IS +1 HERE!!!
             console.log(addrMode)
 
-
             //figure out bytes
+            if ((!opCode[addrMode]) && ! (opCodeNum > 3 && opCodeNum < 12) ) {//not a branch instruction
+                console.error('Incorrect Addressing Mode at Line '+i+': Operation '+opCode[0]+' does not support that address mode.')
+                return false
+            }
+            if ((opCodeNum > 3) && (opCodeNum < 12)) {//if addressing mode is branch addressing
+                if (value.toString(2).length > 8) {
+                    console.error('Syntax Error line '+i+': Branch too far.')
+                    return false
+                }
+                bytes.push(this.toBinStr(opCode[12],1))
+                bytes.push(this.toBinStr(value,1))
+                continue
+            } else {
+                bytes.push(this.toBinStr(opCode[addrMode],1))
+            }
 
-            //repeat
+            if (addrMode == 11) { //if addressing mode is implied
+                continue
+            } else if (isSingleByte) {
+                bytes.push(this.toBinStr(value,1))
+            
+            } else if (!isSingleByte) {
+                var bin = this.toBinStr(value,2)
+                bytes.push(bin.substr(8)) //little Endian
+                bytes.push(bin.substr(0,8))
+            }
+
         }
         console.log(lines)
+        console.log(bytes)
 
-
-        return binary
+        return bytes.join('')
     }
     sanitize(code) {
         var lines = code.split('\n');
@@ -160,6 +187,13 @@ class Assembler {
             lines[i] = lines[i].split(';')[0].replace(/^\s+/, "").replace(/\s+$/, "");
         }
         return lines
+    }
+    toBinStr(num=0,numofbytes=1) {
+        var o = num.toString(2)
+        while(o.length < numofbytes*8) {
+            o = '0' + o
+        }
+        return o
     }
 }
 
