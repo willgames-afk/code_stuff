@@ -13,19 +13,30 @@
             border-width: 2px;
             border-color: black;
         }
+
         button {
             padding: 0px;
             border: 1px;
         }
+
         .texts {
-            display:flex
+            display: flex
         }
+
         #output {
-            background-color:white;
-            margin:0px 0px 0px 10px;
+            background-color: white;
+            margin: 0px 0px 0px 10px;
             padding: 2px;
             border: 2px solid black;
             width: 40ch;
+        }
+
+        ::-webkit-file-upload-button {
+            background-color: #1c76fd;
+            border:1px transparent;
+        }
+        input [type='file'] {
+            width: 12ch;
         }
     </style>
 </head>
@@ -43,14 +54,18 @@
         <div id='widget'>
             <div class='buttons'>
                 <button id='assembleButton'>Assemble</button>
-                <button id='notes'>Notes</button>
+                <button id='download' disabled=true>Download</button>
+                <button id='toggle' disabled=true>View in Hexadecimal</button>
+                <input type="file" id='fileIn'>
             </div>
             <div class='texts'>
                 <textarea id="code" spellcheck='false'></textarea>
                 <code id="output">Not Assembled</code>
             </div>
+            <script src='/other/binFile.js'></script>
             <script src='assembler.js'></script>
         </div>
+            
 
     </div>
     <canvas id="dotcanvas">

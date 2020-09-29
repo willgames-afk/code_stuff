@@ -1,5 +1,5 @@
 class Assembler {
-    constructor(){
+    constructor() {
         this.version = 'V0.1.0'
         this.output = ''
         this.opcodeLookup = [
@@ -64,7 +64,7 @@ class Assembler {
             ["---", null, null, null, null, null, null, null, null, null, null, null, null]
         ];
         this.opcodes = [];
-        for (var i=0;i<this.opcodeLookup.length;i++) {
+        for (var i = 0; i < this.opcodeLookup.length; i++) {
             this.opcodes.push(this.opcodeLookup[i][0]); //Just the opcode
         }
         this.addressingModes = [
@@ -94,16 +94,16 @@ class Assembler {
         var bytes = [];
 
         console.log('Assembling...');
-        for (var i=0;i<lines.length;i++) {
+        for (var i = 0; i < lines.length; i++) {
             //Now that it's formatted the first 3 chars should make up an opcode name
-            var opName = lines[i].substring(0,3).toUpperCase()
+            var opName = lines[i].substring(0, 3).toUpperCase()
             var opCodeNum = this.opcodeLookup.findIndex((value) => {
                 return (value[0] == opName)
-            },this)
+            }, this)
             var opCode = this.opcodeLookup[opCodeNum]
             console.log(opCode)
             if (!opCode) {
-                console.error('Unsupported OpCode at Line '+i+':'+opName)
+                console.error('Unsupported OpCode at Line ' + i + ':' + opName)
                 return false
             }
             //Replace all the numbers with $N for values under 255 (8 bits or 2 Hexadec digits) and $L for values 256-65535 (2 byte 4 hexadec)
@@ -111,7 +111,7 @@ class Assembler {
             var type = ''
             var isSingleByte = undefined
             if ((/(?<=\$)[\da-fA-F]+/g).test(lines[i])) {
-                value = parseInt(lines[i].match(/(?<=\$)[\da-fA-F]+/g)[0].toUpperCase(),16)
+                value = parseInt(lines[i].match(/(?<=\$)[\da-fA-F]+/g)[0].toUpperCase(), 16)
                 type = 'hexadec'
             } else if ((/\d+/g).test(lines[i])) {
                 value = parseInt(lines[i].match(/\d+/g)[0])
@@ -121,20 +121,20 @@ class Assembler {
             console.log(type)
             if (value >= 0 && value < 256) {
                 if (type == 'hexadec') {
-                    lines[i] = lines[i].replace(/\$[\da-fA-F]+/g,'$N')
+                    lines[i] = lines[i].replace(/\$[\da-fA-F]+/g, '$N')
                 } else if (type == 'dec') {
-                    lines[i] = lines[i].replace(/\d+/g,'$N')
+                    lines[i] = lines[i].replace(/\d+/g, '$N')
                 }
                 isSingleByte = true
             } else if (value < 65536) {
                 if (type == 'hexadec') {
-                    lines[i] = lines[i].replace(/\$[\da-fA-F]+/g,'$L')
+                    lines[i] = lines[i].replace(/\$[\da-fA-F]+/g, '$L')
                 } else if (type == 'dec') {
-                    lines[i] = lines[i].replace(/\d+/g,'$L')
+                    lines[i] = lines[i].replace(/\d+/g, '$L')
                 }
                 isSingleByte = false
             } else {
-                console.error('Invalid Value '+value+' at line '+i+'.')
+                console.error('Invalid Value ' + value + ' at line ' + i + '.')
                 return false
             }
             console.log(value)
@@ -144,35 +144,35 @@ class Assembler {
             console.log(info)
             var addrMode = this.addressingModes.findIndex((value) => {
                 return info == value
-            })+1 // <<<<<THERE IS +1 HERE!!!
+            }) + 1 // <<<<<THERE IS +1 HERE!!!
             console.log(addrMode)
 
             //figure out bytes
-            if ((!opCode[addrMode]) && ! (opCodeNum > 3 && opCodeNum < 12) ) {//not a branch instruction
-                console.error('Incorrect Addressing Mode at Line '+i+': Operation '+opCode[0]+' does not support that address mode.')
+            if ((!opCode[addrMode]) && !(opCodeNum > 3 && opCodeNum < 12)) {//not a branch instruction
+                console.error('Incorrect Addressing Mode at Line ' + i + ': Operation ' + opCode[0] + ' does not support that address mode.')
                 return false
             }
             if ((opCodeNum > 3) && (opCodeNum < 12)) {//if addressing mode is branch addressing
                 if (value.toString(2).length > 8) {
-                    console.error('Syntax Error line '+i+': Branch too far.')
+                    console.error('Syntax Error line ' + i + ': Branch too far.')
                     return false
                 }
-                bytes.push(this.toBinStr(opCode[12],1))
-                bytes.push(this.toBinStr(value,1))
+                bytes.push(this.toBinStr(opCode[12], 1))
+                bytes.push(this.toBinStr(value, 1))
                 continue
             } else {
-                bytes.push(this.toBinStr(opCode[addrMode],1))
+                bytes.push(this.toBinStr(opCode[addrMode], 1))
             }
 
             if (addrMode == 11) { //if addressing mode is implied
                 continue
             } else if (isSingleByte) {
-                bytes.push(this.toBinStr(value,1))
-            
+                bytes.push(this.toBinStr(value, 1))
+
             } else if (!isSingleByte) {
-                var bin = this.toBinStr(value,2)
+                var bin = this.toBinStr(value, 2)
                 bytes.push(bin.substr(8)) //little Endian
-                bytes.push(bin.substr(0,8))
+                bytes.push(bin.substr(0, 8))
             }
 
         }
@@ -183,36 +183,121 @@ class Assembler {
     }
     sanitize(code) {
         var lines = code.split('\n');
-        for (var i=0;i<lines.length;i++) {
+        for (var i = 0; i < lines.length; i++) {
             lines[i] = lines[i].split(';')[0].replace(/^\s+/, "").replace(/\s+$/, "");
         }
         return lines
     }
-    toBinStr(num=0,numofbytes=1) {
+    toBinStr(num = 0, numofbytes = 1) {
         var o = num.toString(2)
-        while(o.length < numofbytes*8) {
+        while (o.length < numofbytes * 8) {
             o = '0' + o
         }
         return o
     }
 }
+class GUI {
+    constructor(buttons,input,output,assembleCallback) {
+        this._state = "preAssemble"
+        this.assembleButton == buttons.assemble
+        this.downloadButton == buttons.download
+        this.hexButton == buttons.hexSelect
+        this.fileInput == buttons.file
+        this.assembleButton.addEventListener('click',)
+    }
+    get stateTable() {
+        return {
+            preAssemble: {
+                assemble: true,
+                download: false,
+                hex: false,
+                file: true,
+            },
+            loadingFile: {
+                assemble: false,
+                download: false,
+                hex: false,
+                file: false,
+            },
+            assembling: {
+                assemble: false,
+                download: false,
+                hex: false,
+                file: false,
+            },
+            postAssemble: {
+                assemble: false,
+                download: true,
+                hex: true,
+                file: true,
+            }
+        }
+    }
+    set stateTable(val) {
+        console.error('stateTable is read only')
+        return false
+    }
+    get state() {
+        return this._state
+    }
+    set state(val) {
+        if (!(val == 'preAssemble' || val == 'loadingFile' || val == 'assembling' || val == 'postAssemble')) {
+            return false
+        }
+        if (!this.enabled.hex) {
+            this.hexButton.innerHTML == 'View in Hexadecimal'
+        }
+        this._state = val
+        this.assembleButton.setAttribute('disabled', this.enabled.assemble)
+        this.downloadButton.setAttribute('disabled', this.enabled.download)
+        this.hexButton.setAttribute('disabled', this.enabled.hex)
+        this.fileInput.setAttribute('disabled', this.enabled.file)
+        return true
+    }
+    get enabled() {
+        return this.stateTable[this.state]
+    }
+    set enabled(val) {
+        console.error('enabled is a read only property.')
+        return false
+    }
+    setHexMode(bool = false) {
+        if (this.enabled.hex != true) {
+            return false
+        }
+        if (bool = true) {
+            this.hexButton.innerHTML == 'View in Binary'
+        } else {
+            this.hexButton.innerHTML == 'View in Hexadecimal'
+        }
+    }
+}
 
-var input = document.getElementById('code')
+var codeIn = document.getElementById('code')
 var output = document.getElementById('output')
 var assembleButton = document.getElementById('assembleButton')
+var fileIn = document.getElementById('fileIn')
+var hexButton = document.getElementById('toggle')
+var downloadButton = document.getElementById('download')
+var state = new StateManager({assemble:assembleButton,download:downloadButton,hexSelect:hexButton,file:fileIn},codeIn,output)
 var assembler = new Assembler()
+var binFile = new BinFile(null, onFileLoad)
 
-assembleButton.addEventListener('click',handleClick)
+assembleButton.addEventListener('click', handleClick)
 function handleClick() {
-    output.innerHTML = assembler.assemble(input.value)
+    var result = assembler.assemble(input.value)
+    if (result) {
+        output.innerHTML = result
+        unlockButtons()
+    }
+}
+function onFileLoad() {
+
 }
 
 
-
-
-
 /*if ((/=/).test(lines[i])) {
-    var nameArray = lines[i].match(/\w+(?= *=)/);//Left side of equals sign without including spaces and anything before 
+    var nameArray = lines[i].match(/\w+(?= *=)/);//Left side of equals sign without including spaces and anything before
     var valueArray = lines[i].match(/(?<== *)\S+/);//Right sign of equals without including spaces
     if (!nameArray) {
         console.error('Syntax Error: Invalid Label at line '+ (i+1) + '\nLabel name not defined')
