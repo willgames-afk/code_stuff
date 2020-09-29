@@ -23,20 +23,24 @@
         </div>
         <p>This is the place to find assorted and usually unuseful stuff that doesn't belong anywhere else.</p>
 
-        <h2>KeyDetector</h2>
-        <p>Detects Keypresses and logs them to the console</p>
-        <button id ='keydetectortoggle'onclick='toggleKeyDetector()'>Activate</button>
-        <script src='/other/keydetector.js'></script>
+        <div class=keyDetector>
+            <h2>KeyDetector</h2>
+            <p>Detects Keypresses and logs them to the console</p>
+            <button id='keydetectortoggle' onclick='toggleKeyDetector()'>Activate</button>
+            <script src='/other/keydetector.js'></script>
+        </div>
 
-        <h2>Binary Viewer</h2>
-        <p>Allows you to view binary files.</p>
-        <input type="file" id='fileIn' onchange="processFile()">
-        <input type="button" id='toggle' onclick='toggleHexMode()' value='View in Hexadecimal'>
-        <input type="button" id='download' onclick='downloadFile()' value='Download File'>
-        <br>
-        <textarea readonly id='out'></textarea>
-        <script src='/other/binaryviewer.js'></script>
-
+        <div class=BinaryViewer>
+            <h2>Binary Viewer</h2>
+            <p>Allows you to view binary files.</p>
+            <input type="file" id='fileIn' onchange="processFile()">
+            <input type="button" id='toggle' onclick='toggleHexMode()' value='View in Hexadecimal'>
+            <input type="button" id='download' onclick='downloadFile()' value='Download File'>
+            <br>
+            <textarea readonly id='out'></textarea>
+            <script src='binFile.js'></script>
+            <script src='binaryviewer.js'></script>
+        </div>
     </div>
     <canvas id="dotcanvas">
         <script src="/noms/nom.js"></script>
