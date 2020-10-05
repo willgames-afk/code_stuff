@@ -203,7 +203,7 @@ class GUI {
         this.downloadButton == buttons.download
         this.hexButton == buttons.hexSelect
         this.fileInput == buttons.file
-        this.assembleButton.addEventListener('click',)
+        this.assembleButton.addEventListener('click',assembleCallback)
     }
     get stateTable() {
         return {
@@ -279,7 +279,7 @@ var assembleButton = document.getElementById('assembleButton')
 var fileIn = document.getElementById('fileIn')
 var hexButton = document.getElementById('toggle')
 var downloadButton = document.getElementById('download')
-var state = new StateManager({assemble:assembleButton,download:downloadButton,hexSelect:hexButton,file:fileIn},codeIn,output)
+var gui = new GUI({})
 var assembler = new Assembler()
 var binFile = new BinFile(null, onFileLoad)
 
