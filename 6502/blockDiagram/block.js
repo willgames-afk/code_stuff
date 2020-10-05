@@ -1,4 +1,69 @@
 'use strict';
+//class definitions
+class GUI {
+    constructor(
+        x = 0,
+        y = 0,
+        width = 0,
+        height = 0,
+        state = 1,
+        name = 'GUI',
+        elements = {},
+    ) {
+        this.state = state
+        this.x = x
+        this.y = y
+        this.width = width
+        this.height = height
+        this.name = name
+        this.elements = elements;
+        this.visible = false
+    }
+    setTarget(blockIndex=0) {
+
+    }
+}
+class Block {
+    constructor(
+        x = 0,
+        y = 0,
+        x2 = 0,
+        y2 = 0,
+        state = 1,
+        name = 'New Block',
+        connections = [],
+    ) {
+        this.state = state
+        this.x1 = x
+        this.y1 = y
+        this.x2 = x2
+        this.y2 = y2
+        this.name = name
+        this.connections = connections;
+    }
+    get width() {
+        if (this.state == 0) {
+            return mouse.x - this.x1
+        } else {
+            return this.x2 - this.x1
+        }
+    }
+    set width(value) {
+        this.x2 = this.x1 + value
+    }
+
+    get height() {
+        if (this.state == 0) {
+            return mouse.y - this.y1
+        } else {
+            return this.y2 - this.y1
+        }
+    }
+    set height(value) {
+        this.y2 = this.y1 + value
+    }
+}
+
 //var definitions
 var canvas = document.getElementById('dotcanvas');
 var ctx = canvas.getContext("2d");
@@ -6,6 +71,8 @@ var mouse = { x: 0, y: 0, rightClick: false, leftClick: false, };
 var blocks = [];
 var cwb = {};// current working block
 var state = 0 
+var UI = new GUI(0,canvas.height,20,20,1,'GUI')
+
 /*STATE TABLE:
 -1: Invisible but otherwise same as state 1
  0: Being Created.
@@ -13,9 +80,6 @@ var state = 0
  2: Being Edited
  3: Being Deleted
 */
-var gui = {
-    visible: false,
-}
 var config = {
     textColor: "rgb(200,200,200)",
     blockColor: "rgb(20,20,20)",
@@ -37,6 +101,7 @@ function resize() {
     } else {
         canvas.height = window.innerHeight;
     };
+    UI.y = canvas.height-20;
     render()
 }
 function mouseMove(e) {
@@ -50,7 +115,8 @@ function mouseClick(e) {
     if (e.button == 0) {
         mouse.leftClick = true;
         if (detectBlockCollision(mouse.x, mouse.y).length == 1) {
-            
+            UI.visible = true;
+            render()
         }
     } else if (e.button == 2) {
         if (state == 0) {
@@ -126,7 +192,11 @@ function render() {
     
     //draw connections (not implemented)
 
-
+    //draw GUI
+    if (UI.visible) {
+        ctx.fillStyle = 'rgba(255,255,255,1)'
+        ctx.fillRect(UI.x,UI.y,UI.width,UI.height)
+    }
 
     if (!state == 0) {
         requestAnimationFrame(render)
@@ -145,73 +215,4 @@ function detectBlockCollision(x, y) {
 }
 function startRenderLoop() {
     render();
-}
-class Block {
-    constructor(
-        x = 0,
-        y = 0,
-        x2 = 0,
-        y2 = 0,
-        state = 1,
-        name = 'New Block',
-        connections = [],
-    ) {
-        this.state = state
-        this.x1 = x
-        this.y1 = y
-        this.x2 = x2
-        this.y2 = y2
-        this.name = name
-        this.connections = connections;
-    }
-    get width() {
-        if (this.state == 0) {
-            return mouse.x - this.x1
-        } else {
-            return this.x2 - this.x1
-        }
-    }
-    set width(value) {
-        this.x2 = this.x1 + value
-    }
-
-    get height() {
-        if (this.state == 0) {
-            return mouse.y - this.y1
-        } else {
-            return this.y2 - this.y1
-        }
-    }
-    set height(value) {
-        this.y2 = this.y1 + value
-    }
-}
-
-class GUI {
-    constructor(
-        x = 0,
-        y = 0,
-        x2 = 0,
-        y2 = 0,
-        state = 1,
-        name = 'GUI',
-        elements = {
-            delete: {name: 'Delete Block', type: 'bool'},
-            name: {name: 'New Block', type: 'text'}
-        },
-    ) {
-        this.state = state
-        this.x1 = x
-        this.y1 = y
-        this.x2 = x2
-        this.y2 = y2
-        this.name = name
-        this.elements = elements;
-        this.visible = false
-    }
-    get width() {return this.x2 - this.x1}
-    set width(value) {this.x2 = this.x1 + value}
-    get height() {return this.y2 - this.y1}
-    set height(value) {this.y2 = this.y1 + value}
-    
 }
