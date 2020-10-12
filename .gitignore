@@ -8,3 +8,4 @@ code_stuff/.DS_Store
 *.DS_Store
 *.code-workspace
 PHPtest/users.txt
+6502/rom.bin
