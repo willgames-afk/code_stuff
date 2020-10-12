@@ -19,14 +19,17 @@ function click(e) {
 }
 
 window.addEventListener("mousedown", click, false)
-for (i=0;i<100;i++) {
-    things.make(undefined,undefined,things.randomColor())
-}
 //things.make(20, 20, 'rgb(0,0,0)',1,0)
 //things.make(50,20,'rgb(255,0,0)',0,0)
 //things.make(80,20,'rgb(0,255,0)',-1,0)
 
-window.onload = function(){requestAnimationFrame(things.main)}
+window.onload = function(){
+    things.resize();
+    for (i=0;i<100;i++) {
+        things.make(undefined,undefined,things.randomColor())
+    }
+    requestAnimationFrame(things.main)
+}
 /*for (k=0;k<20;k++) {
     things.process()
 }
