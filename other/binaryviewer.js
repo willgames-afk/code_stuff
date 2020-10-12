@@ -1,4 +1,4 @@
-console.group('Initializing:')
+console.groupCollapsed('Initializing BinViewer:')
 var binFile = new BinFile()
 var file = document.getElementById('fileIn');
 var out = document.getElementById('out');
@@ -25,10 +25,11 @@ function toggleHexMode() {
     hexMode = !hexMode;
     if (toggleButton.value == 'View in Hexadecimal') {
         toggleButton.value = 'View in Binary';
+        console.log(binFile.hexString)
         out.value = binFile.hexString
     } else {
         toggleButton.value = 'View in Hexadecimal';
         out.value = binFile.binaryString
     };
 };
-console.groupEnd('Initializing:')
+console.groupEnd('Initializing BinViewer:')

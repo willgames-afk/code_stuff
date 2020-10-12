@@ -8,8 +8,7 @@ class BinFile {
             this._fileReadHandler(e, this.onComplete)
         };
         if (blob) {
-            this.blob = blob;
-            this.fileReader.readAsBinaryString(blob);
+            this.setSourceBlob(blob)
         } else {
             this.blob = undefined
         }
@@ -43,7 +42,7 @@ class BinFile {
     get hexList() {
         var array = [];
         for (var i=0;i<this.binArray.length;i++) {
-            array[i] == parseInt(this.binArray[i],2).toString(16)
+            array[i] = parseInt(this.binArray[i],2).toString(16).toUpperCase();
         }
         return array
     };
@@ -52,7 +51,7 @@ class BinFile {
         this.binArray = [];
         for (var i = 0; i < val.length; i++) {
             val[i] = val[i].replace('0x', '') //gets rid of any pesky 0x headers, who needs them anyway?
-            if (!(parseInt(val[i], 16) && val[i].length == 2)) { this.binArray = JSON.parse(originalBinArray); return false }
+            if (!((parseInt(val[i], 16) && val[i].length == 2))) { this.binArray = JSON.parse(originalBinArray); return false }
             this.binArray[i] = parseInt(val[i], 16).toString(2)
         }
         return true
@@ -73,7 +72,14 @@ class BinFile {
         }
     };
     saveAsFileDownload(filename) {
-        var correctBinary = String.fromCharCode(this.decimalList);
+        /*var correctBinary = ''
+        for (i=0;i<this.decimalList.length;i++) {
+            console.log(this.decimalList[i])
+            correctBinary[i] = String.fromCharCode([this.decimalList[i]])
+        }*/
+        var correctBinary = new Int8Array(this.decimalList)
+
+        console.log(correctBinary)
         var blob = new Blob([correctBinary], { type: "octet/stream" })
         var url = URL.createObjectURL(blob)
         var a = document.createElement('a')
@@ -84,7 +90,7 @@ class BinFile {
         setTimeout(function() {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-        }, 2)
+        }, 10)
     };
     setSourceBlob(blob) {
         console.group('File Read:')
@@ -94,7 +100,7 @@ class BinFile {
         this.fileReader.readAsBinaryString(blob);
     };
     _fileReadHandler(e, callback) {
-        console.log('File Loaded. Generating Byte Array...')
+        console.log('Binary File Loaded. Generating Byte Array...')
         this.binArray = [];
         for (i = 0; i < e.target.result.length; i++) {
             this.binArray[i] = e.target.result[i].charCodeAt(0).toString(2);
@@ -102,7 +108,10 @@ class BinFile {
                 this.binArray[i] = '0' + this.binArray[i];
             }
         };
-        callback();
+        console.log('Byte Array Generated.')
+        if (callback) {
+            callback();
+        }
         console.groupEnd('File Read:')
     }
 };
