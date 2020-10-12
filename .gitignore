@@ -9,3 +9,4 @@ code_stuff/.DS_Store
 *.code-workspace
 PHPtest/users.txt
 6502/code/rom.bin
+6502/code/vasm6502_oldstyle
