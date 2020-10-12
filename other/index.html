@@ -7,7 +7,7 @@
     <link href='/default.css' rel="stylesheet">
     <style>
         textarea {
-            width: 62ch;
+            width: 64ch;
             height: 30ch;
         }
     </style>
@@ -41,13 +41,22 @@
             <script src='binFile.js'></script>
             <script src='binaryviewer.js'></script>
         </div>
+
+        <div class=nopRom>
+            <h2>Nop ROM creater</h2>
+            <p>Makes ROMs filled with 6502 NOP instructions</p>
+            <input type="button" id='go' onclick="createNOP();" value='Create File'><br>
+            Number of No-Ops<input type="number" id='numberofnops' value=0>
+            <script src='nopRom.js'></script>
+        </div>
     </div>
     <canvas id="dotcanvas">
         <script src="/noms/nom.js"></script>
         <script>
+            things.resize();
             for (i = 0; i < 30; i++) {
-                things.make(Math.random() * canvas.width, Math.random() * canvas.height, things.rgbify(Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)));
-            };
+                things.make(undefined, undefined, things.randomColor())
+            }
             requestAnimationFrame(things.main)
         </script>
     </canvas>

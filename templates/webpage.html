@@ -22,9 +22,10 @@
     <canvas id="dotcanvas">
         <script src="/noms/nom.js"></script>
         <script>
+            things.resize();
             for (i = 0; i < 30; i++) {
-                things.make(Math.random() * canvas.width, Math.random() * canvas.height, things.rgbify(Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)));
-            };
+                things.make(undefined, undefined, things.randomColor())
+            }
             requestAnimationFrame(things.main)
         </script>
     </canvas>
