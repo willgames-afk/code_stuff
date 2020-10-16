@@ -10,8 +10,8 @@ RW = %01000000
 RS = %00100000
 
 reset:
-    ;Reset stack pointer
-    ldx #$ff
+;resets the processor
+    ldx #$ff;Reset stack pointer
     txs
 
     LDA #%11111111 ;set portB pins to output
@@ -26,8 +26,7 @@ reset:
     jsr lcd_instruction
     lda #%00000110 ;Increment and shift cursor but not display
     jsr lcd_instruction
-    ;Make sure it's cleared
-    lda #%00000001
+    lda #%00000001 ;Clear the display, in case of a reset
     jsr lcd_instruction
 
 
@@ -42,6 +41,7 @@ print:
 
 done:
     jmp done
+    
 message: .asciiz "Hello, World!"
 
 lcd_instruction:
