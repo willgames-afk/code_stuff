@@ -82,13 +82,17 @@ class Assembler {
             '$N',
         ]
         this.labels = {};
+        this.error = '';
+        this.pc = 0;
     }
     assemble(code) {
+        this.error = '';
+        this.pc = '';
         if (!code) {
             console.error('Nothing to assemble.');
+            this.error = 'Nothing to assemble.'
             return false;
         };
-        var rawText = code;
         console.log('Cleaning and Formatting code...')
         var lines = this.sanitize(code)
         var bytes = [];
@@ -104,6 +108,7 @@ class Assembler {
             console.log(opCode)
             if (!opCode) {
                 console.error('Unsupported OpCode at Line ' + i + ':' + opName)
+                this.error = 'Unsupported OpCode at Line ' + i + ':' + opName
                 return false
             }
             //Replace all the numbers with $N for values under 255 (8 bits or 2 Hexadec digits) and $L for values 256-65535 (2 byte 4 hexadec)
@@ -135,6 +140,7 @@ class Assembler {
                 isSingleByte = false
             } else {
                 console.error('Invalid Value ' + value + ' at line ' + i + '.')
+                this.error = 'Invalid Value ' + value + ' at line ' + i + '.'
                 return false
             }
             console.log(value)
@@ -149,12 +155,14 @@ class Assembler {
 
             //figure out bytes
             if ((!opCode[addrMode]) && !(opCodeNum > 3 && opCodeNum < 12)) {//not a branch instruction
-                console.error('Incorrect Addressing Mode at Line ' + i + ': Operation ' + opCode[0] + ' does not support that address mode.')
+                console.error('Addressing Error at Line ' + i + ': Operation ' + opCode[0] + ' does not support that address mode.')
+                this.error = 'Addressing Error at Line ' + i + ': Operation ' + opCode[0] + ' does not support that address mode.'
                 return false
             }
             if ((opCodeNum > 3) && (opCodeNum < 12)) {//if addressing mode is branch addressing
                 if (value.toString(2).length > 8) {
                     console.error('Syntax Error line ' + i + ': Branch too far.')
+                    this.error = 'Syntax Error line ' + i + ': Branch too far.'
                     return false
                 }
                 bytes.push(this.toBinStr(opCode[12], 1))
@@ -195,81 +203,8 @@ class Assembler {
         }
         return o
     }
-}
-class GUI {
-    constructor(buttons,input,output,assembleCallback) {
-        this._state = "preAssemble"
-        this.assembleButton == buttons.assemble
-        this.downloadButton == buttons.download
-        this.hexButton == buttons.hexSelect
-        this.fileInput == buttons.file
-        this.assembleButton.addEventListener('click',assembleCallback)
-    }
-    get stateTable() {
-        return {
-            preAssemble: {
-                assemble: true,
-                download: false,
-                hex: false,
-                file: true,
-            },
-            loadingFile: {
-                assemble: false,
-                download: false,
-                hex: false,
-                file: false,
-            },
-            assembling: {
-                assemble: false,
-                download: false,
-                hex: false,
-                file: false,
-            },
-            postAssemble: {
-                assemble: false,
-                download: true,
-                hex: true,
-                file: true,
-            }
-        }
-    }
-    set stateTable(val) {
-        console.error('stateTable is read only')
-        return false
-    }
-    get state() {
-        return this._state
-    }
-    set state(val) {
-        if (!(val == 'preAssemble' || val == 'loadingFile' || val == 'assembling' || val == 'postAssemble')) {
-            return false
-        }
-        if (!this.enabled.hex) {
-            this.hexButton.innerHTML == 'View in Hexadecimal'
-        }
-        this._state = val
-        this.assembleButton.setAttribute('disabled', this.enabled.assemble)
-        this.downloadButton.setAttribute('disabled', this.enabled.download)
-        this.hexButton.setAttribute('disabled', this.enabled.hex)
-        this.fileInput.setAttribute('disabled', this.enabled.file)
-        return true
-    }
-    get enabled() {
-        return this.stateTable[this.state]
-    }
-    set enabled(val) {
-        console.error('enabled is a read only property.')
-        return false
-    }
-    setHexMode(bool = false) {
-        if (this.enabled.hex != true) {
-            return false
-        }
-        if (bool = true) {
-            this.hexButton.innerHTML == 'View in Binary'
-        } else {
-            this.hexButton.innerHTML == 'View in Hexadecimal'
-        }
+    disassemble(bytes) {
+
     }
 }
 
@@ -279,20 +214,36 @@ var assembleButton = document.getElementById('assembleButton')
 var fileIn = document.getElementById('fileIn')
 var hexButton = document.getElementById('toggle')
 var downloadButton = document.getElementById('download')
-var gui = new GUI({})
 var assembler = new Assembler()
 var binFile = new BinFile(null, onFileLoad)
 
-assembleButton.addEventListener('click', handleClick)
-function handleClick() {
-    var result = assembler.assemble(input.value)
+assembleButton.addEventListener('click', handleAssembleClick)
+function handleAssembleClick() {
+    lockButtons();
+    var result = assembler.assemble(codeIn.value)
     if (result) {
         output.innerHTML = result
         unlockButtons()
     }
 }
+fileIn.onclick = startFileLoad
+function startFileLoad() {
+    binFile.setSourceBlob(fileIn.files[0])
+    binFile.r
+}
+
 function onFileLoad() {
 
+}
+
+function unlockButtons() {
+    downloadButton.disabled = false;
+    hexButton.disabled = false;
+}
+
+function lockButtons() {
+    downloadButton.disabled = true;
+    hexButton.disabled = true;
 }
 
 
@@ -328,4 +279,4 @@ function onFileLoad() {
         var value = parseInt(valueString)
     }
     this.labels[name] = value
-} */
+}*/
