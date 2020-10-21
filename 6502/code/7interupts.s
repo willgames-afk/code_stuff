@@ -1,24 +1,33 @@
     .org $8000 ;code starts at $8000
 
 ;LABEL DEFINITIONS
-PORTB = $6000 ;1 byte
-PORTA = $6001
-DDRB  = $6002
-DDRA  = $6003
-
-value = $0200 ;2 bytes
-mod10 = $0202 ;2 bytes
-message = $0204 ;6 bytes (Null terminated 5 char string)
-
+PORTB= $6000    
+PORTA= $6001
+DDRB = $6002
+DDRA = $6003
+PCR  = $600c
+IFR  = $600d
+IER  = $600e
 
 E  = %10000000
 RW = %01000000
 RS = %00100000
 
+value   = $0200 ;2 bytes
+mod10   = $0202 ;2 bytes
+message = $0204 ;6 bytes (Null terminated 5 char string)
+counter = $020a ;2 bytes
+
 reset:
 ;resets the processor
     ldx #$ff;Reset stack pointer
     txs
+
+    lda #$82 ;enable 6522 interupts from CA1
+    sta IER
+    lda #$ff ;set CA1 interupts to be positive edge triggered (0v to 5v)
+    sta PCR
+    cli
 
     LDA #%11111111 ;set portB pins to output
     STA DDRB
@@ -34,13 +43,18 @@ reset:
     jsr lcd_instruction
     lda #%00000001 ;Clear the display, in case of a reset
     jsr lcd_instruction
-    ;reset 'message'
+    ;reset counter
     lda #0
-    sta message
+    sta counter
+    sta counter + 1
+
+loop:
+    lda #%00000010 ;csr home
+    jsr lcd_instruction
     ;Reset 'value' to 'number' stored in EEPROM that we want to convert
-    lda number
+    lda counter
     sta value
-    lda number + 1
+    lda counter + 1
     sta value  + 1
 
 divide:
@@ -89,7 +103,7 @@ ignore_result:
     ldx #0
 print:
     lda message,x
-    beq done
+    beq loop
     jsr lcd_char
     inx
     jmp print
@@ -98,9 +112,6 @@ print:
 done:
     jmp done
     
-
-number: .word 1729
-
 ;add char in A register to null-terminated string at 'message'
 push_char:
     pha ;Push A to stack
@@ -168,10 +179,32 @@ lcd_char:
     sta PORTA
     rts
 
+nmi:
+    rti
 
+irq:
+    pha
+    txa
+    pha
+    inc counter
+    bne exit_irq
+    inc counter + 1
+
+    ldx #$ff
+debounce:
+    dex
+    bne debounce
+
+exit_irq:
+    bit PORTA ;clear inerupt by writing to IO Port A
+    pla
+    tax
+    pla
+    rti
 
 
 ;RESET VECTORS
-    .org $fffc
+    .org $fffa
+    .word nmi
     .word reset
-    .word $0000 ;pad it out to 32kb
+    .word irq
