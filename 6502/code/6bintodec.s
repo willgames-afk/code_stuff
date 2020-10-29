@@ -1,4 +1,3 @@
-    .org $8000 ;code starts at $8000
 
 ;LABEL DEFINITIONS
 PORTB = $6000 ;1 byte
@@ -15,6 +14,8 @@ E  = %10000000
 RW = %01000000
 RS = %00100000
 
+    .org $8000 ;code starts at $8000
+
 reset:
 ;resets the processor
     ldx #$ff;Reset stack pointer
@@ -22,8 +23,11 @@ reset:
 
     LDA #%11111111 ;set portB pins to output
     STA DDRB
-    LDA #%11100000 ;set top 3 portA pins to output
+    LDA #%11100001 ;set top 3 portA pins to output
     STA DDRA
+
+    lda #1
+    sta PORTA
 
     ;Set up LCD
     LDA #%00111000 ;8-bit mode, 2-line display, 5x8 font
@@ -34,9 +38,11 @@ reset:
     jsr lcd_instruction
     lda #%00000001 ;Clear the display, in case of a reset
     jsr lcd_instruction
+
     ;reset 'message'
     lda #0
     sta message
+
     ;Reset 'value' to 'number' stored in EEPROM that we want to convert
     lda number
     sta value
@@ -44,6 +50,10 @@ reset:
     sta value  + 1
 
 divide:
+
+    lda #%00000010 ;crsr home
+    jsr lcd_instruction
+
     ;reset mod10 (remadier) to zero
     lda #0
     sta mod10
@@ -58,17 +68,19 @@ divloop:
     rol mod10
     rol mod10 + 1
 
-    ;Process 16 bit division
+    ;Process 16 bit subtraction
     sec
     lda mod10
     sbc #10
-    tay
-    lda mod10+1
+    tay ; save lo byte
+    lda mod10 + 1
     sbc #0
-    ;a,y now contain the result of the division
+    ;a,y now contain the result of the subrtaction
+
     bcc ignore_result ;brnch if dividend < divisor
     sty mod10
     sta mod10 + 1
+
 ignore_result:
     dex
     bne divloop
@@ -77,7 +89,7 @@ ignore_result:
 
     lda mod10
     clc
-    adc #'0' ;add ascii zero to it to get the correct character
+    adc #"0" ;add ascii zero to it to get the correct character
     jsr push_char
 
     ; if value != 0 then keep dividing
@@ -96,7 +108,7 @@ print:
 
 
 done:
-    jmp done
+    jmp divide
     
 
 number: .word 1729
