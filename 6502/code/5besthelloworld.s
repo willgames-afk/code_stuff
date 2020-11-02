@@ -30,6 +30,9 @@ reset:
     lda #%00000001 ;Clear the display, in case of a reset
     jsr lcd_instruction
 
+loop:
+    lda #%00000010 ;Home
+    jsr lcd_instruction
 
 
     ldx #0
@@ -41,7 +44,7 @@ print:
     jmp print
 
 done:
-    jmp done
+    jmp loop
     
 message: .asciiz "Hello, Maya!" ;DO NOT PUT THIS AT START OF CODE!!
 
