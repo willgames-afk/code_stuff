@@ -227,7 +227,6 @@ commands = {
     }
   },
   grab() {
-    commandExecute.grab = false;
     if (currentCell.loot && !Array.isArray(currentCell.loot)) {
       currentCell.loot = [currentCell.loot]
     }
@@ -615,6 +614,8 @@ function displayText(text = '', txtras = '', displayExits = true) {
 //note: can't fully initialize because it doesn't start until you type start, so all the commands except start have to be
 //initiated after that.
 initSaveSystem()
+console.log(' _                         _                  \n/   _   _   _  _  |  _    / \\      _    _  _|_\n\\_ (_) | | _> (_) | (/_   \\_X |_| (/_  _>   | ') 
+console.log('Developed by Will Kam\n')
 console.log('Type START to continue.')
 var terminate = false;
 var startLoop = false;
