@@ -1,28 +1,5 @@
 'use strict';
 //class definitions
-class GUI {
-    constructor(
-        x = 0,
-        y = 0,
-        width = 0,
-        height = 0,
-        state = 1,
-        name = 'GUI',
-        elements = {},
-    ) {
-        this.state = state
-        this.x = x
-        this.y = y
-        this.width = width
-        this.height = height
-        this.name = name
-        this.elements = elements;
-        this.visible = false
-    }
-    setTarget(blockIndex=0) {
-
-    }
-}
 class Block {
     constructor(
         x = 0,
@@ -63,6 +40,43 @@ class Block {
         this.y2 = this.y1 + value
     }
 }
+var ui = {
+    open() {
+        this.htmlElement.style.width = this.maxWidth;
+        document.getElementById('all').style.marginRight = this.maxWidth;
+    },
+    close() {
+        this.htmlElement.style.width = "0";
+        document.getElementById('all').style.marginRight = '0';
+    },
+    addInputElement(name = '', value, type) {
+        if (!name || !value) {
+            console.error('addInputElement reqires name and value inputs')
+            return false
+        }
+        var nameElement = document.createElement('p');
+        nameElement.appendChild(document.createTextNode(name));
+        var inputElement = document.createElement('textarea');
+        inputElement.appendChild(document.createTextNode(value))
+
+        if (!type) {
+            type = typeof (value)
+        }
+        this.elements[name] = {
+            value: value,
+            type: type
+        }
+
+
+        this.htmlElement.appendChild(nameElement)
+    },
+    state: 'closed',
+    maxWidth: '300px',
+    maxTextareaHeight: 1000,
+    elements: {},
+    htmlElement: document.getElementById('gui-side')
+}
+
 
 //var definitions
 var canvas = document.getElementById('dotcanvas');
@@ -70,8 +84,7 @@ var ctx = canvas.getContext("2d");
 var mouse = { x: 0, y: 0, rightClick: false, leftClick: false, };
 var blocks = [];
 var cwb = {};// current working block
-var state = 0 
-var UI = new GUI(0,canvas.height,20,20,1,'GUI')
+var state = 0
 
 /*STATE TABLE:
 -1: Invisible but otherwise same as state 1
@@ -88,11 +101,26 @@ var config = {
 //configing
 resize()
 window.onresize = resize;
-window.onmousemove = mouseMove;
-window.onmousedown = mouseClick;
-window.onmouseup = mouseUnclick;
+document.addEventListener('mousemove', mouseMove)
+document.addEventListener('mousedown', mouseClick)
+document.addEventListener('mouseup', mouseUnclick)
+document.addEventListener('input',checkInputs, false)
+
 
 //function defininitions
+
+function checkInputs(e) {
+    var tagname = e.target.tagName.toLowerCase();
+    if (tagname == 'textarea') {
+        autoExpand(event.target, ui.maxTextareaHeight)
+    }
+}
+
+function autoExpand(field, maxHeight) {
+    field.rows = 1;
+    field.rows = field.scrollHeight/12
+}
+
 function resize() {
     //resize handler
     canvas.width = window.innerWidth;
@@ -101,7 +129,6 @@ function resize() {
     } else {
         canvas.height = window.innerHeight;
     };
-    UI.y = canvas.height-20;
     render()
 }
 function mouseMove(e) {
@@ -115,7 +142,7 @@ function mouseClick(e) {
     if (e.button == 0) {
         mouse.leftClick = true;
         if (detectBlockCollision(mouse.x, mouse.y).length == 1) {
-            UI.visible = true;
+            ui.open();
             render()
         }
     } else if (e.button == 2) {
@@ -136,7 +163,7 @@ function mouseUnclick(e) {
     }
 }
 function finishNewBlock(x, y) {
-    if (detectBlockCollision(x,y).length == 0) {
+    if (detectBlockCollision(x, y).length == 0) {
         blocks.push(new Block(cwb.x1, cwb.y1, x, y))
         state = 0;
     } else {
@@ -189,14 +216,9 @@ function render() {
 
         //draw connection labels (not implemented)
     }
-    
+
     //draw connections (not implemented)
 
-    //draw GUI
-    if (UI.visible) {
-        ctx.fillStyle = 'rgba(255,255,255,1)'
-        ctx.fillRect(UI.x,UI.y,UI.width,UI.height)
-    }
 
     if (!state == 0) {
         requestAnimationFrame(render)
