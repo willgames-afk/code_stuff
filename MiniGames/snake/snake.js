@@ -60,7 +60,13 @@ var startScreen = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 ]
-var tilemap = new Tilemap(21, 21, 10, 'snakeCanvas')
+var tilemap_config = {
+    width: 21,
+    height: 21,
+    size: 10,
+    canvasid: 'snakeCanvas'
+}
+var tilemap = new Tilemap(tilemap_config)
 var scoreboard = document.getElementById('score')
 document.body.onkeydown = handleKeyboard
 displayTileImage(startScreen)

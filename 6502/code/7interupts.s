@@ -49,6 +49,8 @@ reset:
     sta counter + 1
 
 loop:
+    lda #%00000001 ;Clear the display, in case of a reset
+    jsr lcd_instruction
     lda #%00000010 ;csr home
     jsr lcd_instruction
     ;Reset 'value' to 'number' stored in EEPROM that we want to convert
@@ -180,9 +182,9 @@ lcd_char:
     rts
 
 nmi:
+irq:
     rti
 
-irq:
     pha
     txa
     pha

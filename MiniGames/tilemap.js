@@ -1,23 +1,25 @@
 class Tilemap {
-    constructor(width, height, size, canvasid) {
+    constructor(config) {
+        this.width = config.width
+        this.height = config.height
+        this.size = config.size
 
-        this.width = width
-        this.height = height
-        this.size = size
-
-        this.c = document.getElementById(canvasid)
+        this.c = document.getElementById(config.canvasid)
         this.ctx = this.c.getContext('2d')
-        this.c.width = this.width * size
-        this.c.height = this.height * size
+        this.c.width = this.width * config.size
+        this.c.height = this.height * config.size
 
         this.tileArray = []
         var i = 0, k = 0
-        for (k = 0; k < width; k++) {
+        for (k = 0; k < this.width; k++) {
             this.tileArray[k] = []
-            for (i = 0; i < height; i++) {
+            for (i = 0; i < this.height; i++) {
                 this.tileArray[k].push(0)
             }
         }
+
+        this.textures = {}
+        this.textureLookup = []
     }
     render() {
         this.ctx.clearRect(0, 0, this.c.width, this.c.height)
@@ -54,5 +56,27 @@ class Tilemap {
                 this.tileArray[k].push(0)
             }
         }    
+    }
+    loadTexture(name,url,width,height) {
+        var img = new Image(width,height)
+        img.src = url
+        img.onload = (e) => {
+            texture = this.Texture(img,name)
+            this.textures[name] = texture
+            console.log('texture loaded as '+name)
+            return texture
+        }
+    }
+    applyTexture(name, tilenum) {
+        this.textures[name].apply(tilenum)
+    }
+    Texture(img,name) {
+        return {
+            sourceImg: img,
+            name: name,
+            apply(tilenum) {
+                this.textureLookup[tilenum] = this.name
+            }
+        }
     }
 }
