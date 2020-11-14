@@ -31,7 +31,11 @@ reset:
     jsr lcd_instruction
 
 loop:
+<<<<<<< HEAD
     lda #%00000010 ;Home
+=======
+    lda #%00000010
+>>>>>>> 10535809ab1d4a388e9c0d2d4ccd2a13deb9b89b
     jsr lcd_instruction
 
 
@@ -45,6 +49,10 @@ print:
 
 done:
     jmp loop
+<<<<<<< HEAD
+=======
+
+>>>>>>> 10535809ab1d4a388e9c0d2d4ccd2a13deb9b89b
     
 message: .asciiz "Hello, Maya!" ;DO NOT PUT THIS AT START OF CODE!!
 
