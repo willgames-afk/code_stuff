@@ -47,8 +47,15 @@ def save(): #NOT DONE!! WORK ON MEEEEEE
 
 def printDesc():
     print(currentCell()['desc'])
+
 def printExits():
-    print( 'Possible Exits: ' + str(currentCell()['exit']) ) #Temporary, makeing it look good needed: north, south VS ['north','south']
+    string = 'Possible Exits: '
+    for ext in currentCell()['exit']:
+        string = string + ext + ' '
+    l = list(string)
+    l[len(l)-1] = '.'
+    string = "".join(l)
+    print(string)
 
 def move(direction = player['lastMove']):
     for d in currentCell()['exit']:
@@ -75,7 +82,7 @@ def grab():
         theMap['data'][player['x']][player['y']]['loot'] = [] #Makes it so that the cell no longer has loot
         printInventory()
     else:
-        theMap['data'][player['x']][player['y']]['loot'] = [];
+        theMap['data'][player['x']][player['y']]['loot'] = []
         print("There's nothing to grab in this area.")
 
 
@@ -95,9 +102,9 @@ def runCommand(n):
 
 #MAIN LOOP
 def loop():
-    txt = input() #Leave space, makes it look better.
+    txt = input("   ")
     runCommand(txt)()
-
+    printExits()
     loop()
 
 
@@ -110,11 +117,12 @@ def start():
     print("Type 'loadmap' to load a map file or type 'start' to begin.")
     startloop()
 def startloop():
-    txt = input()
+    txt = input('   ')
     if txt == 'start':
         print(theMap['startText'])
         print("Type 1 word commands to tell me what to do. Which one word commands? I can tell you if you type help. To use an item just type use, I'll know which one you mean.\n")
         print(currentCell()['desc'])
+        printExits()
         loop()
     elif txt == 'loadmap':
         loadMap()
