@@ -1,4 +1,4 @@
-aC = { // aC for all commands
+var aC = { // aC for all commands
   north: 'north',
   south: 'south',
   east: 'east',
@@ -25,35 +25,34 @@ aC = { // aC for all commands
   rem: 'rem',
   remember: 'rem'
 }
-message = {
+var message = {
   nothingToUse: "You don't have anything to use here. Not yet, anyway.",
   notUse: "There's nothing to use here.",
   grab: "There's nothing to grab in this area.",
   move: "You can't go that way!",
   save: 'Are you sure you want to save? It will erase all previous saves.'
 }
-aI = {
+var aI = {
   "debugStick": {
     "name": "Debug Stick",
     "desc": "A Debug Stick. Grants the power of debugging. Can also be used to whack things.", "pers": true
   }
 }
-
-theMap = { "data": [[{ "desc": "You enter a test room. The test must have been successful.", "exit": ["south"] }, false], [{ "desc": "This test worked too!", "exit": ["south", "east", "north"] }, { "desc": "This test has a Debug Stick! Type grab to pick it up.", "exit": ["west"], "loot": ["debugStick"] }], [{ "desc": "You enter a room with a big bug in it. It seems to be blocking an exit. If only you had something to debug it with by typing use.", "exit": ["north"], "locked": { "onUnlock": "You whack the bug with the debug stick. Some code shifts around, and the bug poofs out of existance.", "move": "south", "use": "debugStick" } }, false], [{ "desc": "You have reached the end of this test map. If you poke will a lot, maybe he'll make another one.", "exit": [] }, false]], "startText": "This map was designed by will kam, and is just a test. To load a different map, download it, select the file by clicking the \"Choose File\" button, and type loadmap.\n", "directions": { "north": { "x": 0, "y": -1, "opp": "south" }, "south": { "x": 0, "y": 1, "opp": "north" }, "east": { "x": 1, "y": 0, "opp": "west" }, "west": { "x": -1, "y": 0, "opp": "east" } } }
-textMap = 'Not Available '
-player = {
+var theMap = { "data": [[{ "desc": "You enter a test room. The test must have been successful.", "exit": ["south"] }, false], [{ "desc": "This test worked too!", "exit": ["south", "east", "north"] }, { "desc": "This test has a Debug Stick! Type grab to pick it up.", "exit": ["west"], "loot": ["debugStick"] }], [{ "desc": "You enter a room with a big bug in it. It seems to be blocking an exit. If only you had something to debug it with by typing use.", "exit": ["north"], "locked": { "onUnlock": "You whack the bug with the debug stick. Some code shifts around, and the bug poofs out of existance.", "move": "south", "use": "debugStick" } }, false], [{ "desc": "You have reached the end of this test map. If you poke will a lot, maybe he'll make another one.", "exit": [] }, false]], "startText": "This map was designed by will kam, and is just a test. To load a different map, download it, select the file by clicking the \"Choose File\" button, and type loadmap.\n", "directions": { "north": { "x": 0, "y": -1, "opp": "south" }, "south": { "x": 0, "y": 1, "opp": "north" }, "east": { "x": 1, "y": 0, "opp": "west" }, "west": { "x": -1, "y": 0, "opp": "east" } } }
+var textMap = 'Not Available '
+var player = {
   x: 0,
   y: 0,
   inventory: {},
   lastMove: 'not'
 }
-originalMap = JSON.stringify(theMap)
-originalPlayer = JSON.stringify(player)
-var done = 0
-helpText = "Type 1 word commands to tell me what to do. Which one word commands? I can tell you if you type help. Note: you can replace north, west, east, south with up, down left, right respectively and I'll still work. (left will move you east, etc.) To use an item just type use, I'll know which one you mean.\n\n"
-saveMessage = 'Are you sure you want to save? It will erase all previous saves.'
-loadMessage = ['Loading...', 'Still Loading...', 'Working...', '...', 'Still not done...', 'Almost Kinda Halfway...', 'Processing...']
+var originalMap = JSON.stringify(theMap)
+var originalPlayer = JSON.stringify(player)
+var helpText = "Type 1 word commands to tell me what to do. Which one word commands? I can tell you if you type help. Note: you can replace north, west, east, south with up, down left, right respectively and I'll still work. (left will move you east, etc.) To use an item just type use, I'll know which one you mean.\n\n"
+var saveMessage = 'Are you sure you want to save? It will erase all previous saves.'
+var loadMessage = ['Loading...', 'Still Loading...', 'Working...', '...', 'Still not done...', 'Almost Kinda Halfway...', 'Processing...']
 var started = false;
+
 
 function startAll() { // starts the whole thing, triggered by start or init commands
   if (!started) {
@@ -111,16 +110,9 @@ function loadFile() { // Loads a map file. Far too complecated, in my opinion.
   const file = document.getElementById('file')
   if (file.files[0] && file.files[0].type == 'text/plain') {
     reader = new FileReader()
-    //reader.onload = function (e) { //when the filereader loads, do 
-    //    everything = e.target.result
-    //    console.log(e.target.result)
-    //}
     reader.readAsText(file.files[0])
     reader.onload = function (e) {
-      //console.log(reader.readyState) // these were here for debug purposes
-      //console.log(e.target.result)
       everything = e.target.result
-      //console.log(JSON.parse(everything))//parse yourself into something useful!
       try {
         finalFile = JSON.parse(everything)
       } catch (e) {
