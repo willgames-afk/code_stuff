@@ -39,6 +39,8 @@ things = {
             xVel = x.xVel
             yVel = x.yVel
             x = x.x
+            mass = x.mass
+            radius = x.radius
         }
         things.noms.push({
             x: x,
@@ -49,6 +51,7 @@ things = {
             mass: mass,
             radius: radius,
             colliding: false,
+            rotation: Math.atan2(yVel,xVel)
             aabb: {
                 x: x - radius,
                 y: y - radius,
@@ -60,6 +63,29 @@ things = {
     },
     makeLine(p1, p2, value, color = 'rgb(0,0,0)') {
         things.lines.push({ p1: p1, p2: p2, value: value, color: color })
+    },
+    makeRect(x,y,width,height,mass,xVel=0,yVel=0,color) {
+        if (typeof x == 'object' && !Array.isArray(x)) {
+            //if it is an object and not an array
+            y = x.y
+            color = x.color
+            xVel = x.xVel
+            yVel = x.yVel
+            x = x.x
+            width = x.width
+            height = x.height
+            mass = x.mass
+        }
+        things.noms.push({
+            x:x,
+            y:y,
+            xVel:xVel,
+            yVel:yVel,
+            color:color,
+            mass:mass,
+            width:width,
+            height:height,
+        })
     },
     render() {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -201,14 +227,12 @@ things = {
         distances.sort((a, b) => a.distance - b.distance)
         return distances[0]
     },
-
     findFurthest(nomIndex) {
         //same as findClosest but sorts the opposite way
         distances = things.findDistances(nomIndex)
         distances.sort((a, b) => b.distance - a.distance)
         return distances[0]
     },
-
     findDistances(nomIndex) {
         //calculates the distances from the a point to all other points
         noms = things.noms //convinience
