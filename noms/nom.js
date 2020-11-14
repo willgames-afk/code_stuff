@@ -51,7 +51,7 @@ things = {
             mass: mass,
             radius: radius,
             colliding: false,
-            rotation: Math.atan2(yVel,xVel)
+            rotation: Math.atan2(yVel,xVel),
             aabb: {
                 x: x - radius,
                 y: y - radius,
