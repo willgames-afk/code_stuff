@@ -48,13 +48,30 @@ def save(): #NOT DONE!! WORK ON MEEEEEE
 def printDesc():
     print(currentCell()['desc'])
 
+def printInventory():
+    print('Inventory: ')
+    for item in player['inventory']:
+        print("\033[1m"+player['inventory'][item]['name']+'\033[0m')
+        print(' '+player['inventory'][item]['desc'])
+
 def printExits():
     string = 'Possible Exits: '
     for ext in currentCell()['exit']:
-        string = string + ext + ' '
+        string = string + ext + ', '
     l = list(string)
-    l[len(l)-1] = '.'
+    l[len(l)-2] = '.'
     string = "".join(l)
+    print(string)
+
+def printCommands():
+    num = 0
+    string = '\033[1mCommands:\033[0m '
+    for com in aC:
+        num += 1
+        if num == len(aC):
+            string = string + 'and ' + com + '.'
+        else:
+            string = string + com + ', '
     print(string)
 
 def move(direction = player['lastMove']):
@@ -73,9 +90,12 @@ def exit():
     raise SystemExit
 
 def grab():
-    if currentCell()['loot'] & type(currentCell()['loot']) == 'string': #If currentCell.loot exists and is a string turn it into a list
+    if not "loot" in currentCell():
+        print("There's nothing to grab here.") 
+        return
+    if type(currentCell()['loot']) == 'string': #If currentCell.loot exists and is a string turn it into a list
         theMap['data'][player['x']][player['y']]['loot'] = [theMap['data'][player['x']][player['y']]['loot']]
-    if currentCell()['loot'] & len(currentCell['loot']) > 0:
+    if len(currentCell()['loot']) > 0:
         for i in range(len(currentCell()['loot'])):
             loot = currentCell()['loot'][i]
             player['inventory'][loot] = aI[loot] # puts the loot from the room into your inventory
@@ -104,7 +124,6 @@ def runCommand(n):
 def loop():
     txt = input("   ")
     runCommand(txt)()
-    printExits()
     loop()
 
 
@@ -121,6 +140,7 @@ def startloop():
     if txt == 'start':
         print(theMap['startText'])
         print("Type 1 word commands to tell me what to do. Which one word commands? I can tell you if you type help. To use an item just type use, I'll know which one you mean.\n")
+        printCommands()
         print(currentCell()['desc'])
         printExits()
         loop()
@@ -129,5 +149,5 @@ def startloop():
     else:
         startloop()
 
-printDesc()
+
 start()
