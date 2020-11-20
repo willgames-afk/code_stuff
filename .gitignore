@@ -9,5 +9,4 @@ code_stuff/.DS_Store
 *.code-workspace
 PHPtest/users.txt
 rom.bin
-vasm6502_oldstyle
 a.out
