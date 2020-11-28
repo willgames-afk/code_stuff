@@ -143,7 +143,7 @@ function initSaveSystem() { // cookies coming soon?
   let savedItems = localStorage.getItem('items');
   this.loadGame = function () {
     if (savedMap) {
-      theMap = JSON.parse(savedMap) // Turns the stringified object back intoan actual object.
+      theMap = JSON.parse(savedMap) // Turns the stringified object back into an actual object.
       player = JSON.parse(savedPlayer)
       aI = JSON.parse(savedItems)
       createCompletionElements()

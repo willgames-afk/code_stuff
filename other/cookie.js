@@ -4,7 +4,7 @@ class CookieManager {
     }
 
     get cookies() {
-        str = docuemnt.cookie
+        str = docuement.cookie
         str = str.split(', ');
         var result = {};
         for (var i = 0; i < str.length; i++) {
