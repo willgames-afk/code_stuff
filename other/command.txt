@@ -1,1 +1,2 @@
-python3 -m http.server 8080 -d /Users/will/code_stuff
+python3 -m http.server 8080 -d ~/code_stuff
+php -S 127.0.0.1:8080 -t ~/code_stuff

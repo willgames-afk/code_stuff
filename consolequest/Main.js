@@ -84,7 +84,14 @@ function initCommands() { // Very similar to code used in Google's Text Adventur
   for (command in aC) {
     b.num = command;
     win.commandExecute[aC[b.num]] = false;
-    Object.defineProperty(window, b.num, { get: function (d) { return function () { win.commandExecute[aC[d.num]] = true; return d.num; } }(b) });
+    Object.defineProperty(window, b.num, {
+      get: function (d) { 
+        return function () {
+          win.commandExecute[aC[d.num]] = true;
+          return d.num;
+        }
+      }(b) 
+    });
     b = { num: b.num } //I think this is to detach b from the properties defined in Obect.defineProperty
   }
 }

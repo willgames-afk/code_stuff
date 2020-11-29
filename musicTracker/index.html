@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
 
 <body>
-    <div id="musictracker"></div>
+    <div id="musictracker"><button id= 'launchbutton'onclick='init(document.getElementById("musictracker"));'>Launch!</button></div>
     <script src='https://unpkg.com/tone'></script>
     <script src="musictracker.js"></script>
     <style>
@@ -26,6 +26,9 @@
         p{
             display:inline;
             font-family: 'Source Code Pro',monospace;
+        }
+        span[class='duration'] {
+            margin-left: 10px;
         }
     </style>
 </body>
