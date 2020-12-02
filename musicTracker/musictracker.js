@@ -71,7 +71,7 @@ function init(element) {
                     oscillator: {
                         type: 'square',
                         portamento: 0,
-                        volume: -12
+                        volume: -20
                     },
                     envelope: {
                         attack: 0,
@@ -85,16 +85,16 @@ function init(element) {
                     { 'time': '0:2.5', 'note': 'F4', 'duration': '8n' },
                     { 'time': '0:3', 'note': 'F4', 'duration': '8n' },
                     { 'time': '0:3.5', 'note': 'A#4', 'duration': '8n' },
-                    { 'time': '0:4', 'note': 'G#4', 'duration': '16n' },
-                    { 'time': '0:4.25', 'note': 'F#4', 'duration': '16n' },
-                    { 'time': '0:4.5', 'note': 'G#4', 'duration': '2n+4n.' },
+                    { 'time': '1:0', 'note': 'G#4', 'duration': '16n' },
+                    { 'time': '1:0.25', 'note': 'F#4', 'duration': '16n' },
+                    { 'time': '1:0.5', 'note': 'G#4', 'duration': '2n+4n.' },
                     { 'time': '2:0', 'note': 'A#4', 'duration': '2n+8n' },
                     { 'time': '2:2.5', 'note': 'F#4', 'duration': '8n' },
                     { 'time': '2:3', 'note': 'F#4', 'duration': '8n' },
                     { 'time': '2:3.5', 'note': 'A#4', 'duration': '8n' },
-                    { 'time': '2:4', 'note': 'A4', 'duration': '16n' },
-                    { 'time': '2:4.25', 'note': 'G4', 'duration': '16n' },
-                    { 'time': '2:4.5', 'note': 'A4', 'duration': '2n+4n.' },
+                    { 'time': '3:0', 'note': 'A4', 'duration': '16n' },
+                    { 'time': '3:0.25', 'note': 'G4', 'duration': '16n' },
+                    { 'time': '3:0.5', 'note': 'A4', 'duration': '2n.+8n' },
                 ]
             },
             Triange_1: {
@@ -102,7 +102,7 @@ function init(element) {
                     oscillator: {
                         type: 'triangle',
                         portamento: 0,
-                        volume: -5
+                        volume: -20
                     },
                     envelope: {
                         attack: 0,
@@ -112,8 +112,8 @@ function init(element) {
                     }
                 },
                 data: [
-                    { 'time': 0, 'note': 'A#2', 'duration': '4n' },
-                    { 'time': '0:1', 'note': 'F3', 'duration': '4n' },
+                    { 'time':  0   , 'note': 'A#2', 'duration': '4n' },
+                    { 'time': '0:1', 'note': 'F3' , 'duration': '4n' },
                     { 'time': '0:2', 'note': 'A#3', 'duration': '2n' },
                     { 'time': '1:0', 'note': 'G#2', 'duration': '4n' },
                     { 'time': '1:1', 'note': 'D#3', 'duration': '4n' },
@@ -121,9 +121,9 @@ function init(element) {
                     { 'time': '2:0', 'note': 'F#2', 'duration': '4n' },
                     { 'time': '2:1', 'note': 'C#3', 'duration': '4n' },
                     { 'time': '2:2', 'note': 'F#3', 'duration': '2n' },
-                    { 'time': '3:0', 'note': 'F2', 'duration': '4n' },
-                    { 'time': '3:1', 'note': 'C3', 'duration': '4n' },
-                    { 'time': '3:2', 'note': 'F3', 'duration': '2n' },
+                    { 'time': '3:0', 'note': 'F2' , 'duration': '4n' },
+                    { 'time': '3:1', 'note': 'C3' , 'duration': '4n' },
+                    { 'time': '3:2', 'note': 'F3' , 'duration': '2n' },
                 ]
             }
         }
@@ -145,55 +145,57 @@ function init(element) {
         currentSong.play();
         if (Tone.Transport.state == 'started') {
             Tone.Transport.stop();
+            playbutton.innerHTML = 'play'
         } else {
             Tone.Transport.start();
+            playbutton.innerHTML = 'stop'
         }
     });
 
-    var instrument = [];
-    instrument[0] = document.createElement("ol")
-    for (i = 0; i < 32; i++) {
-        //Make a span element to contain note data
-        note = document.createElement("span")
-        note.innerHTML = "---"
-        //Set up event listeners to allow for editing 
-        note.addEventListener('mouseover', hover);
-        note.addEventListener('click', select);
-        note.addEventListener('mouseout', nothover);
-        //Set up attrubutes
-        note.setAttribute("status", 'deselected')
-        note.setAttribute("index", i.toString(10))
-        note.setAttribute("instrument", (0).toString(10))
-        note.setAttribute('class', 'note')
-        //make another span element to contain duration data, pretty much the same as note
-        duration = document.createElement("span")
-        duration.innerHTML = '--'
 
-        duration.addEventListener('mouseover', hover);
-        duration.addEventListener('click', select);
-        duration.addEventListener('mouseout', nothover);
+    for (var currentTrack in currentSong.tracks) {
 
-        duration.setAttribute("status", "deselected")
-        duration.setAttribute('index', i.toString(10))
-        duration.setAttribute('instrument', (0).toString(10))
-        duration.setAttribute('class', 'duration')
-        //add them both to a list element
-        li = document.createElement('li')
-        li.appendChild(note)
-        li.appendChild(duration)
+        var list = document.createElement("ol")
+        for (var i = 0; i < currentSong.tracks[currentTrack].data.length; i++) {
+            //Make a span element to contain note data
+            note = document.createElement("span")
+            note.innerHTML = currentSong.tracks[currentTrack].data[i].note
+            //Set up event listeners to allow for editing 
+            note.addEventListener('mouseover', hover);
+            note.addEventListener('click', select);
+            note.addEventListener('mouseout', nothover);
+            //Set up attrubutes
+            note.setAttribute("status", 'deselected')
+            note.setAttribute("index", i.toString(10))
+            note.setAttribute("instrument", (0).toString(10))
+            note.setAttribute('class', 'note')
+            //make another span element to contain duration data, pretty much the same as note
+            duration = document.createElement("span")
+            duration.innerHTML = currentSong.tracks[currentTrack].data[i].duration
 
-        label = document.createElement("p")
-        label.innerText = pad(i.toString(16), 2, '0') + ' '
+            duration.addEventListener('mouseover', hover);
+            duration.addEventListener('click', select);
+            duration.addEventListener('mouseout', nothover);
 
-        instrument[0].appendChild(li);
+            duration.setAttribute("status", "deselected")
+            duration.setAttribute('index', i.toString(10))
+            duration.setAttribute('instrument', (0).toString(10))
+            duration.setAttribute('class', 'duration')
+            //add them both to a list element
+            li = document.createElement('li')
+            li.appendChild(note)
+            li.appendChild(duration)
 
-        li.insertBefore(label, note)
+            label = document.createElement("p")
+            label.innerText = pad(i.toString(16), 2, '0') + ' '
+
+            list.appendChild(li);
+
+            li.insertBefore(label, note)
+        }
+        element.appendChild(list)
     }
-    element.appendChild(instrument[0])
-    document.addEventListener('keypress', keydown)
-    document.addEventListener('keydown', (e) =>{
-        console.log(e.key)
-    })
+    document.addEventListener('keydown', keydown)
 }
 function hover(e) {
     if (this.getAttribute("status") == 'deselected') {
@@ -207,6 +209,10 @@ function select(e) {
     if (prevElement == this) return;
     keycount = 0;
     if (prevElement) {
+        if (prevElement.getAttribute('class') == 'note' && (keycount <= 3 && keycount > 0) && !(prevElement.innerHTML == '---')) {
+            console.log('Incomplete!');
+            prevElement.innerHTML = '---';
+        }
         prevElement.setAttribute("status", 'deselected')
         prevElement.style = null;
     }
@@ -219,6 +225,7 @@ function selectElement(e) {
     if (prevElement == e) return;
     keycount = 0;
     if (prevElement) {
+
         prevElement.setAttribute("status", 'deselected')
         prevElement.style = null;
     }
@@ -233,18 +240,22 @@ function nothover(e) {
     }
 }
 function keydown(e) {
-    console.log(e.key);
-    console.log(keycount);
-
     element = document.querySelectorAll('[status="selected"]')[0]
+    console.log(e.key)
 
-
-    if (element && (e.key.length == 1)) {
+    if (element) {
         if (element.getAttribute('class') == 'note') {
             if (keycount == 0) { //Key 1 is the key, ABCDEF or G
-                if (/[a-gA-G]/.test(e.key)) {
+                if (/[a-gA-G]/.test(e.key) && e.key.length == 1) {
                     element.innerHTML = e.key.toUpperCase() + '--';
                     keycount++;
+                    durEl = document.querySelector('[index ="' + element.getAttribute('index') + '"][class="duration"]');
+                    if (durEl.innerHTML == '--') {
+                        durEl.innerHTML = '01';
+                    }
+                } else if (e.key == 'Backspace' || e.key == ' ' || e.key == '-') {
+                    element.innerHTML = '---'
+                    nextDurInput(element)
                 }
             } else if (keycount == 1) {
                 if (/[# -]/.test(e.key)) { //Key 2 is wether it's sharp or not (No flats supported yet)
@@ -256,41 +267,45 @@ function keydown(e) {
                     keycount++;
                 } else if (/[0-9]/.test(e.key)) { //If user types a number, skip ahead to Key 3
                     element.innerHTML = element.innerHTML[0] + '-' + e.key;
-                    keycount == 0;
-                    nextSelected = document.querySelector('[index ="' + element.getAttribute('index') + '"][class="duration"]')
-                    selectElement(nextSelected)
+                    nextDurInput(element)
                 }
             } else if (keycount == 2) {
                 if (/[0-9]/.test(e.key)) { //Key 3 is the Octave, 12345678 or 9
                     element.innerHTML = element.innerHTML.slice(0, 2) + e.key;
-                    keycount == 0;
-                    nextSelected = document.querySelector('[index ="' + element.getAttribute('index') + '"][class="duration"]')
-                    selectElement(nextSelected)
+                    nextDurInput(element)
                 }
             }
-        } else if (element.getAttribute('class') == 'duration'){
-            if (keycount == 0) { //Key 1
-                if (/[0-9]/.test(e.key)) {
-                    element.innerHTML ='-' + e.key;
+        } else if (element.getAttribute('class') == 'duration') {
+            if (keycount == 0) { // digit one of Duration (how many beats the not should play), 12345678 or 9.
+                if (/[0-9]/.test(e.key) && e.key.length == 1) {
+                    element.innerHTML = '0' + e.key;
                     keycount++;
+                } else if (e.key == 'Backspace') {
+                    element.innerHTML = '--'
+                    keycount = 2;
                 }
             } else if (keycount == 1) {
-                if (/[0-9]/.test(e.key)) { //If user types a number, skip ahead to Key 3
-                    element.innerHTML =  element.innerHTML[1] + e.key;
-                    keycount == 0;
-                    nextSelected = document.querySelector('[index ="' + (parseInt(element.getAttribute('index'), 10) + 1).toString(10) + '"][class="note"]')
-                    selectElement(nextSelected)
-                } else if (e.key == ' ') {
+                if (/[0-9]/.test(e.key) && e.key.length == 1) { //digit 2 of Duration
+                    element.innerHTML = element.innerHTML[1] + e.key;
+                    nextNoteInput(element)
+                } else if (e.key == ' ' || e.key == 'Enter') {
                     element.innerHTML = '0' + element.innerHTML[1]
-                    keycount == 0;
-                    nextSelected = document.querySelector('[index ="' + (parseInt(element.getAttribute('index'), 10) + 1).toString(10) + '"][class="note"]')
-                    selectElement(nextSelected)
+                    nextNoteInput(element);
                 }
             }
         }
     }
 }
-
+function nextNoteInput(element) {
+    keycount = 0;
+    var nextSelected = document.querySelector('[index ="' + (parseInt(element.getAttribute('index'), 10) + 1).toString(10) + '"][class="note"]');
+    selectElement(nextSelected);
+}
+function nextDurInput(element) {
+    keycount = 0;
+    nextSelected = document.querySelector('[index ="' + element.getAttribute('index') + '"][class="duration"]');
+    selectElement(nextSelected);
+}
 
 
 function pad(string, padlen, padchar = " ", padfromright = false) {
