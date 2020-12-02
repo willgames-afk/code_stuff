@@ -1,4 +1,4 @@
-.org $8000; put it at the start of memory (eeprom chip mapped in at $8000)
+    .org $8000; put it at the start of memory (eeprom chip mapped in at $8000)
 ;Labels
 PORTB = $6000 ;io chip
 PORTA = $6001 ;|
@@ -38,6 +38,8 @@ init:
     lda #%10000011
     sta IER ;Enable CA1 and CA2 interupts
 
+    cli ;enable 6502 interupts
+
 loop:
     lda #%00000010 ;csr Home
     jsr lcd_instruction
@@ -53,10 +55,10 @@ print_bits:
     and #%00000001 ;mask off all but the first bit
     bne print_one  ;
 ;print_zero:
-    lda #"0"
+    lda #'0'
     jmp print_bit
 print_one:
-    lda #"1"
+    lda #'1'
 print_bit:
     jsr lcd_char
     tya ; slide bits along so next bit is "seen" through bitmask
@@ -115,18 +117,25 @@ nmi:
 
 irqbrk:
     pha
+    tya
+    pha
+    txa
+    pha
     lda #%00000001
     bit IFR
     beq not_A1
 ;If A1
         lda #%00000010
         jsr lcd_instruction
-        lda #"A"
+        lda #'A'
         jsr lcd_char
-        lda #"1"
+        lda #'1'
         jsr lcd_char
-        lda #"!"
+        lda #'!'
         jsr lcd_char
+        ldx #$FF
+        ldy #$FF
+        jmp delay
 not_A1:
     lda #%00000010
     bit IFR
@@ -140,8 +149,21 @@ not_A1:
         jsr lcd_char
         lda #"!"
         jsr lcd_char
+            ldx #$FF
+            ldy #$FF
+        delay:
+            dex
+            bne delay
+            dey
+            bne delay
+
+
 
 exit_irq:
+    pla
+    tax
+    pla
+    tay
     pla
     bit PORTA ;read of port a/b clears CA/CB interupt
     bit PORTB 
