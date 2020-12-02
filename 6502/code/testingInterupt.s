@@ -1,33 +1,71 @@
- .org $8000; put it at the start of memory (eeprom chip mapped in at addr $8000)
+.org $8000; put it at the start of memory (eeprom chip mapped in at $8000)
 ;Labels
-E  = %10000001 ;LCD display
-RW = %01000001 ;|
-RS = %00100001 ;/
-
-CCH = $08 ;LCD CGRAM address of the custom char used for graphics
-
-;Variables and External Registers
-dot_x   = $0000 ;1 byte
-dot_y   = $0001 ;1 byte
-;Max is $00FF; $0100 is stack
-
 PORTB = $6000 ;io chip
-PORTA = $6001
-DDRB  = $6002
-DDRA  = $6003 
+PORTA = $6001 ;|
+DDRB  = $6002 ;|
+DDRA  = $6003 ;/
 PCR   = $600c
 IFR   = $600d
 IER   = $600e
 
+E  = %10000000 ;LCD display
+RW = %01000000 ;|
+RS = %00100000 ;/
+
 init:
-    cli
-    lda #%10000010 ;Try $82 if not work
-    sta IER
-    lda #$FF ;Ben has this the opposite; negative triggering edge
+    lda #%11111111 ;set portB pins to output
+    sta DDRB
+    lda #%11100001 ;set top 3 portA pins to output plus LED (so we can light it up)
+    sta DDRA
+    
+    lda #%00000001 ;Ensure everything is reset and turn on indicator LED
+    sta PORTA
+    lda #%00000000
+    sta PORTB
+
+    lda #%00111000 ;8-bit mode; 2 line; 5x8 font
+    jsr lcd_instruction
+    lda #%00001110 ;Display on; cursor on; blink off;
+    jsr lcd_instruction
+    lda #%00000110 ;Increment and shift cursor, don't shift screen
+    jsr lcd_instruction
+    lda #%00000001
+    jsr lcd_instruction
+
+    lda #%00000101 ;CA1 and 2 are both positive edge triggered
     sta PCR
 
+    lda #%10000011
+    sta IER ;Enable CA1 and CA2 interupts
 
+loop:
+    lda #%00000010 ;csr Home
+    jsr lcd_instruction
 
+    lda #%00011110 ;Get button values into y register
+    and PORTA
+    clc
+    ror
+    tay
+    ldx #$04
+print_bits:
+    tya
+    and #%00000001 ;mask off all but the first bit
+    bne print_one  ;
+;print_zero:
+    lda #"0"
+    jmp print_bit
+print_one:
+    lda #"1"
+print_bit:
+    jsr lcd_char
+    tya ; slide bits along so next bit is "seen" through bitmask
+    ror ; |
+    tay ;/
+
+    dex
+    beq loop ;branch if zero flag set
+    jmp print_bits
 
 
 lcd_instruction:
@@ -41,7 +79,7 @@ lcd_instruction:
     sta PORTA
     rts
 
-lcd_data:
+lcd_char:
     jsr lcd_wait
     sta PORTB
     lda #RS
@@ -81,27 +119,33 @@ irqbrk:
     bit IFR
     beq not_A1
 ;If A1
-
+        lda #%00000010
+        jsr lcd_instruction
+        lda #"A"
+        jsr lcd_char
+        lda #"1"
+        jsr lcd_char
+        lda #"!"
+        jsr lcd_char
 not_A1:
     lda #%00000010
     bit IFR
     beq exit_irq
 ;If A2
-
-
+        lda #%00000010
+        jsr lcd_instruction
+        lda #"A"
+        jsr lcd_char
+        lda #"2"
+        jsr lcd_char
+        lda #"!"
+        jsr lcd_char
 
 exit_irq:
     pla
     bit PORTA ;read of port a/b clears CA/CB interupt
     bit PORTB 
     rti
-
-    
-
-
-
-
-
 
     .org $fffa
     .word nmi
