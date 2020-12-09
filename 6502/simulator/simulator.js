@@ -1,14 +1,27 @@
 class Simulator {
     constructor(element) {
-        this.canvas = document.createElement('canvas')
-        element.appendChild(this.canvas)
+        //create canvas and rendering context; used to render LCD
+        this.canvas = document.createElement('canvas');
+        element.appendChild(this.canvas);
+        this.ctx = this.canvas.getContext("2d");
+
+        //Setting up reset button- this is crucial for audio
+        this.startButton = document.createElement('button');
+        this.startButton.innerHTML = 'Reset';
+        element.appendChild(this.startButton);
+
+        //Grab assets and finish setting up canvas
         this.assets = Simulator.assets;
+
         this.canvas.width = this.assets.background.width * 0.90;
         this.canvas.height = this.assets.background.height * 0.90;
-        this.ctx = this.canvas.getContext("2d");
-        this.charset = this.assets.chartable
-        console.log(this.charset)
+
+        this.charset = this.assets.chartable;
+
+        //Create LCD simulator
         this.display = Simulator.LCD(this.canvas, this.assets);
+        console.log('Successful Simulator Start!')
+        //Start the simulation!
         this.render();
     }
     render() {
@@ -51,14 +64,13 @@ class Simulator {
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/json");
             xobj.open('GET', "assets/" + toLoad.json[i].src, true)
-            xobj.onreadystatechange = (function (assets,toLoad) {
+            xobj.onreadystatechange = (function (assets,toLoad,i) {
                 return function () {
                     if (xobj.readyState == 4 && xobj.status == "200") {
                         assets[toLoad.json[i].name] = JSON.parse(xobj.responseText);
-                        console.log('I loaded!')
                     }
                 }
-            })(this.assets,toLoad)
+            })(this.assets,toLoad,i)
             xobj.send()
         }
     }
@@ -86,11 +98,9 @@ class Simulator {
     }
 }
 Simulator.loadResources();
-
 window.addEventListener("load", () => {
     widgets = document.getElementsByClassName('widget');
     for (widget of widgets) {
-        console.log('Widget!')
         Simulator.initSimulatorWidget(widget);
     }
 });
