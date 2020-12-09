@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>TITLE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link href='/default.css' rel="stylesheet">
+</head>
+
+<body>
+    <div class='mainbox'>
+        <h1>SaveStuff.js</h1>
+        <div class='menu'>
+            <p id='localhost?'>Not locally hosted</p>
+            <script src='/localhostdetector.js'></script>
+            <a href='/'>Homepage</a>
+        </div>
+
+        <p>This is a simple library for saving data locally. It will use <code>localStorage</code> if possible, but can fall back to cookies if necisary.</p>
+    </div>
+    <canvas id="dotcanvas">
+        <script src="/noms/nom.js"></script>
+        <script>
+            things.resize();
+            for (i = 0; i < 30; i++) {
+                things.make(undefined, undefined, things.randomColor())
+            }
+            requestAnimationFrame(things.main)
+        </script>
+    </canvas>
+</body>
+
+</html>
