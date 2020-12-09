@@ -1,16 +1,16 @@
     .org $8000; put it at the start of memory (eeprom chip mapped in at $8000)
 ;Labels
-PORTB = $6000 ;io chip
-PORTA = $6001 ;|
-DDRB  = $6002 ;|
-DDRA  = $6003 ;/
+PORTB = $6000;io chip
+PORTA = $6001
+DDRB  = $6002
+DDRA  = $6003
 PCR   = $600c
 IFR   = $600d
 IER   = $600e
 
-E  = %10000000 ;LCD display
-RW = %01000000 ;|
-RS = %00100000 ;/
+E  = %10000000;LCD display
+RW = %01000000
+RS = %00100000
 
 init:
     lda #%11111111 ;set portB pins to output
