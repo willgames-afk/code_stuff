@@ -277,7 +277,11 @@ things = {
     resize() {
         //resize handler
         //console.log('resize detected')
-        canvas.width = window.innerWidth
+        if (document.body.scrollWidth > window.innerWidth) {
+            canvas.width = document.body.scrollWidth + document.body.style.marginleft + document.body.style.marginRight
+        } else {
+            canvas.width = window.innerWidth
+        }
         if (document.body.scrollHeight > window.innerHeight) {
             canvas.height = document.body.scrollHeight
         } else {
