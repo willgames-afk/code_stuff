@@ -1,5 +1,6 @@
 class BinFile {
     constructor(blob, callback) {
+        console.group('File Read:')
         console.log('Creating BinFile Object...')
         this.onComplete = callback
         this.binArray = [];
@@ -12,7 +13,6 @@ class BinFile {
         } else {
             this.blob = undefined
         }
-        console.log('BinFile Created!')
     };
     get binaryString() { return this.binArray.join('') }
     set binaryString(val = '') {
@@ -93,7 +93,11 @@ class BinFile {
         }, 10)
     };
     setSourceBlob(blob) {
-        console.group('File Read:')
+        if (!blob) {
+            console.warn('No file specified, returning.')
+            console.groupEnd()
+            return
+        }
         console.log('Setting Source Blob...')
         this.blob = blob;
         console.log('Reading Binary...')
