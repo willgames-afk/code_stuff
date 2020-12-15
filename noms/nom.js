@@ -1,3 +1,10 @@
+/*TO DO-
+
+-Implement real physics
+-Automake Noms based on area of webpage and add/remove them on resize
+-Convert to class/object?
+-Perfect resizing.
+*/
 things = {
     noms: [],
     lines: [],
@@ -278,7 +285,14 @@ things = {
         //resize handler
         //console.log('resize detected')
         if (document.body.scrollWidth > window.innerWidth) {
-            canvas.width = document.body.scrollWidth + document.body.style.marginleft + document.body.style.marginRight
+            var width = document.body.scrollWidth;
+            if (document.body.style.marginleft) {
+                width += document.body.style.marginLeft
+            }
+            if (document.body.style.marginRight) {
+                width += document.body.style.marginRight
+            }
+            canvas.width = width
         } else {
             canvas.width = window.innerWidth
         }
