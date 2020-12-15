@@ -25,20 +25,22 @@ class Simulator {
         this.render();
     }
     render() {
-        var ps = 2, pd = 1, rows = 2, cols = 16, cwidth = 5, cheight = 8;
-        this.ctx.drawImage(this.assets.background, 0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.fillStyle = "#000"
-        for (var cr = 0; cr < rows; cr++) {
-            for (var cc = 0; cc < cols; cc++) {
-                for (var r = 0; r < cheight; r++) {
-                    for (var c = 0; c < cwidth; c++) {
-                        this.ctx.fillRect(50 + ((ps + pd) * 6) * cc + (ps + pd) * c, 60 + ((ps + pd) * 10) * cr + (ps + pd) * r, ps, ps)
-                    }
-                }
+        this.display.render.bind(this)();
+    }
+    static pad(string, padlen, padchar = " ", padfromright = false) {
+        if (string.length >= padlen) return string;
+        out = string;
+        if (padfromright) {
+            while (out.length < padlen) {
+                out = out + padchar
+            }
+        } else {
+            while (out.length < padlen) {
+                out = padchar + out;
             }
         }
+        return out;
     }
-
 
 
     static initSimulatorWidget(node) {
@@ -80,20 +82,32 @@ class Simulator {
         lcd.ctx = canvas.getContext('2d');
         lcd.canvas.width = assets.background.width * 0.90;
         lcd.canvas.height = assets.background.height * 0.90;
+        lcd.ddram = [];
+        for (i=0;i<128;i++) {
+            lcd.ddram[i] = 34;//Display Initializes to spaces
+        }
+        lcd.cgram = new Array(64);
+
         lcd.render = function () {
             var ps = 2, pd = 1, rows = 2, cols = 16, cwidth = 5, cheight = 8;
-            this.ctx.drawImage(this.assets.background, 0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.fillStyle = "#000"
+            lcd.ctx.drawImage(assets.background, 0, 0, lcd.canvas.width, lcd.canvas.height);
+            lcd.ctx.fillStyle = "#000"
+            var test = '';
             for (var cr = 0; cr < rows; cr++) {
                 for (var cc = 0; cc < cols; cc++) {
                     for (var r = 0; r < cheight; r++) {
                         for (var c = 0; c < cwidth; c++) {
-                            this.ctx.fillRect(50 + ((ps + pd) * 6) * cc + (ps + pd) * c, 60 + ((ps + pd) * 10) * cr + (ps + pd) * r, ps, ps)
+                            if (r < 8 && Simulator.pad(assets.chartable[34][r].toString(2),5,'0',false)[c] == '1') {
+                                test += '█'
+                                lcd.ctx.fillRect(50 + ((ps + pd) * 6) * cc + (ps + pd) * c, 60 + ((ps + pd) * 10) * cr + (ps + pd) * r, ps, ps)
+                            } else {
+                                test += ' '
+                            }
                         }
                     }
                 }
             }
-        }
+        }.bind(this)
         return lcd
     }
 }
