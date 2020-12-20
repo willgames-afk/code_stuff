@@ -31,6 +31,8 @@ class Simulator {
         console.log('Successful Simulator Start!')
         //Create Memory
         this.memory = Simulator.Memory()
+        this.memory.write(0x8001,'adsfasd')
+        console.log(this.memory.read(0x4000))
 
         //Set up internal registers
         this.regA = 0;
@@ -73,6 +75,7 @@ class Simulator {
         return new Simulator(node)
     }
     static loadResources(completeLoadCallback) {
+        //Loads the required resources for the simulator
         var total = 0
         var toLoad = {
             imgs: [
@@ -183,10 +186,42 @@ class Simulator {
         return lcd
     }
     static Memory() {
-        var memory = [];
-        return memory
+        var memarray = new Array(0xFFFF);
+        var iochip = Simulator.IOchip();
+
+        function write(address, value) {
+            address = Simulator.pad(address.toString(2),16,'0').split('').reverse();
+            console.log(address)
+            if (address[14] == 0 && address[15] == 0) { //If in first quarter of mem
+                memarray[address] = value;
+            } else if (address[14] == 1 && address[15] == 0 && address[13] == 1) {
+                iochip.write(parseInt(address.slice(0,4).reverse().join(''),2),value)
+            } else {
+                console.warn('Write to '+address+' is invalid, data was not stored.')
+            }
+        }
+        function read(address, value) {
+            address = Simulator.pad(address.toString(2),16,'0').split('').reverse();
+            if (address[15] == 0 && address[14] == 1 && address[13] == 0) {
+                console.warn('Nothing provides data at address '+address+', garbage data was read.')
+                return Math.round(Math.random()*255)
+            }
+        }
+        return {
+            read:read,
+            write:write,
+        }
+    }
+    static IOchip() {
+        function write(register, val) {
+            console.log('Writing '+val+' to register '+register+'.')
+        }
+        return {
+            write:write
+        }
     }
 }
+
 Simulator.loadResources(() => {
     widgets = document.getElementsByClassName('widget');
     for (widget of widgets) {
