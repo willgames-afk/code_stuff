@@ -33,6 +33,8 @@ class Simulator {
         this.memory = Simulator.Memory()
         this.memory.write(0x8001,'adsfasd')
         console.log(this.memory.read(0x4000))
+        this.memory.write(0x6000)
+        this.memory.iochip.controlLines.CB1 = 'adsfsdf'
 
         //Set up internal registers
         this.regA = 0;
@@ -200,25 +202,78 @@ class Simulator {
                 console.warn('Write to '+address+' is invalid, data was not stored.')
             }
         }
-        function read(address, value) {
+        function read(address) {
             address = Simulator.pad(address.toString(2),16,'0').split('').reverse();
             if (address[15] == 0 && address[14] == 1 && address[13] == 0) {
                 console.warn('Nothing provides data at address '+address+', garbage data was read.')
                 return Math.round(Math.random()*255)
+            } else if (address[14] == 1 && address[15] == 0 && address[13] == 1) {
+                return iochip.read(parseInt(address.slice(0,4).reverse().join(''),2))
+            } else {
+                return memarray[parseInt(address.join(''),2)]
             }
         }
         return {
             read:read,
             write:write,
+            iochip:iochip,
         }
     }
     static IOchip() {
+        var registers = [
+            0,//PORTB
+            0,//PORTA
+            0,//DDRB
+            0,//DDRA
+            0,//T1 LO Latches/Counter
+            0,//T1 Hi Counter
+            0,//T1 LO Latches
+            0,//T1 HI Latches
+            0,//T2 LO Latches/Counter 
+            0,//T2 HI Counter
+            0,//Shift Register
+            0,//ACR 
+            0,//PCR
+            0,//IFR
+            0,//IER
+            0 //PORTA no handshake
+        ]
+        var controlLines = {};
+        Simulator.makeControlLine(controlLines,'CB1',(v) => {
+            if (controlLines[13].toString(2).split('')[4]) {
+                
+            }
+        });
+        Simulator.makeControlLine(controlLines,'CB2',(v) => {
+
+        });
+        Simulator.makeControlLine(controlLines,'CA1',(v) => {
+
+        });
+        Simulator.makeControlLine(controlLines,'CA2',(v) => {
+
+        });
+        console.log(controlLines)
         function write(register, val) {
-            console.log('Writing '+val+' to register '+register+'.')
+            console.log('Writing '+val+' to io chip register '+register+'.')
+        }
+        function read(register) {
+            return registers[register]
         }
         return {
-            write:write
+            read:read,
+            write:write,
+            registers:registers,
+            controlLines:controlLines,
         }
+    }
+    static makeControlLine(object,name,callback) {
+        Object.defineProperty(object,name,{
+            set(v) {
+                this['_'+name] = v
+                callback(v);
+            }
+        })
     }
 }
 
