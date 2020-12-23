@@ -1,3 +1,17 @@
+console.logAsBin = function (num) {
+    console.log(Simulator.pad(num.toString(2), 8, "0"))
+}
+class Register extends Number {
+    constructor(value = 0) {
+        super(value)
+    }
+    bitTest(index) {
+        if (this.value >> index & 1) {
+            return true
+        }
+        return false
+    }
+}
 class Simulator {
     constructor(element) {
 
@@ -11,7 +25,7 @@ class Simulator {
         //create input button for 6502 executable
         this.fileInput = document.createElement('input')
         this.fileInput.type = "file";
-        this.fileInput.addEventListener("change",this.loadProg.bind(this))
+        this.fileInput.addEventListener("change", this.loadProg.bind(this))
         element.appendChild(this.fileInput);
 
         //Setting up reset button- this is crucial for audio
@@ -31,10 +45,11 @@ class Simulator {
         console.log('Successful Simulator Start!')
         //Create Memory
         this.memory = Simulator.Memory()
-        this.memory.write(0x8001,'adsfasd')
+        this.memory.write(0x8001, 'adsfasd')
         console.log(this.memory.read(0x4000))
         this.memory.write(0x6000)
-        this.memory.iochip.controlLines.CB1 = 'adsfsdf'
+        this.memory.iochip.controlLines.CB1 = true
+        this.memory.iochip.controlLines.CB1 = false
 
         //Set up internal registers
         this.regA = 0;
@@ -58,7 +73,7 @@ class Simulator {
         fileObj.setSourceBlob(this.fileInput.files[0])//Only takes the first file you submit; Ignores others
     }
 
-//STATIC METHODS
+    //STATIC METHODS
     static pad(string, padlen, padchar = " ", padfromright = false) {
         if (string.length >= padlen) return string;
         out = string;
@@ -192,88 +207,110 @@ class Simulator {
         var iochip = Simulator.IOchip();
 
         function write(address, value) {
-            address = Simulator.pad(address.toString(2),16,'0').split('').reverse();
+            address = Simulator.pad(address.toString(2), 16, '0').split('').reverse();//TO DO- convert to '>>'s and &s
             console.log(address)
-            if (address[14] == 0 && address[15] == 0) { //If in first quarter of mem
+            if (address[14] == 0 && address[15] == 0) { //If in first quarter of mem//TO DO- convert to '>>'s and &s
                 memarray[address] = value;
-            } else if (address[14] == 1 && address[15] == 0 && address[13] == 1) {
-                iochip.write(parseInt(address.slice(0,4).reverse().join(''),2),value)
+            } else if (address[14] == 1 && address[15] == 0 && address[13] == 1) { //TO DO- convert to '>>'s and &s
+                iochip.write(parseInt(address.slice(0, 4).reverse().join(''), 2), value) //TO DO- convert to '>>'s and &s
             } else {
-                console.warn('Write to '+address+' is invalid, data was not stored.')
+                console.warn('Write to ' + address + ' is invalid, data was not stored.')
             }
         }
         function read(address) {
-            address = Simulator.pad(address.toString(2),16,'0').split('').reverse();
-            if (address[15] == 0 && address[14] == 1 && address[13] == 0) {
-                console.warn('Nothing provides data at address '+address+', garbage data was read.')
-                return Math.round(Math.random()*255)
-            } else if (address[14] == 1 && address[15] == 0 && address[13] == 1) {
-                return iochip.read(parseInt(address.slice(0,4).reverse().join(''),2))
+            address = Simulator.pad(address.toString(2), 16, '0').split('').reverse();//TO DO- convert to '>>'s and &s
+            if (address[15] == 0 && address[14] == 1 && address[13] == 0) {//TO DO- convert to '>>'s and &s
+                console.warn('Nothing provides data at address ' + address + ', garbage data was read.')
+                return Math.round(Math.random() * 255)
+            } else if (address[14] == 1 && address[15] == 0 && address[13] == 1) {//TO DO- convert to '>>'s and &s
+                return iochip.read(parseInt(address.slice(0, 4).reverse().join(''), 2))
             } else {
-                return memarray[parseInt(address.join(''),2)]
+                return memarray[parseInt(address.join(''), 2)]
             }
         }
         return {
-            read:read,
-            write:write,
-            iochip:iochip,
+            read: read,
+            write: write,
+            iochip: iochip,
         }
     }
     static IOchip() {
-        var registers = [
-            0,//PORTB
-            0,//PORTA
-            0,//DDRB
-            0,//DDRA
-            0,//T1 LO Latches/Counter
-            0,//T1 Hi Counter
-            0,//T1 LO Latches
-            0,//T1 HI Latches
-            0,//T2 LO Latches/Counter 
-            0,//T2 HI Counter
-            0,//Shift Register
-            0,//ACR 
-            0,//PCR
-            0,//IFR
-            0,//IER
-            0 //PORTA no handshake
-        ]
+        var registers = [];
+        for (var i = 0; i < 16; i++) {
+            registers[i] = new Register()
+        }
+
         var controlLines = {};
-        Simulator.makeControlLine(controlLines,'CB1',(v) => {
-            if (controlLines[13].toString(2).split('')[4]) {
-                
+        Simulator.makeControlLine(controlLines, 'CB1', (v) => {
+            if (registers[12].bitTest(4)) {//bit 4 toggles between negative and positive edge triggers
+                if (v) {
+                    console.log('CB1 Triggered!')
+                }
+            } else {
+                if (!v) {
+                    console.log('CB1 Triggered!')
+                }
             }
         });
-        Simulator.makeControlLine(controlLines,'CB2',(v) => {
+        Simulator.makeControlLine(controlLines, 'CB2', (v) => {
+            if (!registers[12].bitTest(7)) { //If bit 7 is on, CB2 is an output
+                if (registers[12].bitTest(6)) {
+                    if (registers[12].bitTest(5)) {
+                        controlLines
+                    } else {
 
-        });
-        Simulator.makeControlLine(controlLines,'CA1',(v) => {
+                    }
+                } else {
 
+                }
+            }
         });
-        Simulator.makeControlLine(controlLines,'CA2',(v) => {
+        Simulator.makeControlLine(controlLines, 'CA1', (v) => {
+            if (registers[0].bitTest(4)) {
+                if (v) {//bit 0 toggles neg and pos edge triggers for CA1
+                    console.log('CA1 Triggered!')
+                }
+            } else {
+                if (!v) {
+                    console.log('CA1 Triggered!');
+                }
+            }
+        });
+        Simulator.makeControlLine(controlLines, 'CA2', (v) => {
 
         });
         console.log(controlLines)
         function write(register, val) {
-            console.log('Writing '+val+' to io chip register '+register+'.')
+            console.log('Writing ' + val + ' to io chip register ' + register + '.')
         }
         function read(register) {
             return registers[register]
         }
         return {
-            read:read,
-            write:write,
-            registers:registers,
-            controlLines:controlLines,
+            read: read,
+            write: write,
+            registers: registers,
+            controlLines: controlLines,
         }
     }
-    static makeControlLine(object,name,callback) {
-        Object.defineProperty(object,name,{
+    static makeControlLine(object, name, callback) {
+        Object.defineProperty(object, name, {
             set(v) {
-                this['_'+name] = v
+                if (this['_' + name] == v) { return }
+                this['_' + name] = v
                 callback(v);
-            }
+            },
+            get() {
+                return this['_' + name]
+            },
+        });
+        Object.defineProperty(object, ('_' + name), {
+            value: false,
+            writable: true
         })
+    }
+    static bin(num) {
+        return this.pad(num.toString(2), 8, '0')
     }
 }
 
