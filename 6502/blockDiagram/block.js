@@ -54,14 +54,14 @@ class SidebarUI {
             width: 0,
             position: 'fixed',
             zIndex: 1,
-            top:0,
-            right:0,
+            top: 0,
+            right: 0,
             backgroundColor: '#111',
             overflowX: 'hidden',
-            paddingTop:'60px',
+            paddingTop: '60px',
             transition: '0.5s',
         }
-        SidebarUI.applyStyle(this.containerElement,this.containerStyle)
+        SidebarUI.applyStyle(this.containerElement, this.containerStyle)
         this.containerElement.className = 'gui'
         containerElement.appendChild(this.containerElement)
 
@@ -124,12 +124,18 @@ class SidebarUI {
 }
 class BlockDiagram {
     constructor(element, config = {}) {
+        //General Init
         this.containerElement = element;
         this.sidebar = new SidebarUI(this.containerElement)
         this.state = 1; //0 = creating block, 1 = stable, 2 = editing block, 3 = deleting block
+        this.blocks = [];
+        this.mouse = {
+            x: 0,
+            y: 0,
+        }
         this.style = {
             canvas: {
-                position:'absolute',
+                position: 'absolute',
                 top: 0,
                 left: 0,
                 backgroundColor: 'gray',
@@ -143,17 +149,17 @@ class BlockDiagram {
 
         //Canvas Config
         this.c = document.createElement('canvas')
-        SidebarUI.applyStyle(this.c,this.style.canvas)
-        this.c.oncontextmenu = ()=>{return false;}
+        SidebarUI.applyStyle(this.c, this.style.canvas)
+        this.c.addEventListener('contextmenu', e => { e.preventDefault() })
         this.containerElement.appendChild(this.c)
         this.ctx = this.c.getContext('2d')
         this.resize();
 
         //Event Listener Setup
-        this.containerElement.addEventListener('resize',this.resize)
-        this.containerElement.addEventListener('mousemove',this.resize)
-        this.containerElement.addEventListener('mousedown',this.resize)
-        this.containerElement.addEventListener('input',this.resize)
+        this.containerElement.addEventListener('resize', this.resize.bind(this))
+        this.containerElement.addEventListener('mousemove', this.mouseMove.bind(this))
+        this.containerElement.addEventListener('mousedown', this.mouseClick.bind(this))
+        this.containerElement.addEventListener('input', this.getInput.bind(this))
     }
     resize() {
         //resize handler
@@ -163,207 +169,132 @@ class BlockDiagram {
         } else {
             this.c.height = window.innerHeight;
         };
-        this.render()
+        this.render();
     }
     render() {
-       //Renders the screen
-    
+        //Renders the screen
+
         //draw current working block
         this.ctx.clearRect(0, 0, this.c.width, this.c.height)
         if (this.state == 0) {
             //draw block
-            this.ctx.fillStyle = config.blockColor
-            this.ctx.fillRect(cwb.x1, cwb.y1, cwb.width, cwb.height)
+            var cwb = {
+                width: this.mouse.x - this.cwb.x1,
+                height: this.mouse.y - this.cwb.y1
+            }
+            this.ctx.fillStyle = this.style.blocks.blockColor
+            this.ctx.fillRect(this.cwb.x1, this.cwb.y1, cwb.width, cwb.height)
             //draw block name
-            this.ctx.fillStyle = config.textColor
+            this.ctx.fillStyle = this.style.blocks.textColor
             this.ctx.fillText(
-                cwb.name,
-                cwb.x1 + cwb.width / 2 - (ctx.measureText(cwb.name).width / 2),
-                cwb.y1 + (cwb.height / 2)
+                this.cwb.name,
+                this.cwb.x1 + cwb.width / 2 - (this.ctx.measureText(this.cwb.name).width / 2),
+                this.cwb.y1 + (cwb.height / 2)
             )
         }
-    
+
         //draw all other blocks
-        for (var i = 0; i < blocks.length; i++) {
+        for (var i = 0; i < this.blocks.length; i++) {
             //draw the block
-            this.ctx.fillStyle = config.blockColor
-            this.ctx.fillRect(blocks[i].x1, blocks[i].y1, blocks[i].width, blocks[i].height)
-    
+            this.ctx.fillStyle = this.style.blocks.blockColor
+            this.ctx.fillRect(this.blocks[i].x1, this.blocks[i].y1, this.blocks[i].width, this.blocks[i].height)
+
             //draw the block's name
-            this.ctx.fillStyle = config.textColor
+            this.ctx.fillStyle = this.style.blocks.textColor
             this.ctx.fillText(
-                blocks[i].name,
-                blocks[i].x1 + (blocks[i].width / 2) - (ctx.measureText(blocks[i].name).width / 2),
+                this.blocks[i].name,
+                this.blocks[i].x1 + (this.blocks[i].width / 2) - (this.ctx.measureText(this.blocks[i].name).width / 2),
                 //X-pos of block + offset to get the x of the text center - 1/2 of text's length to get the text centered
-                blocks[i].y1 + (blocks[i].height / 2)
+                this.blocks[i].y1 + (this.blocks[i].height / 2)
             )
-    
+
             //draw connection labels (not implemented)
         }
-    
         //draw connections (not implemented)
-    
-    
+
         if (this.state == 0) {
-            requestAnimationFrame(render)
+            requestAnimationFrame(this.render.bind(this))
+        }
+    }
+    mouseMove(e) {
+        //mouse move handler
+        this.mouse.x = e.clientX;
+        this.mouse.y = e.clientY;
+    }
+    mouseClick(e) {
+        //mouse click handler
+        var collisions = this.detectBlockCollision(this.mouse.x, this.mouse.y)
+        if (e.button == 0) {
+
+            if (this.state == 2) {
+                if (collisions.length == 1) {
+                    this.sidebar.clearInputElements()
+                    this.sidebar.editingIndex = collisions[0]
+                    this.sidebar.open();
+                }
+            } else if (this.state == 0) {
+                this.cwb = {};
+                this.state = 1;
+            } else {
+                if (collisions.length == 1) {
+                    this.state = 2;
+                    this.sidebar.editingIndex = collisions[0];
+                    this.sidebar.open();
+                    this.render()
+                }
+            }
+
+        } else if (e.button == 2) {
+            if (this.state == 1) {
+                if (collisions.length == 0) {
+                    this.startNewBlock(this.mouse.x, this.mouse.y);
+                }
+            } else if (this.state == 0) {
+                this.makeNewBlock(this.mouse.x, this.mouse.y);
+            } else if (this.state == 2) {
+                this.sidebar.close();
+                this.startNewBlock(this.mouse.x, this.mouse.y);
+            }
+        }
+    }
+    getInput(e) {
+        if (this.state == 2) {
+            var tagname = e.target.tagName.toLowerCase();
+            if (tagname == 'textarea') {
+                //Auto Expand
+                e.target.rows = 1;
+                if (e.target.scrollHeight / 12 > e.target.rows) {
+                    e.target.rows = e.target.scrollHeight / 12
+                }
+                blocks[ui.editingIndex][e.target.id] = e.target.value
+                render();
+            }
+        }
+    }
+    detectBlockCollision(x, y) {
+        //checks if a given point intersects with any block and returns a list of indexes of all the blocks it collides with.
+        var outArray = []
+        for (var i = 0; i < this.blocks.length; i++) {
+            if (x > this.blocks[i].x1 && x < this.blocks[i].x2 && y > this.blocks[i].y1 && y < this.blocks[i].y2) {
+                outArray.push(i)
+                console.log('collision')
+            }
+        }
+        return outArray
+    }
+    startNewBlock(x, y) {
+        this.state = 0;
+        this.cwb = new Block(x, y, false, false, 0)
+        this.render.bind(this)();
+    }
+    makeNewBlock(x, y) {
+        if (this.detectBlockCollision(x, y).length == 0) {
+            this.blocks.push(new Block(this.cwb.x1, this.cwb.y1, x, y))
+            this.state = 1;
+        } else {
+            console.log(detectBlockCollision(x, y))
+            console.warn("Cannot create blocks inside blocks.")
         }
     }
 }
 var t = new BlockDiagram(document.body)
-
-/*var definitions
-var canvas = document.getElementById('dotcanvas');
-var ctx = canvas.getContext("2d");
-var mouse = { x: 0, y: 0 };
-var blocks = [];
-var cwb = {};// current working block
-var state = 1
-/*STATE TABLE:
--1: Invisible but otherwise same as state 1
- 0: Being Created.
- 1: Stable. 
- 2: Being Edited
- 3: Being Deleted
-
-var config = {
-    textColor: "rgb(200,200,200)",
-    blockColor: "rgb(20,20,20)",
-}
-//configing
-resize()
-window.onresize = resize;
-document.addEventListener('mousemove', mouseMove)
-document.addEventListener('mousedown', mouseClick)
-document.addEventListener('input', checkInputs, false)
-*/
-//function defininitions
-function checkInputs(e) {
-    if (state == 2) {
-        var tagname = e.target.tagName.toLowerCase();
-        if (tagname == 'textarea') {
-            autoExpand(e.target, ui.maxTextareaHeight);
-            blocks[ui.editingIndex][e.target.id] = e.target.value
-            render();
-        }
-    }
-}
-function autoExpand(field) {
-    field.rows = 1;
-    if (field.scrollHeight / 12 > field.rows) {
-        field.rows = field.scrollHeight / 12
-    }
-}
-function resize() {
-    //resize handler
-    canvas.width = window.innerWidth;
-    if (document.body.scrollHeight > window.innerHeight) {
-        canvas.height = document.body.scrollHeight;
-    } else {
-        canvas.height = window.innerHeight;
-    };
-    render()
-}
-function mouseMove(e) {
-    //mouse move handler
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-}
-function mouseClick(e) {
-    //mouse click handler
-    if (e.button == 0) {
-        var collisions = detectBlockCollision(mouse.x, mouse.y)
-        if (collisions.length == 1) {
-            if (state == 2) {
-                ui.clearInputElements()
-                ui.editingIndex = collisions[0]
-                ui.open();
-            } else {
-                state = 2
-                ui.editingIndex = collisions[0]
-                ui.open();
-                render()
-            }
-        }
-    } else if (e.button == 2) {
-        if (state == 1) {
-            if (detectBlockCollision(mouse.x, mouse.y).length == 0) {
-                createNewBlock(mouse.x, mouse.y);
-            }
-        } else if (state == 0) {
-            finishNewBlock(mouse.x, mouse.y);
-        } else if (state == 2) {
-            ui.close();
-            createNewBlock(mouse.x, mouse.y);
-        }
-    }
-}
-function finishNewBlock(x, y) {
-    if (detectBlockCollision(x, y).length == 0) {
-        blocks.push(new Block(cwb.x1, cwb.y1, x, y))
-        state = 1;
-    } else {
-        console.log(detectBlockCollision(x, y))
-        console.error("Cannot create blocks inside blocks.")
-    }
-}
-function createNewBlock(x, y) {
-    //generates a new block
-    state = 0;
-    cwb = new Block(x, y, false, false, 0)
-    render();
-
-}
-function render() {
-    //Renders the screen
-
-    //draw current working block
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    if (state == 0) {
-        //draw block
-        ctx.fillStyle = config.blockColor
-        ctx.fillRect(cwb.x1, cwb.y1, cwb.width, cwb.height)
-        //draw block name
-        ctx.fillStyle = config.textColor
-        ctx.fillText(
-            cwb.name,
-            cwb.x1 + cwb.width / 2 - (ctx.measureText(cwb.name).width / 2),
-            cwb.y1 + (cwb.height / 2)
-        )
-    }
-
-    //draw all other blocks
-    for (var i = 0; i < blocks.length; i++) {
-        //draw the block
-        ctx.fillStyle = config.blockColor
-        ctx.fillRect(blocks[i].x1, blocks[i].y1, blocks[i].width, blocks[i].height)
-
-        //draw the block's name
-        ctx.fillStyle = config.textColor
-        ctx.fillText(
-            blocks[i].name,
-            blocks[i].x1 + (blocks[i].width / 2) - (ctx.measureText(blocks[i].name).width / 2),
-            //X-pos of block + offset to get the x of the text center - 1/2 of text's length to get the text centered
-            blocks[i].y1 + (blocks[i].height / 2)
-        )
-
-        //draw connection labels (not implemented)
-    }
-
-    //draw connections (not implemented)
-
-
-    if (state == 0) {
-        requestAnimationFrame(render)
-    }
-}
-function detectBlockCollision(x, y) {
-    //checks if a given point intersects with any block and returns a list of indexes of all the blocks it collides with.
-    var outArray = []
-    for (var i = 0; i < blocks.length; i++) {
-        if (x > blocks[i].x1 && x < blocks[i].x2 && y > blocks[i].y1 && y < blocks[i].y2) {
-            outArray.push(i)
-            console.log('collision')
-        }
-    }
-    return outArray
-}
