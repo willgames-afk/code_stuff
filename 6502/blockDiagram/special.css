@@ -20,9 +20,9 @@
 }
 
 .gui textarea,.gui p {
-    margin: 8px 8px 8px 8px;
+    margin: 0px 8px 0px 8px;
     text-decoration: none;
-    font-size: 18px;
+    font-size: 12px;
     transition: 0.3s;
 }
 
@@ -33,7 +33,7 @@
     outline: none;
     resize: none;
     background-color: #111;
-    border: none;
+    border-color: #444;
     color: #818181;
     /*height: 1em;
     max-height: 50vh;

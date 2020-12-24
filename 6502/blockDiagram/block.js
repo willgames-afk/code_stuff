@@ -1,4 +1,3 @@
-'use strict';
 //class definitions
 class Block {
     constructor(
@@ -40,16 +39,21 @@ class Block {
         this.y2 = this.y1 + value
     }
 }
+
 var ui = {
     open() {
+        this.addInputElement('name', blocks[this.editingIndex].name)
         this.htmlElement.style.width = this.maxWidth;
         document.getElementById('all').style.marginRight = this.maxWidth;
+        state = 2
     },
     close() {
+        this.clearInputElements();
         this.htmlElement.style.width = "0";
         document.getElementById('all').style.marginRight = '0';
+        state = 1
     },
-    addInputElement(name = '', value, type) {
+    addInputElement(name = '', value) {
         if (!name || !value) {
             console.error('addInputElement reqires name and value inputs')
             return false
@@ -58,26 +62,28 @@ var ui = {
         nameElement.appendChild(document.createTextNode(name));
         var inputElement = document.createElement('textarea');
         inputElement.appendChild(document.createTextNode(value))
-
-        if (!type) {
-            type = typeof (value)
-        }
-        this.elements[name] = {
-            value: value,
-            type: type
-        }
+        inputElement.id = 'name'
+        this.elements.push(nameElement)
+        this.elements.push(inputElement)
 
 
         this.htmlElement.appendChild(nameElement)
+        this.htmlElement.appendChild(inputElement)
+        autoExpand(inputElement)
+    },
+    clearInputElements() {
+        for (var i = 0; i < this.elements.length; i++) {
+            this.htmlElement.removeChild(this.elements[i])
+        }
+        this.elements = [];
     },
     state: 'closed',
     maxWidth: '300px',
     maxTextareaHeight: 1000,
-    elements: {},
-    htmlElement: document.getElementById('gui-side')
+    elements: [],
+    htmlElement: document.getElementById('gui-side'),
+    editingIndex: null,
 }
-
-
 //var definitions
 var canvas = document.getElementById('dotcanvas');
 var ctx = canvas.getContext("2d");
@@ -85,7 +91,6 @@ var mouse = { x: 0, y: 0, rightClick: false, leftClick: false, };
 var blocks = [];
 var cwb = {};// current working block
 var state = 0
-
 /*STATE TABLE:
 -1: Invisible but otherwise same as state 1
  0: Being Created.
@@ -97,30 +102,30 @@ var config = {
     textColor: "rgb(200,200,200)",
     blockColor: "rgb(20,20,20)",
 }
-
 //configing
 resize()
 window.onresize = resize;
 document.addEventListener('mousemove', mouseMove)
 document.addEventListener('mousedown', mouseClick)
 document.addEventListener('mouseup', mouseUnclick)
-document.addEventListener('input',checkInputs, false)
-
-
+document.addEventListener('input', checkInputs, false)
 //function defininitions
-
 function checkInputs(e) {
-    var tagname = e.target.tagName.toLowerCase();
-    if (tagname == 'textarea') {
-        autoExpand(event.target, ui.maxTextareaHeight)
+    if (state == 2) {
+        var tagname = e.target.tagName.toLowerCase();
+        if (tagname == 'textarea') {
+            autoExpand(e.target, ui.maxTextareaHeight);
+            blocks[ui.editingIndex][e.target.id] = e.target.value
+            render();
+        }
     }
 }
-
-function autoExpand(field, maxHeight) {
+function autoExpand(field) {
     field.rows = 1;
-    field.rows = field.scrollHeight/12
+    if (field.scrollHeight / 12 > field.rows) {
+        field.rows = field.scrollHeight / 12
+    }
 }
-
 function resize() {
     //resize handler
     canvas.width = window.innerWidth;
@@ -139,18 +144,31 @@ function mouseMove(e) {
 function mouseClick(e) {
     //mouse click handler
     console.log('click')
+    console.log(state)
     if (e.button == 0) {
-        mouse.leftClick = true;
-        if (detectBlockCollision(mouse.x, mouse.y).length == 1) {
-            ui.open();
-            render()
+        var collisions = detectBlockCollision(mouse.x, mouse.y)
+        if (collisions.length == 1) {
+            if (state == 2) {
+                ui.clearInputElements()
+                ui.editingIndex = collisions[0]
+                ui.open();
+            } else {
+                state = 2
+                ui.editingIndex = collisions[0]
+                ui.open();
+                render()
+            }
         }
     } else if (e.button == 2) {
-        if (state == 0) {
-            state = 1;
-            createNewBlock(mouse.x, mouse.y);
-        } else if (state == 1) {
+        if (state == 1) {
+            if (detectBlockCollision(x,y).length == 0) {
+                createNewBlock(mouse.x, mouse.y);
+            }
+        } else if (state == 0) {
             finishNewBlock(mouse.x, mouse.y);
+        } else if (state == 2) {
+            ui.close();
+            createNewBlock(mouse.x, mouse.y);
         }
     }
 }
@@ -165,7 +183,7 @@ function mouseUnclick(e) {
 function finishNewBlock(x, y) {
     if (detectBlockCollision(x, y).length == 0) {
         blocks.push(new Block(cwb.x1, cwb.y1, x, y))
-        state = 0;
+        state = 1;
     } else {
         console.log(detectBlockCollision(x, y))
         console.error("Cannot create blocks inside blocks.")
@@ -173,20 +191,17 @@ function finishNewBlock(x, y) {
 }
 function createNewBlock(x, y) {
     //generates a new block
-    if (detectBlockCollision(x, y).length == 0) {
-        cwb = new Block(x, y, false, false, 0)
-        startRenderLoop();
-    } else {
-        console.log(detectBlockCollision(x, y))
-        console.error("Cannot create blocks inside blocks.")
-    }
+    state = 0;
+    cwb = new Block(x, y, false, false, 0)
+    startRenderLoop();
+    
 }
 function render() {
     //Renders the screen
 
     //draw current working block
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    if (state == 1) {
+    if (state == 0) {
         //draw block
         ctx.fillStyle = config.blockColor
         ctx.fillRect(cwb.x1, cwb.y1, cwb.width, cwb.height)
@@ -220,7 +235,7 @@ function render() {
     //draw connections (not implemented)
 
 
-    if (!state == 0) {
+    if (state == 0) {
         requestAnimationFrame(render)
     }
 }
@@ -238,3 +253,4 @@ function detectBlockCollision(x, y) {
 function startRenderLoop() {
     render();
 }
+state = 1;
