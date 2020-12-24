@@ -1,5 +1,4 @@
 .gui{
-    /*height: 100%;*/
     width: 0;
     position: fixed;
     z-index: 1;
@@ -7,7 +6,7 @@
     right:0;
     background-color: #111;
     overflow-x: hidden;
-    padding-top:60px;  /*SOMETHING IN HERE is makein my code not work...*/
+    padding-top:60px;  
     transition: 0.5s;
 }
 

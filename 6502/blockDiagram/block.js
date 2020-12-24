@@ -39,20 +39,59 @@ class Block {
         this.y2 = this.y1 + value
     }
 }
+class SidebarUI {
+    constructor(containerElement, config = {}) {
+        this.containerElement = document.createElement('div');
 
-var ui = {
+        var a = document.createElement('a')
+        a.href = 'javascript:void(0)'
+        a.innerHTML = '&times;'
+        a.onclick = this.close;
+        a.className = 'sidebarui-closebtn'
+        this.containerElement.appendChild(a)
+
+        this.containerStyle = {
+            width: 0,
+            position: 'fixed',
+            zIndex: 1,
+            top:0,
+            right:0,
+            backgroundColor: '#111',
+            overflowX: 'hidden',
+            paddingTop:'60px',
+            transition: '0.5s',
+        }
+        SidebarUI.applyStyle(this.containerElement,this.containerStyle)
+        this.containerElement.className = 'gui'
+        containerElement.appendChild(this.containerElement)
+
+        this.supportedProperties = {
+            state: 'closed',
+            sidebarWidth: '300px',
+            minTextareaRows: 1,
+            maxTextareaRows: 20,
+        }
+        for (var property in this.supportedProperties) {
+            if (config[property]) {
+                this[property] = config[property]
+            } else {
+                this[property] = this.supportedProperties[property]
+            }
+        }
+        this.editingIndex = null;
+    }
     open() {
         this.addInputElement('name', blocks[this.editingIndex].name)
         this.htmlElement.style.width = this.maxWidth;
         document.getElementById('all').style.marginRight = this.maxWidth;
         state = 2
-    },
+    }
     close() {
         this.clearInputElements();
         this.htmlElement.style.width = "0";
         document.getElementById('all').style.marginRight = '0';
         state = 1
-    },
+    }
     addInputElement(name = '', value) {
         if (!name || !value) {
             console.error('addInputElement reqires name and value inputs')
@@ -70,24 +109,112 @@ var ui = {
         this.htmlElement.appendChild(nameElement)
         this.htmlElement.appendChild(inputElement)
         autoExpand(inputElement)
-    },
+    }
     clearInputElements() {
         for (var i = 0; i < this.elements.length; i++) {
             this.htmlElement.removeChild(this.elements[i])
         }
         this.elements = [];
-    },
-    state: 'closed',
-    maxWidth: '300px',
-    maxTextareaHeight: 1000,
-    elements: [],
-    htmlElement: document.getElementById('gui-side'),
-    editingIndex: null,
+    }
+    static applyStyle(element, style) {
+        for (var s in style) {
+            element.style[s] = style[s]
+        }
+    }
 }
-//var definitions
+class BlockDiagram {
+    constructor(element, config = {}) {
+        this.containerElement = element;
+        this.sidebar = new SidebarUI(this.containerElement)
+        this.state = 1; //0 = creating block, 1 = stable, 2 = editing block, 3 = deleting block
+        this.style = {
+            canvas: {
+                position:'absolute',
+                top: 0,
+                left: 0,
+                backgroundColor: 'gray',
+                zIndex: -1
+            },
+            blocks: {
+                textColor: "rgb(200,200,200)",
+                blockColor: "rgb(20,20,20)"
+            }
+        }
+
+        //Canvas Config
+        this.c = document.createElement('canvas')
+        SidebarUI.applyStyle(this.c,this.style.canvas)
+        this.c.oncontextmenu = ()=>{return false;}
+        this.containerElement.appendChild(this.c)
+        this.ctx = this.c.getContext('2d')
+        this.resize();
+
+        //Event Listener Setup
+        this.containerElement.addEventListener('resize',this.resize)
+        this.containerElement.addEventListener('mousemove',this.resize)
+        this.containerElement.addEventListener('mousedown',this.resize)
+        this.containerElement.addEventListener('input',this.resize)
+    }
+    resize() {
+        //resize handler
+        this.c.width = window.innerWidth;
+        if (document.body.scrollHeight > window.innerHeight) {
+            this.c.height = document.body.scrollHeight;
+        } else {
+            this.c.height = window.innerHeight;
+        };
+        this.render()
+    }
+    render() {
+       //Renders the screen
+    
+        //draw current working block
+        this.ctx.clearRect(0, 0, this.c.width, this.c.height)
+        if (this.state == 0) {
+            //draw block
+            this.ctx.fillStyle = config.blockColor
+            this.ctx.fillRect(cwb.x1, cwb.y1, cwb.width, cwb.height)
+            //draw block name
+            this.ctx.fillStyle = config.textColor
+            this.ctx.fillText(
+                cwb.name,
+                cwb.x1 + cwb.width / 2 - (ctx.measureText(cwb.name).width / 2),
+                cwb.y1 + (cwb.height / 2)
+            )
+        }
+    
+        //draw all other blocks
+        for (var i = 0; i < blocks.length; i++) {
+            //draw the block
+            this.ctx.fillStyle = config.blockColor
+            this.ctx.fillRect(blocks[i].x1, blocks[i].y1, blocks[i].width, blocks[i].height)
+    
+            //draw the block's name
+            this.ctx.fillStyle = config.textColor
+            this.ctx.fillText(
+                blocks[i].name,
+                blocks[i].x1 + (blocks[i].width / 2) - (ctx.measureText(blocks[i].name).width / 2),
+                //X-pos of block + offset to get the x of the text center - 1/2 of text's length to get the text centered
+                blocks[i].y1 + (blocks[i].height / 2)
+            )
+    
+            //draw connection labels (not implemented)
+        }
+    
+        //draw connections (not implemented)
+    
+    
+        if (this.state == 0) {
+            requestAnimationFrame(render)
+        }
+    }
+}
+var t = new BlockDiagram(document.body)
+
+/*var definitions
 var canvas = document.getElementById('dotcanvas');
 var ctx = canvas.getContext("2d");
-var mouse = { x: 0, y: 0};
+var mouse = { x: 0, y: 0 };
 var blocks = [];
 var cwb = {};// current working block
 var state = 1
@@ -97,7 +224,7 @@ var state = 1
  1: Stable. 
  2: Being Edited
  3: Being Deleted
-*/
+
 var config = {
     textColor: "rgb(200,200,200)",
     blockColor: "rgb(20,20,20)",
@@ -108,6 +235,7 @@ window.onresize = resize;
 document.addEventListener('mousemove', mouseMove)
 document.addEventListener('mousedown', mouseClick)
 document.addEventListener('input', checkInputs, false)
+*/
 //function defininitions
 function checkInputs(e) {
     if (state == 2) {
@@ -158,7 +286,7 @@ function mouseClick(e) {
         }
     } else if (e.button == 2) {
         if (state == 1) {
-            if (detectBlockCollision(x,y).length == 0) {
+            if (detectBlockCollision(mouse.x, mouse.y).length == 0) {
                 createNewBlock(mouse.x, mouse.y);
             }
         } else if (state == 0) {
@@ -183,7 +311,7 @@ function createNewBlock(x, y) {
     state = 0;
     cwb = new Block(x, y, false, false, 0)
     render();
-    
+
 }
 function render() {
     //Renders the screen
