@@ -87,10 +87,10 @@ var ui = {
 //var definitions
 var canvas = document.getElementById('dotcanvas');
 var ctx = canvas.getContext("2d");
-var mouse = { x: 0, y: 0, rightClick: false, leftClick: false, };
+var mouse = { x: 0, y: 0};
 var blocks = [];
 var cwb = {};// current working block
-var state = 0
+var state = 1
 /*STATE TABLE:
 -1: Invisible but otherwise same as state 1
  0: Being Created.
@@ -107,7 +107,6 @@ resize()
 window.onresize = resize;
 document.addEventListener('mousemove', mouseMove)
 document.addEventListener('mousedown', mouseClick)
-document.addEventListener('mouseup', mouseUnclick)
 document.addEventListener('input', checkInputs, false)
 //function defininitions
 function checkInputs(e) {
@@ -143,8 +142,6 @@ function mouseMove(e) {
 }
 function mouseClick(e) {
     //mouse click handler
-    console.log('click')
-    console.log(state)
     if (e.button == 0) {
         var collisions = detectBlockCollision(mouse.x, mouse.y)
         if (collisions.length == 1) {
@@ -172,14 +169,6 @@ function mouseClick(e) {
         }
     }
 }
-function mouseUnclick(e) {
-    // mouse up handler
-    if (e.button === 0) {
-        mouse.leftClick = false;
-    } else if (e.button === 2) {
-        mouse.rightClick = false;
-    }
-}
 function finishNewBlock(x, y) {
     if (detectBlockCollision(x, y).length == 0) {
         blocks.push(new Block(cwb.x1, cwb.y1, x, y))
@@ -193,7 +182,7 @@ function createNewBlock(x, y) {
     //generates a new block
     state = 0;
     cwb = new Block(x, y, false, false, 0)
-    startRenderLoop();
+    render();
     
 }
 function render() {
@@ -250,7 +239,3 @@ function detectBlockCollision(x, y) {
     }
     return outArray
 }
-function startRenderLoop() {
-    render();
-}
-state = 1;
