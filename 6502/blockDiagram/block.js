@@ -61,8 +61,8 @@ class SidebarUI {
                 right: 0,
                 backgroundColor: '#111',
                 overflowX: 'hidden',
-                paddingTop: '60px',
                 transition: '0.5s',
+                paddingTop: '60px',
             },
             closebutton: {
                 float: 'right',
@@ -72,8 +72,33 @@ class SidebarUI {
                 color: '#818181',
             },
             orderedList: {
-                margin: 0,
+                margin: '0px 8px 0px 8px',
                 padding: 0,
+            },
+            p: {
+                margin: '0px 0px 0px 2px',
+                textDecoration: 'none',
+                color: '#818181',
+                fontSize: '12px',
+            },
+            textarea: {
+                margin: '0px',
+                textDecoration: 'none',
+                fontSize: '10px',
+                outline: 'none',
+                resize: 'none',
+                color: '#818181',
+                borderColor: '#505050',
+            },
+            checkbox: {
+                backgroundColor: 'transparent',
+                outline: 'none',
+                borderWidth: '2px',
+                borderStyle: "solid",
+                borderColor: '#505050',
+                borderRadius: '3px',
+                padding: '7px 7px',
+                margin: '0px'
             }
         }
         SidebarUI.applyStyle(this.containerElement, this.style.container)
@@ -112,19 +137,23 @@ class SidebarUI {
         }
 
         this.containerElement.style.width = this.sidebarWidth;
-        document.getElementById('all').style.marginRight = this.sidebarWidth;
         setterCallback('state', 2);
     }
     close() {
-        this.clearInputElements();
         this.containerElement.style.width = "0";
-        document.getElementById('all').style.marginRight = '0';
+        setTimeout(this.finishClose.bind(this),500)
+    }
+    finishClose() {
+        this.clearInputElements()
+
         this.state = 1
+        this.setterCallback('state',1)
     }
     addInputElement(name = '', value, containerElement) {
         console.log(value)
         var nameElement = document.createElement('p');
         nameElement.appendChild(document.createTextNode(name));
+        SidebarUI.applyStyle(nameElement,this.style.p)
         this.elements.push(nameElement) //Keep track of element to manipulate/delete
 
         if (!Array.isArray(value)) {
@@ -133,27 +162,54 @@ class SidebarUI {
         var inputElement = document.createElement('ol');
         SidebarUI.applyStyle(inputElement, this.style.orderedList)
         var i = 0
-        for (var item of value) {
+        for (var thing in value) {
+            var item = value[thing]
             i++
             var typeval = typeof item
             console.log(typeval)
             console.log(typeof item)
             if (typeval == 'boolean') {
-                var inputlistitem = document.createElement('input');
-                inputlistitem.type = 'checkbox';
-                inputlistitem.value = true;
+
+                var inputlistitem = document.createElement('button');
+                inputlistitem.addEventListener('click',function (e){
+                    console.log(e.target.getAttribute('checkbox-true'))
+                    if (e.target.getAttribute('checkbox-true') == '') {
+                        e.target.style.backgroundColor = '#111'
+                        e.target.removeAttribute('checkbox-true')
+                        this.setterCallback(name,false)
+                    } else {
+                        e.target.style.backgroundColor = '#505050'
+                        e.target.setAttribute('checkbox-true','')
+                        this.setterCallback(name,true)
+                    }
+                }.bind(this))
+
+                SidebarUI.applyStyle(inputlistitem,this.style.checkbox)
+
             } else if (typeval == 'number' || typeval == 'string') {
+
                 var inputlistitem = document.createElement('textarea');
-                inputlistitem.innerText = item
+
+                inputlistitem.innerText = item;
+                inputlistitem.addEventListener('input',function(e){
+                    console.log(e.target)
+                }.bind(this))
+
                 inputlistitem.rows = 1;
                 if (inputlistitem.scrollHeight / 12 > inputlistitem.rows) {
                     inputlistitem.rows = inputlistitem.scrollHeight / 12
                 }
+
+                SidebarUI.applyStyle(inputlistitem, this.style.textarea)
+
             } else if (Array.isArray(item)) {
+
                 var inputlistitem = document.createElement('div')
+
                 for (var value of item) {
                     this.addInputElement(value, blocks[this.editingIndex][value], inputlistitem)
                 }
+
             }
             inputlistitem.className = name;
             inputlistitem.setAttribute('index', i.toString(10));
@@ -226,7 +282,7 @@ class BlockDiagram {
         this.containerElement.addEventListener('resize', this.resize.bind(this))
         this.containerElement.addEventListener('mousemove', this.mouseMove.bind(this))
         this.containerElement.addEventListener('mousedown', this.mouseClick.bind(this))
-        this.containerElement.addEventListener('input', this.getInput.bind(this))
+        //this.containerElement.addEventListener('input', this.getInput.bind(this))
     }
     resize() {
         //resize handler
@@ -324,7 +380,7 @@ class BlockDiagram {
             }
         }
     }
-    getInput(e) {
+    /*getInput(e) {
         if (this.state == 2) {
             var tagname = e.target.tagName.toLowerCase();
             if (tagname == 'textarea') {
@@ -333,13 +389,13 @@ class BlockDiagram {
                 if (e.target.scrollHeight / 12 > e.target.rows) {
                     e.target.rows = e.target.scrollHeight / 12
                 }
-                console.log(this.sidebar.isValid(thios))
+                console.log(this.sidebar.isValid(e.target.value))
                 this.blocks[this.sidebar.editingIndex][e.target.className] = e.target.value
                 this.render();
                 
             }
         }
-    }
+    }*/
     detectBlockCollision(x, y) {
         //checks if a given point intersects with any block and returns a list of indexes of all the blocks it collides with.
         var outArray = []
@@ -365,6 +421,7 @@ class BlockDiagram {
         }
     }
     setterCallback(property, value) {
+        console.log('setting this.'+property+' to '+value+'.')
         this[property] = value
     }
 }
