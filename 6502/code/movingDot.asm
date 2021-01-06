@@ -4,7 +4,8 @@ E  = %10000001 ;LCD display
 RW = %01000001 ;|
 RS = %00100001 ;/
 
-CCH = $08 ;LCD CGRAM address of the custom char used for graphics
+CCHA = $08 ;LCD CGRAM address of the custom char used for graphics.
+CCH = $01 ; We're using char 1, $08 to $10
 
 ;Variables and External Registers
 dot_x   = $0000 ;1 byte
@@ -44,7 +45,7 @@ init:
 
     lda #%10000100 ;Set DDRAM address to 4
     jsr lcd_instruction
-    lda #%00000001 ; set char 5 on lcd to be our custom character that is the gamefield
+    lda CCH ; set char 5 on lcd to be our custom character that is the gamefield
     jsr lcd_data
 
 loop:
@@ -92,11 +93,11 @@ fdot_left:
 
 ;If button 1 is pressed, move up
     and #%00000001
-    beq fdot_down 
+    beq fdot_up 
 
     inc dot_y
     jmp redraw
-fdot_down:
+fdot_up:
     jmp loop
 
 
@@ -127,8 +128,8 @@ rowloop_continue:
     cpy #8 ;Once we've gone through 8 times, we're done!
     bne rowloop
 
-    lda #%10000000 ;Get back into DDRAM
-    jsr lcd_instruction
+    ;lda #%10000000 ;Get back into DDRAM
+    ;jsr lcd_instruction
 
 
 ;Delay to prevent insane dot speeds 
