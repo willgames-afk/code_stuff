@@ -5,6 +5,7 @@
     <title>Comment!</title>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
     <link href='/default.css' rel="stylesheet">
+    <script src="/noms/nom.js"></script>
 </head>
 
 <body>
@@ -19,16 +20,6 @@
         <script src="comments.js"></script>
         
     </div>
-    <canvas id="dotcanvas">
-        <script src="/noms/nom.js"></script>
-        <script>
-            things.resize();
-            for (i = 0; i < 30; i++) {
-                things.make(undefined, undefined, things.randomColor())
-            }
-            requestAnimationFrame(things.main)
-        </script>
-    </canvas>
 </body>
 
 </html>

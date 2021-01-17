@@ -25,6 +25,7 @@
         ::-webkit-file-upload-button {background-color: #1c76fd;border:1px transparent;}
         input [type='file'] {width: 12ch;}
     </style>
+    <script src="/noms/nom.js"></script>
 </head>
 
 <body>
@@ -54,16 +55,6 @@
             
 
     </div>
-    <canvas id="dotcanvas">
-        <script src="/noms/nom.js"></script>
-        <script>
-            things.resize();
-            for (i = 0; i < 30; i++) {
-                things.make(Math.random() * canvas.width, Math.random() * canvas.height, things.rgbify(Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)));
-            };
-            requestAnimationFrame(things.main)
-        </script>
-    </canvas>
 </body>
 
 </html>

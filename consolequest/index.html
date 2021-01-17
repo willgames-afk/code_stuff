@@ -10,6 +10,7 @@
             font-family: 'Courier New', Courier, monospace;
         }
     </style>
+    <script src="/noms/nom.js"></script>
 </head>
 
 <body>
@@ -31,16 +32,6 @@
         <script src="Main.js"></script>
 
     </div>
-    <canvas id="dotcanvas">
-        <script src="/noms/nom.js"></script>
-        <script>
-            things.resize();
-            for (i = 0; i < 30; i++) {
-                things.make(Math.random() * canvas.width, Math.random() * canvas.height, things.rgbify(Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)));
-            };
-            requestAnimationFrame(things.main)
-        </script>
-    </canvas>
 </body>
 
 </html>

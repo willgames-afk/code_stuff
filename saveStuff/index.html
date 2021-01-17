@@ -5,6 +5,7 @@
     <title>SaveStuff.js</title>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
     <link href='/default.css' rel="stylesheet">
+    <script src="/noms/nom.js"></script>
 </head>
 
 <body>
@@ -22,16 +23,6 @@
         <button>Save Locally</button><button>Load</button>
         <script src='saveStuff.js'></script>
     </div>
-    <canvas id="dotcanvas">
-        <script src="/noms/nom.js"></script>
-        <script>
-            things.resize();
-            for (i = 0; i < 30; i++) {
-                things.make(undefined, undefined, things.randomColor())
-            }
-            requestAnimationFrame(things.main)
-        </script>
-    </canvas>
 </body>
 
 </html>
