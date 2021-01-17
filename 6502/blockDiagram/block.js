@@ -43,15 +43,8 @@ class Block {
 }
 class SidebarUI {
     constructor(containerElement, config = {}) {
-        this.containerElement = document.createElement('div');
 
-        var a = document.createElement('a')
-        a.href = 'javascript:void(0)'
-        a.innerHTML = '&times;'
-        a.onclick = this.close.bind(this);
-        a.className = 'sidebarui-closebtn'
-        this.containerElement.appendChild(a)
-
+        //Setting up Style info
         this.style = {
             container: {
                 width: 0,
@@ -101,12 +94,29 @@ class SidebarUI {
                 margin: '0px'
             }
         }
-        SidebarUI.applyStyle(this.containerElement, this.style.container)
-        SidebarUI.applyStyle(a, this.style.closebutton)
-        this.containerElement.className = 'gui'
-        containerElement.appendChild(this.containerElement)
-        this.elements = [];
 
+        //Adding container DIV
+        this.containerElement = document.createElement('div');
+        this.containerElement.className = 'gui'
+        SidebarUI.applyStyle(this.containerElement, this.style.container)
+
+        //Create close button
+        var a = document.createElement('a');
+        a.href = 'javascript:void(0)'; //Makes it so you don't reload the page when clicked
+        a.innerHTML = '&times;';       // X char- renders as × in this font
+        a.onclick = this.close.bind(this); 
+        a.className = 'sidebarui-closebtn';
+        this.containerElement.appendChild(a); //Add it to container
+        SidebarUI.applyStyle(a, this.style.closebutton); //Styling
+
+        //Adding container element to document
+        containerElement.appendChild(this.containerElement)
+
+        //Assorted Vars
+        this.elements = []; //DOM elements being displayed; makes for easy deletion
+        this.editingIndex = null; //The index of the block currently being edited in the GUI
+
+        //Property Setup
         this.supportedProperties = {
             state: 'closed',
             sidebarWidth: '300px',
@@ -119,6 +129,8 @@ class SidebarUI {
                 number: {type: 'number'}
             }
         }
+
+        //Applying Properties
         for (var property in this.supportedProperties) {
             if (config[property]) {
                 this[property] = config[property]
@@ -126,7 +138,6 @@ class SidebarUI {
                 this[property] = this.supportedProperties[property]
             }
         }
-        this.editingIndex = null;
     }
     open(blocks, setterCallback) {
         this.setterCallback = setterCallback;
@@ -261,7 +272,7 @@ class BlockDiagram {
                 position: 'absolute',
                 top: 0,
                 left: 0,
-                backgroundColor: 'gray',
+                backgroundColor: 'transparent',
                 zIndex: -1
             },
             blocks: {
@@ -272,9 +283,9 @@ class BlockDiagram {
 
         //Canvas Config
         this.c = document.createElement('canvas')
-        SidebarUI.applyStyle(this.c, this.style.canvas)
-        this.c.addEventListener('contextmenu', e => { e.preventDefault() })
-        this.containerElement.appendChild(this.c)
+        SidebarUI.applyStyle(this.c, this.style.canvas)                     //style
+        this.c.addEventListener('contextmenu', e => { e.preventDefault() }) //Prevent right clicks from opening menu
+        this.containerElement.appendChild(this.c)                           //adding it to the doc
         this.ctx = this.c.getContext('2d')
         this.resize();
 
@@ -349,13 +360,13 @@ class BlockDiagram {
         var collisions = this.detectBlockCollision(this.mouse.x, this.mouse.y)
         if (e.button == 0) {
 
-            if (this.state == 2) {
+            if (this.state == 2) { //Editing Existing Block
                 if (collisions.length == 1) {
                     this.sidebar.clearInputElements()
                     this.sidebar.editingIndex = collisions[0]
                     this.sidebar.open(this.blocks, this.setterCallback.bind(this));
                 }
-            } else if (this.state == 0) {
+            } else if (this.state == 0) { //Creating Block
                 this.cwb = {};
                 this.state = 1;
             } else {

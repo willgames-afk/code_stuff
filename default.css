@@ -1,7 +1,7 @@
 body{font-family: 'ubuntu';margin-top:0px;margin-bottom:0px;}
 button{border: none;background-color: #1c76fd;text-align: center;display: inline-flex;padding: 15px 32px;font-size: 16px;margin: 3px;font-family: 'ubuntu'}
 .mainbox{background-color: rgba(100, 100, 100, 0.88);padding: 10px;margin: 0px;}
-#dotcanvas{position: absolute;top: 0;left: 0;background-color: gray;z-index: -1;}
+#dotcanvas{position: absolute;top: 0;left: 0;background-color: gray;z-index: -2;}
 .menu{display: flex;}
 .menu * {padding-inline-end: 1em;margin: 0px;padding: 0px 20px 0px 0px;vertical-align: baseline;}
 a{padding-block-start: 1em;padding-bottom: 1em;}
