@@ -306,8 +306,6 @@ function nextDurInput(element) {
     nextSelected = document.querySelector('[index ="' + element.getAttribute('index') + '"][class="duration"]');
     selectElement(nextSelected);
 }
-
-
 function pad(string, padlen, padchar = " ", padfromright = false) {
     if (string.length >= padlen) return string;
     out = string;
