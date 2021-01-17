@@ -12,19 +12,18 @@
 				}
 				break;
 			case "send_comment":
-				echo "Started...";
+				echo "Started...\n";
 				$comment = $_GET['comment'];
 				$user = $_GET['user'];
 				if (!$comment || !$user) {
-					echo $_GET." missing comment or username.";
+					echo "comment ".json_encode($_GET)." missing comment or username.";
 					break;
 				}
 				$cfile = fopen($comment_file,'a');
 				$cfilesize = filesize($comment_file);
-				$date = date_create();
-				fwrite($cfile,",{\"name\":\"".$user."\",\"text\":\"".$comment."\",\"timestamp\":\"".date_timestamp_get($date)."\"}");
+				fwrite($cfile,",{\"name\":\"".$user."\",\"text\":\"".$comment."\",\"timestamp\":\"".time()."\"}");
 				fclose($cfile);
-				echo "Success!";
+				echo "Success!\n";
 				break;
 		}
 	}
