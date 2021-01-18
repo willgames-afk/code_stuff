@@ -11,6 +11,7 @@
             height: 30ch;
         }
     </style>
+     <script src="/noms/nom.js"></script>
 </head>
 
 <body>
@@ -51,20 +52,10 @@
         </div>
         <script src='cookie.js'></script>
         <script>
-cman = new CookieManager();
-cman.setCookie('testCookie','I AM A COOKIE',1)
+            cman = new CookieManager();
+            cman.setCookie('testCookie', 'I AM A COOKIE', 1)
         </script>
     </div>
-    <canvas id="dotcanvas">
-        <script src="/noms/nom.js"></script>
-        <script>
-            things.resize();
-            for (i = 0; i < 30; i++) {
-                things.make(undefined, undefined, things.randomColor())
-            }
-            requestAnimationFrame(things.main)
-        </script>
-    </canvas>
 </body>
 
 </html>

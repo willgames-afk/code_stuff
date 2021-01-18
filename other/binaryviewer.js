@@ -32,4 +32,4 @@ function toggleHexMode() {
         out.value = binFile.binaryString
     };
 };
-console.groupEnd('Initializing BinViewer:')
+console.groupEnd()

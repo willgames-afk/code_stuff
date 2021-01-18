@@ -106,7 +106,7 @@ class BinFile {
     _fileReadHandler(e, callback) {
         console.log('Binary File Loaded. Generating Byte Array...')
         this.binArray = [];
-        for (i = 0; i < e.target.result.length; i++) {
+        for (var i = 0; i < e.target.result.length; i++) {
             this.binArray[i] = e.target.result[i].charCodeAt(0).toString(2);
             while (this.binArray[i].length < 8) {
                 this.binArray[i] = '0' + this.binArray[i];

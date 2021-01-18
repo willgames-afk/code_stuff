@@ -30,6 +30,7 @@ class Things {
             gravityY: 0,
             gravityX: 0,
             maxVel: 19,
+            max: 100,
         };
         this.canvas = document.createElement('canvas');
         this.canvas.id = 'dotcanvas'
@@ -37,7 +38,10 @@ class Things {
         this.ctx = this.canvas.getContext('2d');
         window.addEventListener('resize',this.resize.bind(this));
         this.resize();
-        for (var i=0;i<numberofnoms;i++) {
+        if (!numberofnoms) {
+            numberofnoms = (this.canvas.width/100) * (this.canvas.height/100)
+        }
+        for (var i=0;(i<numberofnoms && i<this.configs.max);i++) {
             this.make();
         }
     }
@@ -292,9 +296,9 @@ class Things {
         //same as randomXInCanvas but for Y coordanate
         return (Math.random() * (this.canvas.height - 2 * pad)) + pad;
     }
-    resize() {
+    resize(e) {
         //resize handler
-        //console.log('resize detected')
+        this.canvas.width = window.innerWidth;
         if (document.body.scrollWidth > window.innerWidth) {
             var width = document.body.scrollWidth;
             if (document.body.style.marginleft) {
@@ -304,17 +308,14 @@ class Things {
                 width += document.body.style.marginRight;
             }
             this.canvas.width = width;
-        } else {
-            this.canvas.width = window.innerWidth;
         }
+        this.canvas.height = window.innerHeight;
         if (document.body.scrollHeight > window.innerHeight) {
             this.canvas.height = document.body.scrollHeight;
-        } else {
-            this.canvas.height = window.innerHeight;
         }
     }
 }
 window.addEventListener('load', function (e) {
-    var things = new Things(10);
+    var things = new Things();
     things.main();
 });
