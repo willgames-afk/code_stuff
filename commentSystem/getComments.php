@@ -21,7 +21,7 @@
 				}
 				$cfile = fopen($comment_file,'a');
 				$cfilesize = filesize($comment_file);
-				fwrite($cfile,",{\"name\":\"".$user."\",\"text\":\"".$comment."\",\"timestamp\":\"".time()."\"}");
+				fwrite($cfile,",\n{\"name\":\"".$user."\",\"text\":\"".$comment."\",\"timestamp\":\"".time()."\"}");
 				fclose($cfile);
 				echo "Success!\n";
 				break;

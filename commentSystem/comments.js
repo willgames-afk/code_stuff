@@ -1,5 +1,5 @@
-addComments();
-addCommentInterface();
+initComments();
+refreshComments();
 var elementStyle = {
 	name: {
 		margin: "0px",
@@ -13,7 +13,7 @@ var elementStyle = {
 		padding: "0px"
 	},
 	comment: {
-
+		paddingBottom: '15px'
 	},
 	timestamp: {
 		fontSize: "9px",
@@ -29,7 +29,7 @@ function timeDifference(timestamp) {
 	var msPerDay = msPerHour * 24;
 	var msPerMonth = msPerDay * 30;
 	var msPerYear = msPerMonth * 365;
-	var ap = 'about ';//Approximator; about or approx and things like that
+	var ap = 'About ';//Approximator; about or approx and things like that
 	var unknown = '???'
 
 	var elapsed = currentTime - timestamp;
@@ -46,10 +46,10 @@ function timeDifference(timestamp) {
 		return addS(Math.round(elapsed / msPerMinute), 'minute', 'ago');
 
 	} else if (elapsed < msPerDay) {
-		return addS(Math.round(elapsed / msPerHour),'hours', 'ago');
+		return addS(Math.round(elapsed / msPerHour),'hour', 'ago');
 
 	} else if (elapsed < msPerMonth) {
-		return ap + addS(Math.round(elapsed / msPerDay), 'days', 'ago');
+		return ap + addS(Math.round(elapsed / msPerDay), 'day', 'ago');
 
 	} else if (elapsed < msPerYear) {
 		return ap + addS(Math.round(elapsed / msPerMonth), 'month', 'ago');
@@ -61,22 +61,43 @@ function timeDifference(timestamp) {
 
 }
 function addS(value, units, suffix) {
-	if (value > 1) {
+	if (value != 1) {
 		return value + ' '+units + 's ' + suffix
 	}
 	return value+' '+units+' '+suffix
 }
-function addComments() {
-	if (document.getElementById('comments')) {
-		document.getElementsByClassName('mainbox')[0].removeChild(document.getElementById('comments'))
+function initComments() {
+
+	var container = document.createElement('div');
+	container.id = 'comment-widget';
+	document.getElementsByClassName('mainbox')[0].appendChild(container);
+
+	var commentsContainer = document.createElement('div');
+	commentsContainer.id = 'comments';
+	container.appendChild(commentsContainer)
+
+	addCommentInterface(container);
+}
+function refreshComments() {
+
+	var scroll = window.scrollY
+
+	var container = document.getElementById('comments');
+
+	if (document.getElementById('comment-list')) {
+		container.removeChild(document.getElementById('comment-list'))
 	}
+
 	var commentList = document.createElement('ul');
-	commentList.id = 'comments'
-	document.getElementsByClassName('mainbox')[0].appendChild(commentList)
+	commentList.id = 'comment-list'
+	container.appendChild(commentList)
+
 	var xhr = new XMLHttpRequest();
+
 	xhr.onreadystatechange = function (e) {
 		if (this.readyState == 4 && this.status == 200) {
 			var comments = JSON.parse(this.responseText);
+
 			for (var i = 0; i < comments.length; i++) {
 				var li = document.createElement('li');
 				addP(li, comments[i].name, elementStyle.name);
@@ -84,6 +105,12 @@ function addComments() {
 				addP(li, comments[i].text, elementStyle.content);
 				applyStyle(li, elementStyle.comment)
 				commentList.appendChild(li);
+
+			}
+
+			if (typeof noms != 'undefined') {
+				//Resize dynamic backgroud if it has been created (It's created after page load)
+				noms.resize();
 			}
 		}
 	}
@@ -112,31 +139,44 @@ function createInput(form, type, name, label, id) {
 	form.appendChild(element)
 	form.appendChild(document.createElement('br'))
 }
-function addCommentInterface() {
+function addCommentInterface(container) {
 	var interface = document.createElement('div');
+	interface.id = 'submit-comment'
 
 	createInput(interface, 'text', 'name', 'Name: ', 'nameInput')
 	createInput(interface, 'text', 'comment', 'Comment: ', 'commentInput')
+
 	var submitButton = document.createElement('input')
 	submitButton.type = 'button'
+
 	function oc(e) {
+
 		console.groupCollapsed('SENDING COMMENT')
+
 		var send_xhr = new XMLHttpRequest()
+
 		send_xhr.onreadystatechange = function (e) {
 			console.log(this.readyState + " " + this.status)
+
 			if (this.readyState == 4 && this.status == 200) {
-				console.log('Server Response:')
-				console.log(this.responseText)
-				addComments();
+				console.log('Server Response:');
+				console.log(this.responseText);
+
+				refreshComments();
+				document.getElementById('submit-comment').scrollIntoView()
+				
 				console.groupEnd();
+
 			}
 		}
+
 		send_xhr.open("GET", "getComments.php/?action=send_comment&user=" + document.getElementById('nameInput').value + "&comment=" + document.getElementById('commentInput').value);
 		send_xhr.send();
 	}
-	submitButton.onclick = oc.bind(this)
+	submitButton.onclick = oc.bind(this);
+
 	submitButton.value = 'Submit'
 	interface.appendChild(submitButton)
-	document.getElementsByClassName('mainbox')[0].appendChild(interface);
-	things.resize();
+
+	container.appendChild(interface);
 }

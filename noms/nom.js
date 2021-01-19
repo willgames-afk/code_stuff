@@ -39,7 +39,7 @@ class Things {
         window.addEventListener('resize',this.resize.bind(this));
         this.resize();
         if (!numberofnoms) {
-            numberofnoms = (this.canvas.width/100) * (this.canvas.height/100)
+            numberofnoms = Math.floor((this.canvas.width/200) * (this.canvas.height/200))
         }
         for (var i=0;(i<numberofnoms && i<this.configs.max);i++) {
             this.make();
@@ -316,6 +316,6 @@ class Things {
     }
 }
 window.addEventListener('load', function (e) {
-    var things = new Things();
-    things.main();
+    window.noms = new Things();
+    noms.main();
 });
