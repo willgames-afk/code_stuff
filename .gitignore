@@ -1,14 +1,14 @@
-.DS_Store
-
-consoleQuest/.DS_Store
-code_stuff/.DS_Store
-
-
+# MacOS
 .DS_Store
 *.DS_Store
+
+# Local organization
 *.code-workspace
+
+# Server-size stuff
 PHPtest/users.txt
+commentSystem/comments.txt
+
+# Output files
 rom.bin
 a.out
-
-commentSystem/comments.txt
