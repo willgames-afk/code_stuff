@@ -1,3 +1,0 @@
-{"name":"Bannanaman","text":"This website is the greatest","timestamp":""},
-{"name":"asdf","text":"asdf","timestamp":"1611014679"},
-{"name":"Will","text":"Hi Y'all, I made this!","timestamp":"1611186543"}
