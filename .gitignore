@@ -8,7 +8,7 @@
 # Server-size stuff
 PHPtest/users.txt
 
-comments.txt
+**/comments.txt
 
 # Output files
 rom.bin
