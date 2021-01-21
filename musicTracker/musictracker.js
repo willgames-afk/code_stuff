@@ -81,23 +81,11 @@ function init(element) {
                     }
                 },
                 data: [
-                    { 'time': '0', 'note': 'A#4', 'duration': '2n+8n' },
-                    { 'time': '0:2.5', 'note': 'F4', 'duration': '8n' },
-                    { 'time': '0:3', 'note': 'F4', 'duration': '8n' },
-                    { 'time': '0:3.5', 'note': 'A#4', 'duration': '8n' },
-                    { 'time': '1:0', 'note': 'G#4', 'duration': '16n' },
-                    { 'time': '1:0.25', 'note': 'F#4', 'duration': '16n' },
-                    { 'time': '1:0.5', 'note': 'G#4', 'duration': '2n+4n.' },
-                    { 'time': '2:0', 'note': 'A#4', 'duration': '2n+8n' },
-                    { 'time': '2:2.5', 'note': 'F#4', 'duration': '8n' },
-                    { 'time': '2:3', 'note': 'F#4', 'duration': '8n' },
-                    { 'time': '2:3.5', 'note': 'A#4', 'duration': '8n' },
-                    { 'time': '3:0', 'note': 'A4', 'duration': '16n' },
-                    { 'time': '3:0.25', 'note': 'G4', 'duration': '16n' },
-                    { 'time': '3:0.5', 'note': 'A4', 'duration': '2n.+8n' },
+                    {},
+                    {},
                 ]
             },
-            Triange_1: {
+            Triangle_1: {
                 instrument: {
                     oscillator: {
                         type: 'triangle',
@@ -112,54 +100,60 @@ function init(element) {
                     }
                 },
                 data: [
-                    { 'time':  0   , 'note': 'A#2', 'duration': '4n' },
-                    { 'time': '0:1', 'note': 'F3' , 'duration': '4n' },
-                    { 'time': '0:2', 'note': 'A#3', 'duration': '2n' },
-                    { 'time': '1:0', 'note': 'G#2', 'duration': '4n' },
-                    { 'time': '1:1', 'note': 'D#3', 'duration': '4n' },
-                    { 'time': '1:2', 'note': 'G#3', 'duration': '2n' },
-                    { 'time': '2:0', 'note': 'F#2', 'duration': '4n' },
-                    { 'time': '2:1', 'note': 'C#3', 'duration': '4n' },
-                    { 'time': '2:2', 'note': 'F#3', 'duration': '2n' },
-                    { 'time': '3:0', 'note': 'F2' , 'duration': '4n' },
-                    { 'time': '3:1', 'note': 'C3' , 'duration': '4n' },
-                    { 'time': '3:2', 'note': 'F3' , 'duration': '2n' },
+                    {},
+                    {},
                 ]
             }
         }
     })
 
-
-
-
-
+    //We've launched, so no more launch button
     document.getElementById('launchbutton').remove();
-    console.log(currentSong)
-    var menu = document.createElement('div')
-    menu.setAttribute('class', 'menu')
-    var playbutton = document.createElement('button')
-    playbutton.innerText = 'Play'
-    menu.appendChild(playbutton)
-    element.appendChild(menu)
+    console.log(currentSong);
+
+    //create menu
+    var menu = document.createElement('div');
+    menu.setAttribute('class', 'menu');
+
+    var playbutton = document.createElement('button');
+    playbutton.innerText = 'Play';
     playbutton.addEventListener("click", function () {
         currentSong.play();
         if (Tone.Transport.state == 'started') {
             Tone.Transport.stop();
-            playbutton.innerHTML = 'play'
+            playbutton.innerHTML = 'play';
         } else {
             Tone.Transport.start();
-            playbutton.innerHTML = 'stop'
+            playbutton.innerHTML = 'stop';
         }
-    });
+    })
+    menu.appendChild(playbutton);
+
+    var addTrackB = document.createElement('button');
+    addTrackB.innerText = 'Add Track';
+    addTrackB.addEventListener("click", function() {
+
+    })
+
+    element.appendChild(menu);
 
 
     for (var currentTrack in currentSong.tracks) {
 
-        var list = document.createElement("ol")
+        var instrument = document.createElement("ol")
+        var instName = document.createElement("p");
+        instName.innerText = currentTrack.replace('_',' ')
+        instrument.appendChild(instName);
+
+
         for (var i = 0; i < currentSong.tracks[currentTrack].data.length; i++) {
             //Make a span element to contain note data
             note = document.createElement("span")
-            note.innerHTML = currentSong.tracks[currentTrack].data[i].note
+            if (currentSong.tracks[currentTrack].data[i].note) {
+                note.innerHTML = currentSong.tracks[currentTrack].data[i].note
+            } else {
+                note.innerHTML = "---"
+            }
             //Set up event listeners to allow for editing 
             note.addEventListener('mouseover', hover);
             note.addEventListener('click', select);
@@ -171,7 +165,11 @@ function init(element) {
             note.setAttribute('class', 'note')
             //make another span element to contain duration data, pretty much the same as note
             duration = document.createElement("span")
-            duration.innerHTML = currentSong.tracks[currentTrack].data[i].duration
+            if (currentSong.tracks[currentTrack].data[i].duration) {
+                duration.innerHTML = currentSong.tracks[currentTrack].data[i].duration
+            } else {
+                duration.innerHTML = '--'
+            }
 
             duration.addEventListener('mouseover', hover);
             duration.addEventListener('click', select);
@@ -189,11 +187,12 @@ function init(element) {
             label = document.createElement("p")
             label.innerText = pad(i.toString(16), 2, '0') + ' '
 
-            list.appendChild(li);
+            instrument.appendChild(li);
 
             li.insertBefore(label, note)
         }
-        element.appendChild(list)
+        instrument.style.verticalAlign = 'top'
+        element.appendChild(instrument)
     }
     document.addEventListener('keydown', keydown)
 }
