@@ -25,54 +25,53 @@ class Song {
             this[item] = json[item]
         }
 
-        for (var trackName in this.tracks) { // Turns the config for the synth and the Part into actual synths and Parts that play the music.
-            this.tracks[trackName].instrument = new Tone.Synth(this.tracks[trackName].instrument).toDestination();
-            this.tracks[trackName].part = new Tone.Part(function (synth) {
-                return function (time, note) { //Fanciness to deal with the fact that it is a callback. Man, I hate callbacks.
-                    console.log(time+":"+note)
-                    if (!note.note) {return};
-                    synth.triggerAttackRelease(note.note, note.duration, time);
-                }
-            }(this.tracks[trackName].instrument), this.tracks[trackName].data);
+        for (var trackName in this.tracks) { // Turns the config for each track into actual tracks
 
-            var bData = JSON.stringify(this.tracks[trackName].data)
-            Object.defineProperty(this.tracks[trackName], "data", {
-                set(val) {
-                    this._data = val;
-                    console.log("Track Data set to "+ JSON.stringify(val))
-                    this.part = new Tone.Part(function (synth) {
-                        return function (time, note) { //Fanciness to deal with the fact that it is a callback. Man, I hate callbacks.
-                            console.log(time+":"+JSON.stringify(note))
-                            if (!note.note) {return}
-                            synth.triggerAttackRelease(note.note, note.duration, time);
-                        }
-                    }(this.instrument), val);
-                },
-                get() {
-                    return this._data
-                }
-            })
-            this.tracks[trackName].data = JSON.parse(bData)
+            this.tracks[trackName] = new Track(this.tracks[trackName].notes, this.tracks[trackName].instrument)
         }
     }
     play() {
         console.log(this.tracks)
-        for (var trackName in this.tracks) {
-            this.tracks[trackName].data = this.tracks[trackName].data //Update
-            this.tracks[trackName].part.start();
-        }
+        Tone.Transport.start();
         console.log('success!')
+    }
+    stop() {
+        Tone.Transport.stop();
+    }
+    pause() {
+        Tone.Transport.pause();
+    }
+    setNote(track, time ,noteObj) {
+        this.tracks[track].part.at(time, noteObj)
+    }
+    getNote(track, time) {
+        return this[track].part.at(time)
     }
 
     addTrack(track) {
         this.tracks.push(track)
     }
-    static Track(instrument, data, name) {
-        track = { name: name, instrument: instrument, data: data }
-        track.addNote = function (time, note, duration) {
-            this.data.push({ 'time': time, 'note': note, 'duration': duration })
-        }
-        return track
+}
+class Track {
+    constructor(notes, instrumentConfig) {
+        this.instrument = new Tone.Synth(instrumentConfig).toDestination();
+        this.part = new Tone.Part(
+            function (synth) {
+                return function(time, note) {
+                    synth.triggerAttackRelease(note.note, note.duration, time);
+                }
+            } (this.instrument),
+            notes
+        ).start(0); //Start it with Tone.Trasport.start();
+    }
+    addNote(note) {
+        this.part.add(note)
+    }
+    setNote(time, note) {
+        this.part.at(time, note);
+    }
+    getNote(time) {
+        return this.part.at(time)
     }
 }
 
@@ -98,7 +97,7 @@ class MusicTracker {
                             release: 0
                         }
                     },
-                    data: [
+                    notes: [
                         { note: 'C4', time: 0, duration:'4n' },
                     ]
                 },
@@ -116,7 +115,7 @@ class MusicTracker {
                             release: 0,
                         }
                     },
-                    data: [
+                    notes: [
                         { note: 'C4', time: 0, duration:'4n' },
                     ]
                 }
@@ -129,21 +128,22 @@ class MusicTracker {
         }
         console.log(this.currentSong);
 
-        //create menu
+        //create menu object
         this.menu = {};
 
+        //set up container object
         this.menu.container = document.createElement('div');
         this.menu.container.setAttribute('class', 'menu');
 
-
+        //playbutton config
         this.menu.playbutton = document.createElement('button');
         this.menu.playbutton.innerText = 'Play';
+
         this.menu.playbutton.addEventListener("click", function () {
             if (Tone.Transport.state == 'started') {
                 Tone.Transport.stop();
                 this.menu.playbutton.innerHTML = 'play';
             } else {
-                this.currentSong.play();
                 Tone.Transport.start();
                 this.menu.playbutton.innerHTML = 'stop';
             }
@@ -378,176 +378,6 @@ function onstart() {
     launchbutton.addEventListener('click', (e) => {
         //Yes, I'm defining this globally.
         window.musicTracker = new MusicTracker(document.getElementById('musictracker'));
-        var test = new Song({
-            "tracks": {
-                "Square_1": {
-                    "instrument": {
-                        "oscillator": {
-                            "type": "square",
-                            "portamento": 0,
-                            "volume": -20
-                        },
-                        "envelope": {
-                            "attack": 0,
-                            "decay": 0,
-                            "sustain": 1,
-                            "release": 0
-                        }
-                    },
-                    "data": [
-                        {
-                            "time": "0",
-                            "note": "A#4",
-                            "duration": "2n+8n"
-                        },
-                        {
-                            "time": "0:2.5",
-                            "note": "F4",
-                            "duration": "8n"
-                        },
-                        {
-                            "time": "0:3",
-                            "note": "F4",
-                            "duration": "8n"
-                        },
-                        {
-                            "time": "0:3.5",
-                            "note": "A#4",
-                            "duration": "8n"
-                        },
-                        {
-                            "time": "1:0",
-                            "note": "G#4",
-                            "duration": "16n"
-                        },
-                        {
-                            "time": "1:0.25",
-                            "note": "F#4",
-                            "duration": "16n"
-                        },
-                        {
-                            "time": "1:0.5",
-                            "note": "G#4",
-                            "duration": "2n+4n."
-                        },
-                        {
-                            "time": "2:0",
-                            "note": "A#4",
-                            "duration": "2n+8n"
-                        },
-                        {
-                            "time": "2:2.5",
-                            "note": "F#4",
-                            "duration": "8n"
-                        },
-                        {
-                            "time": "2:3",
-                            "note": "F#4",
-                            "duration": "8n"
-                        },
-                        {
-                            "time": "2:3.5",
-                            "note": "A#4",
-                            "duration": "8n"
-                        },
-                        {
-                            "time": "3:0",
-                            "note": "A4",
-                            "duration": "16n"
-                        },
-                        {
-                            "time": "3:0.25",
-                            "note": "G4",
-                            "duration": "16n"
-                        },
-                        {
-                            "time": "3:0.5",
-                            "note": "A4",
-                            "duration": "2n.+8n"
-                        }
-                    ]
-                },
-                "Triange_1": {
-                    "instrument": {
-                        "oscillator": {
-                            "type": "triangle",
-                            "portamento": 0,
-                            "volume": -20
-                        },
-                        "envelope": {
-                            "attack": 0,
-                            "decay": 0,
-                            "sustain": 1,
-                            "release": 0
-                        }
-                    },
-                    "data": [
-                        {
-                            "time": 0,
-                            "note": "A#2",
-                            "duration": "4n"
-                        },
-                        {
-                            "time": "0:1",
-                            "note": "F3",
-                            "duration": "4n"
-                        },
-                        {
-                            "time": "0:2",
-                            "note": "A#3",
-                            "duration": "2n"
-                        },
-                        {
-                            "time": "1:0",
-                            "note": "G#2",
-                            "duration": "4n"
-                        },
-                        {
-                            "time": "1:1",
-                            "note": "D#3",
-                            "duration": "4n"
-                        },
-                        {
-                            "time": "1:2",
-                            "note": "G#3",
-                            "duration": "2n"
-                        },
-                        {
-                            "time": "2:0",
-                            "note": "F#2",
-                            "duration": "4n"
-                        },
-                        {
-                            "time": "2:1",
-                            "note": "C#3",
-                            "duration": "4n"
-                        },
-                        {
-                            "time": "2:2",
-                            "note": "F#3",
-                            "duration": "2n"
-                        },
-                        {
-                            "time": "3:0",
-                            "note": "F2",
-                            "duration": "4n"
-                        },
-                        {
-                            "time": "3:1",
-                            "note": "C3",
-                            "duration": "4n"
-                        },
-                        {
-                            "time": "3:2",
-                            "note": "F3",
-                            "duration": "2n"
-                        }
-                    ]
-                }
-            }
-        })
-        //test.play();
-        //Tone.Transport.start();
     })
     document.body.appendChild(launchbutton);
 };
