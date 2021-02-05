@@ -11,3 +11,4 @@ ul{list-style-type: none;}
 textarea{background-color: transparent;outline: none;border-radius: 3px;border-width: 2px;border-color: #505050;font-family:monospace;}
 textarea:focus{background-color: #505050;border-color:transparent;}
 code{background-color:rgb(100,100,100);color:#000}
+#login{border:0px;}

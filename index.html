@@ -14,6 +14,14 @@
         <div class='menu'>
             <p id='localhost?'>Not locally hosted</p>
             <script src='localhostdetector.js'></script>
+            <iframe src='/login/login.php' id="login" width='0' height='0'></iframe>
+            <script>
+                var frame = document.getElementById("login");
+                frame.onload = () => {
+                    frame.style.height = frame.contentWindow.document.body.scrollHeight + 'px';
+                    frame.style.width = frame.contentWindow.document.body.scrollWidth + 'px';
+                } 
+            </script>
         </div>
         <div class='buttons'>
             <h2>Projects:</h2>
@@ -31,7 +39,9 @@
             <button onclick="window.location.href = '/other/'">Other</button>
             <br>
             <label for="colorInput">Click Me</label>
-            <input id='colorInput' type='color'onChange="buttons = document.getElementsByTagName('BUTTON');for (i=buttons.length;i>0,i--;) {buttons[i].style['background-color'] = document.getElementById('colorInput').value}"value='#1c76fd'>
+            <input id='colorInput' type='color'
+                onChange="buttons = document.getElementsByTagName('BUTTON');for (i=buttons.length;i>0,i--;) {buttons[i].style['background-color'] = document.getElementById('colorInput').value}"
+                value='#1c76fd'>
         </div>
         <br>
         <h2>About</h2>

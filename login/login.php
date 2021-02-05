@@ -1,6 +1,5 @@
+<?php session_start();?>
 <?php
-
-session_start();
 
 //Check if already logged in
 if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) {
@@ -35,6 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				$_SESSION["loggedin"] = true;
 				$_SESSION["id"] = $userData->id;
 				$_SESSION["username"] = $username;
+				header("location: welcome.php");
 			} else {
 				//Bad password
 				$password_err = "Invalid Password. Either that or we messed up, big time.";
@@ -47,6 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		}
 	} else {
 		echo "Something went wrong. Maybe try again later?";
+		
 	}
 }
 
@@ -77,4 +78,24 @@ function user_exists($u) {
 	fclose($file);
 	return false;
 }
+
 ?>
+<!DOCTYPE HTML>
+<html lang='en'>
+<head>
+	<link href='/login/login.css' rel='stylesheet'>
+	<title>Login</title>
+</head>
+<body>
+<h2>Login</h2>
+<form action='<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>' method='POST'>
+Username <input type='text' name='username' value=''><br>
+	<?php echo $username_err;?>
+Password <input type='password' name='password'><br>
+	<?php echo $password_err;?>
+	<input type='submit'>
+	<a href="/login/createLogin.php">Create Account</a>
+</form>
+
+</body>
+</html>
