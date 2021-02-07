@@ -6,7 +6,7 @@
 		<title>Welcome!</title>
 	</head>
 	<body class="greet">
-		<p>Hello, <?php echo $_SESSION["username"]?>!</p>
+		<p>Hello, <?php echo $_SESSION["username"]?>!</p><br>
 		<a href="/login/logout.php">Log Out</a>
 	</body>
 </html>

@@ -93,7 +93,7 @@ Username <input type='text' name='username' value=''><br>
 	<?php echo $username_err;?>
 Password <input type='password' name='password'><br>
 	<?php echo $password_err;?>
-	<input type='submit'>
+	<input type='submit'> <br>
 	<a href="/login/createLogin.php">Create Account</a>
 </form>
 

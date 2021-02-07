@@ -12,18 +12,26 @@
 				}
 				break;
 			case "send_comment":
-				echo "Started...\n";
 				$comment = $_GET['comment'];
-				$user = $_GET['user'];
-				if (!$comment || !$user) {
-					echo "comment ".json_encode($_GET)." missing comment or username.";
-					break;
+				session_start();
+				if ($_SESSION["loggedin"] == true) {
+					$user = $_SESSION["username"];
+					if (!$comment) {
+						echo "{\"success\":false,\"errorCode\":\"400\",\"desc\":\"You forgot to write your comment.\"}";
+						break;
+					}
+					if (!$user) {
+						echo "{\"success\":false,\"errorCode\":\"401\",\"desc\":\"Error: You are not logged in.\"}";
+						break;
+					}
+					$cfile = fopen($comment_file,'a');
+					$cfilesize = filesize($comment_file);
+					fwrite($cfile,",\n{\"name\":\"".$user."\",\"text\":\"".$comment."\",\"timestamp\":\"".time()."\"}");
+					fclose($cfile);
+					echo "{\"success\":true}";
+				} else {
+					echo "{\"success\":false,\"errorCode\":\"401\",\"desc\":\"Not logged in.\"}";
 				}
-				$cfile = fopen($comment_file,'a');
-				$cfilesize = filesize($comment_file);
-				fwrite($cfile,",\n{\"name\":\"".$user."\",\"text\":\"".$comment."\",\"timestamp\":\"".time()."\"}");
-				fclose($cfile);
-				echo "Success!\n";
 				break;
 		}
 	}

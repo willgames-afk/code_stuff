@@ -15,6 +15,14 @@
             <p id='localhost?'>Not locally hosted</p>
             <script src='/localhostdetector.js'></script>
             <a href='/'>Homepage</a>
+            <iframe src='/login/login.php' id="login" width='0' height='0'></iframe>
+            <script>
+                var frame = document.getElementById("login");
+                frame.onload = () => {
+                    frame.style.height = frame.contentWindow.document.body.scrollHeight + 'px';
+                    frame.style.width = frame.contentWindow.document.body.scrollWidth + 'px';
+                } 
+            </script>
         </div>
 
         <script src="comments.js"></script>

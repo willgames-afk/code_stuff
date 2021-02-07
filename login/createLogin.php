@@ -89,7 +89,7 @@ Password <input type='password' name='password'><br>
 	<?php echo $password_err;?>
 Confirm Password <input type='password' name='confirm_password'><br>
 	<?php echo $confirm_password_err;?>
-	<input type='submit'>
+	<input type='submit'><br>
 	<a href="/login/login.php">Log In</a>
 </form>
 </body>

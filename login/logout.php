@@ -5,5 +5,5 @@
    	unset($_SESSION["password"]);
 
 	header('Refresh: 2; URL = login.php');
-	echo 'You have cleaned session';
+	echo 'You have been logged out!';
 ?>

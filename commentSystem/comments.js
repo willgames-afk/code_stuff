@@ -143,11 +143,15 @@ function addCommentInterface(container) {
 	var interface = document.createElement('div');
 	interface.id = 'submit-comment'
 
-	createInput(interface, 'text', 'name', 'Name: ', 'nameInput')
+	//createInput(interface, 'text', 'name', 'Name: ', 'nameInput')
 	createInput(interface, 'text', 'comment', 'Comment: ', 'commentInput')
 
 	var submitButton = document.createElement('input')
 	submitButton.type = 'button'
+
+	var errorMessage = document.createElement('p');
+	errorMessage.style.color = "rgb(225,0,0)"
+	interface.appendChild(errorMessage)
 
 	function oc(e) {
 
@@ -161,6 +165,12 @@ function addCommentInterface(container) {
 			if (this.readyState == 4 && this.status == 200) {
 				console.log('Server Response:');
 				console.log(this.responseText);
+				var resp = JSON.parse(this.responseText);
+				if (!resp.success) {
+					errorMessage.innerHTML = resp.desc
+				} else {
+					errorMessage.innerHTML = "";
+				}
 
 				refreshComments();
 				document.getElementById('submit-comment').scrollIntoView()
@@ -170,13 +180,14 @@ function addCommentInterface(container) {
 			}
 		}
 
-		send_xhr.open("GET", "getComments.php/?action=send_comment&user=" + document.getElementById('nameInput').value + "&comment=" + document.getElementById('commentInput').value);
+		send_xhr.open("GET", "getComments.php/?action=send_comment&comment=" + document.getElementById('commentInput').value);
 		send_xhr.send();
 	}
 	submitButton.onclick = oc.bind(this);
 
 	submitButton.value = 'Submit'
 	interface.appendChild(submitButton)
+
 
 	container.appendChild(interface);
 }
