@@ -6,12 +6,19 @@ function objectifyExpression(str) {
 
 	var buffer = "";   //Holds things before parse
 
+	var mcOps = [
+		"==", "+=", "-=", "++", "--", "*=", ">=", "<=",
+	] //Multi-Character operators
+	var unaryOps = [
+		"!", "-"
+	]
+
 	function charType(c) {
 		var nums = [
 			"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
 		]
 		var ops = [
-			"+", "-", "*", "/"
+			"+", "-", "*", "/","=",">","<"
 		]
 		var vars = [
 			"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
@@ -113,8 +120,9 @@ function objectifyExpression(str) {
 				}
 				buffer += char;
 			} else if (type == "space") {
-				if ((charType(str[i-1]) == "variable" ||)charType(str[i+1])) {
-					console.error("objectifyExpression Error- Unexpected ")
+				if ((charType(str[i-1]) == "variable" && charType(str[i+1]) == "variable") || (charType(str[i-1]) == "digit" && charType(str[i+1]) == "digit")) {
+					console.error("objectifyExpression Error- Unexpected char \""+str[i+1]+"\" at position "+i+1+'.');
+					return false
 				}
 			}
 
