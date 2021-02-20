@@ -31,7 +31,9 @@ class CQEditor {
 				margin: '0px',
 				padding: '0px',
 				whiteSpace: 'pre',
-				background: 'rgb(150,150,150)'
+				background: 'rgb(150,150,150)',
+				borderCollapse: 'collapse',
+				borderSpacing: '0px',
 			},
 			dataTableSelected: {
 				background: 'rgb(130,130,227)'

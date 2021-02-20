@@ -1,7 +1,11 @@
 canvas = document.getElementById('canvas')
 ctx = canvas.getContext("2d")
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight
+canvas.width = window.innerWidth;
+if (document.body.scrollHeight > window.innerHeight) {
+    canvas.height = document.body.scrollHeight;
+} else {
+    canvas.height = window.innerHeight;
+};
 class fractalThing {
     constructer() {
         console.log('fractalThing created sucessfully')
