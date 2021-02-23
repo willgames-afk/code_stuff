@@ -1,0 +1,20 @@
+.widget, .lightWidget {
+	font-family: Menlo, Monaco, 'Source Sans Pro', 'Courier New',monospace;
+	color: #95c4e2;
+	background-color: #1e1e1e;
+	font-size: 11.5px;
+}
+.widget input {
+	background-color: transparent;
+	color: #c89175;
+	font-family: Menlo, Monaco, 'Source Sans Pro', 'Courier New',monospace;
+	border: 0px;
+	font-size: 11.5px;
+}
+.lightWidget {
+	color: black;
+	background-color: white; 
+}
+.lightWidget input {
+	color: red;
+}
