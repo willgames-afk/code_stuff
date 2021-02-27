@@ -56,6 +56,9 @@ class SidebarUI {
                 overflowX: 'hidden',
                 transition: '0.5s',
                 paddingTop: '60px',
+                textDecoration: 'none',
+                color: '#818181',
+                fontSize: '12px',
             },
             closebutton: {
                 float: 'right',
@@ -97,7 +100,7 @@ class SidebarUI {
 
         //Adding container DIV
         this.containerElement = document.createElement('div');
-        this.containerElement.className = 'gui'
+        this.containerElement.className = 'gui';
         SidebarUI.applyStyle(this.containerElement, this.style.container)
 
         //Create close button
@@ -141,11 +144,10 @@ class SidebarUI {
     }
     open(blocks, setterCallback) {
         this.setterCallback = setterCallback;
-
-        for (var value in this.blockProperties) {
-            console.log()
+        this.viewer = new EditableObject(this.containerElement, blocks[this.editingIndex])
+        /*for (var value in this.blockProperties) {
             this.addInputElement(this.cleanProperty(value), blocks[this.editingIndex][value], this.containerElement)
-        }
+        }*/
 
         this.containerElement.style.width = this.sidebarWidth;
         setterCallback('state', 2);
@@ -155,11 +157,12 @@ class SidebarUI {
         setTimeout(this.finishClose.bind(this),500)
     }
     finishClose() {
-        this.clearInputElements()
+        this.viewer.remove();
 
         this.state = 1
         this.setterCallback('state',1)
     }
+    /*
     addInputElement(name = '', value, containerElement) {
         console.log(value)
         var nameElement = document.createElement('p');
@@ -232,7 +235,7 @@ class SidebarUI {
 
         containerElement.appendChild(nameElement)
         containerElement.appendChild(inputElement)
-    }
+    }*/
     clearInputElements() {
         for (var i = 0; i < this.elements.length; i++) {
             this.containerElement.removeChild(this.elements[i])
@@ -260,7 +263,6 @@ class BlockDiagram {
     constructor(element, config = {}) {
         //General Init
         this.containerElement = element;
-        this.sidebar = new SidebarUI(this.containerElement)
         this.state = 1; //0 = creating block, 1 = stable, 2 = editing block, 3 = deleting block
         this.blocks = [];
         this.mouse = {
@@ -272,24 +274,92 @@ class BlockDiagram {
                 position: 'absolute',
                 top: 0,
                 left: 0,
-                backgroundColor: 'transparent',
+                backgroundColor: 'grey',
                 zIndex: -1
             },
             blocks: {
                 textColor: "rgb(200,200,200)",
                 blockColor: "rgb(20,20,20)"
+            },
+            sidebar: {
+                container: {
+                    width: 0,
+                    position: 'fixed',
+                    zIndex: 1,
+                    top: 0,
+                    right: 0,
+                    backgroundColor: '#111',
+                    overflow: 'hidden',
+                    transition: '0.5s',
+                    paddingTop: '60px',
+                    textDecoration: 'none',
+                    color: '#818181',
+                    fontSize: '12px',
+                },
+                closebutton: {
+                    float: 'right',
+                    fontSize: '36px',
+                    marginRight: '8px',
+                    padding: 0,
+                    color: '#818181',
+                },
             }
         }
+        this.editingIndex = false;
 
-        //Canvas Config
+        //CANVAS CONFIG
         this.c = document.createElement('canvas')
-        SidebarUI.applyStyle(this.c, this.style.canvas)                     //style
+        applyStyle(this.c, this.style.canvas)                     //style
         this.c.addEventListener('contextmenu', e => { e.preventDefault() }) //Prevent right clicks from opening menu
         this.containerElement.appendChild(this.c)                           //adding it to the doc
         this.ctx = this.c.getContext('2d')
         this.resize();
 
-        //Event Listener Setup
+
+
+        //SIDEBAR CONFIG
+        this.sidebar = {
+            element: null,//Containing HTML element
+            onClose: function() {
+                this.sidebar.element.style.width = "0";
+                this.sidebar.viewer.remove();
+                this.sidebar.viewer = null;
+            }.bind(this),
+            open: function() {
+                if (this.sidebar.viewer) {
+                    this.sidebar.viewer.remove();
+                    this.sidebar.viewer = null;
+                }
+                this.sidebar.viewer = new EditableObject(this.sidebar.element, this.blocks[this.editingIndex], this.sidebar.setCallback);
+                this.sidebar.element.style.width = this.sidebar.width;
+            }.bind(this),
+            setCallback: function(v) {
+                this.blocks[this.editingIndex] = v.target.value;
+                this.render(); //Update the
+            }.bind(this),
+            viewer: null,
+            width: '300px'
+        }
+        //Sidebar Container Div
+        this.sidebar.element = document.createElement('div'); //It's just a div with some special style
+        this.sidebar.element.className = 'gui';
+        applyStyle(this.sidebar.element, this.style.sidebar.container);
+        this.containerElement.appendChild(this.sidebar.element);
+
+        //Close button
+        var a = document.createElement('a');
+        a.href = 'javascript:void(0)';  //Makes it so you don't reload the page when clicked
+        a.innerHTML = '&times;';        // X char- renders as × in this font
+        a.onclick = this.sidebar.onClose.bind(this); 
+        a.className = 'sidebarui-closebtn';
+        this.sidebar.element.appendChild(a);   //Add it to container
+        applyStyle(a, this.style.closebutton); //Styling
+
+
+
+    
+
+        //EVENT LISTENER SETUP
         this.containerElement.addEventListener('resize', this.resize.bind(this))
         this.containerElement.addEventListener('mousemove', this.mouseMove.bind(this))
         this.containerElement.addEventListener('mousedown', this.mouseClick.bind(this))
@@ -362,9 +432,8 @@ class BlockDiagram {
 
             if (this.state == 2) { //Editing Existing Block
                 if (collisions.length == 1) {
-                    this.sidebar.clearInputElements()
-                    this.sidebar.editingIndex = collisions[0]
-                    this.sidebar.open(this.blocks, this.setterCallback.bind(this));
+                    this.editingIndex = collisions[0]
+                    this.sidebar.open();
                 }
             } else if (this.state == 0) { //Creating Block
                 this.cwb = {};
@@ -372,7 +441,7 @@ class BlockDiagram {
             } else {
                 if (collisions.length == 1) {
                     this.state = 2;
-                    this.sidebar.editingIndex = collisions[0];
+                    this.editingIndex = collisions[0];
                     this.sidebar.open(this.blocks, this.setterCallback.bind(this));
                     this.render()
                 }
@@ -386,7 +455,7 @@ class BlockDiagram {
             } else if (this.state == 0) {
                 this.makeNewBlock(this.mouse.x, this.mouse.y);
             } else if (this.state == 2) {
-                this.sidebar.close();
+                this.sidebar.onClose();
                 this.startNewBlock(this.mouse.x, this.mouse.y);
             }
         }
@@ -434,6 +503,11 @@ class BlockDiagram {
     setterCallback(property, value) {
         console.log('setting this.'+property+' to '+value+'.')
         this[property] = value
+    }
+}
+function applyStyle(element, style) {
+    for (var s in style) {
+        element.style[s] = style[s]
     }
 }
 var t = new BlockDiagram(document.body)
