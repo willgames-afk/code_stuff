@@ -8,28 +8,37 @@ var ui = {
 }
 
 ui.runButton.addEventListener('click', onRun);
-ui.input.addEventListener('input', resizeTACallback(ui.input, 300));
+ui.input.addEventListener('input', resizeTACallback(ui.input, 30));
 
 //Function to auto-resize textareas
-function resizeTA(ta, minH) {
-	ta.style.height = "";
-	ta.style.height = Math.min(ta.scrollHeight, minH) + 'px'
+function resizeTA(textarea, minHeight) {
+	textarea.style.height = "0px";
+	if (textarea.scrollHeight > minHeight) {
+		textarea.style.height = textarea.scrollHeight + 'px';
+	} else {
+		textarea.style.height = minHeight + 'px';
+	}
 }
 //resizeTA in a callback wrapper
 function resizeTACallback(textarea, minHeight) {
 	return (e) => {
-		textarea.style.height = "";
-		textarea.style.height = Math.min(textarea.scrollHeight, minHeight) + 'px';
+		textarea.style.height = "0px";
+		if (textarea.scrollHeight > minHeight) {
+			textarea.style.height = textarea.scrollHeight + 'px';
+		} else {
+			textarea.style.height = minHeight + 'px';
+		}
 	}
 }
 
 //---------Setting up compiler -------------//
-var compiler = new TinyInterpereter(ui.input,0,0)
+var compiler = new TinyInterpereter(ui.input, 0, 0)
 
 
 
 //----------------Main Function ------------//
 
 function onRun() {
-
+	ui.output.innerHTML += compiler.run() + "\n";
+	resizeTA(ui.output, 20);
 }

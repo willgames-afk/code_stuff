@@ -3,9 +3,7 @@ function objectifyExpression(str) {
 
 	var output = [];   //Contains the expression in JSON
 	var state = 0; //When true, grabbing a sub-equation (parentheses; Otherwise, Grabbing number)
-
 	var buffer = "";   //Holds things before parse
-
 	var mcOps = [
 		"==", "+=", "-=", "++", "--", "*=", ">=", "<=",
 	] //Multi-Character operators
@@ -61,7 +59,7 @@ function objectifyExpression(str) {
 
 		if (state == 1) { //If grabbing Parentheses
 
-			if (type == "closed") {
+			if (type == "closed") { //Done grabbing, make recursive call to deal with contents of parentheses
 				state = 0;
 				output.push(objectifyExpression(buffer));
 				buffer = ")";
@@ -88,7 +86,7 @@ function objectifyExpression(str) {
 
 			} else if (type == "open") {
 
-				state = 1;
+				state = 1; //If open parenthesis, go to grab mode and grab everything inside the parentheses
 				if (buffer.length > 0) {
 					output.push(parseInt(buffer, 10));
 				}
@@ -98,21 +96,24 @@ function objectifyExpression(str) {
 				console.log(buffer)
 
 				if (!(buffer.length > 0 || charType(buffer) == "open" || char == "-")) {
+					//Makes sure the operator has a value
 					console.error("strToObject Error- Operator missing argument at " + i);
 					return false;
 				}
-				if (!(buffer == ')' || (char == '-'))) {
+				if (!(buffer == ')' || (char == '-'))) { //Edge Cases
 					if (parseInt(buffer)) {
 						console.log('pushing number ' + parseInt(buffer, 10) + ', operator is ' + char)
-					output.push(parseInt(buffer, 10));
+						output.push(parseInt(buffer, 10));
 					} else {
 						console.log ('pushing variable '+buffer+', operator is '+char)
 						output.push(buffer)
 					}
 				}
 
-				buffer = "";
-				output.push(char)
+				buffer = ""; //Clear the buffer
+				output.push(char) //Add the operator to the output object
+
+
 			} else if (type == "variable") {
 				if (!(buffer == "" || buffer != ')' || !parseInt(buffer,10))) {
 					console.error("objectifyExpression Error- Unexpected Character \""+ char +"\" at position " + i + ".")
@@ -138,26 +139,6 @@ function objectifyExpression(str) {
 		}
 	}
 
-
+	
 	return output
 }
-var textarea = document.getElementById("in")
-var output = document.getElementById("out")
-document.getElementById("run").addEventListener("click", (e) => {
-	if (!output.innerHTML) {
-		output.innerHTML = " ";
-	}
-	var string = textarea.value
-	if (!string) {
-		console.error("Can't objectify nothing!");
-		output.innerHTML += "Can't objectify nothing!\n"
-		return
-	}
-	console.log("Objectifying " + string + ".");
-	output.innerHTML += "Objectifying " + string + ".\n";
-	var out = JSON.stringify(objectifyExpression(string))
-	console.log("Object: " + out);
-	output.innerHTML += "Object: " + '\n';
-	output.innerHTML += out + "\n";
-	resizeTA(output, 300)
-})

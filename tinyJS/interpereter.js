@@ -10,37 +10,32 @@ class TinyInterpereter {
         } else {
             this.outputType = 'string'
         }
-        this.verbose = config.verbose
         this.callback = this.run.bind(this, this.input);
-        if (this.verbose) {
-            console.group('AnyInt Verbose Start')
-            console.log(this);
-        }
-        console.groupEnd()
     }
     run(code) {
-
-        if (this.verbose) {
-            console.group('AnyInt Verbose Run');
-            this.output('\nAnyInt Verbose Run');
-            this.println('Input Text: ' + code);
-            this.println('Clearing Output and Formatting Input...');
-        }
-        //Remove 
-        this.code = this.sanitize(this.input);
-        if (this.verbose) {
-            this.print('Done')
-            this.println('Code:'+this.code)
-            this.println('Expression Length:' + this.code[0].length)
-        };
-
+        //Remove unnecicary whitespace and whatnot
+        this.code = this.sanitize(this.inputElement.value);
         //If no code, don't do anything
-        if (!(this.code && ((this.code.length > 0) && (this.code[0].length > 0)))) { this.throw('No code to interperet'); console.groupEnd(); return false };
+        console.log(this.code)
+        if (!(this.code && ((this.code.length > 0) && (this.code[0].length > 0)))) { this.throw('No code to interperet');  return false };
 
+        //Tokenize
+        var outCode = [];
+        for (var i = 0; i<this.code.length; i++) {
+            outCode[i] = [];
+            var line = this.code[i];
+            outCode[i] = this.code[i].split(" ")
+            if (outCode[i].includes("=")) {
+                var loc = outCode[i].indexOf("=");
+                outCode[i][loc+1] = objectifyExpression(outCode[i][loc+1]);
+
+                
+            }
+            console.log(outCode[i])
+        }
 
         //Evaluate tokens
 
-        console.groupEnd()
         return this.code
     }
     sanitize(t = '') {
