@@ -58,9 +58,13 @@ class Shader {
 		this.info = { program: this.shader };
 	}
 }
+class Prism {
+	constructor(x, y, z, width, height, depth) {
 
+	}
+}
 export class Rendererer {
-	constructor(display) {
+	constructor(display, gameState) {
 		this.display = display;
 		this.gl = this.display.renderingContext;
 
@@ -87,13 +91,14 @@ export class Rendererer {
 		  `;
 		this.initShaders();
 		this.initBuffers();
+		this.gameState = gameState;
 	}
 	initShaders() {
 		this.shader = new Shader(this.gl, this.vsSource, this.fsSource);
 		const shaderProgram = this.shader.shader
 		this.shader.info.attribLocations = {
 			vertexPosition: this.gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-			vertexColor: this.gl.getAttribLocation(shaderProgram,'aVertexColor')
+			vertexColor: this.gl.getAttribLocation(shaderProgram, 'aVertexColor')
 		}
 		this.shader.info.uniformLocations = {
 			projectionMatrix: this.gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
@@ -104,30 +109,99 @@ export class Rendererer {
 		const positionBuffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer);
 		const positions = [
-			-1.0, 1.0,
-			1.0, 1.0,
-			-1.0, -1.0,
-			1.0, -1.0
+			// Front face
+			-1.0, -1.0, 1.0,
+			1.0, -1.0, 1.0,
+			1.0, 1.0, 1.0,
+			-1.0, 1.0, 1.0,
+
+			// Back face
+			-1.0, -1.0, -1.0,
+			-1.0, 1.0, -1.0,
+			1.0, 1.0, -1.0,
+			1.0, -1.0, -1.0,
+
+			// Top face
+			-1.0, 1.0, -1.0,
+			-1.0, 1.0, 1.0,
+			1.0, 1.0, 1.0,
+			1.0, 1.0, -1.0,
+
+			// Bottom face
+			-1.0, -1.0, -1.0,
+			1.0, -1.0, -1.0,
+			1.0, -1.0, 1.0,
+			-1.0, -1.0, 1.0,
+
+			// Right face
+			1.0, -1.0, -1.0,
+			1.0, 1.0, -1.0,
+			1.0, 1.0, 1.0,
+			1.0, -1.0, 1.0,
+
+			// Left face
+			-1.0, -1.0, -1.0,
+			-1.0, -1.0, 1.0,
+			-1.0, 1.0, 1.0,
+			-1.0, 1.0, -1.0,
 		];
+		//We need different vertexes per face because they're colored by vertex (So )
+
 		this.gl.bufferData(
 			this.gl.ARRAY_BUFFER,
 			new Float32Array(positions),
 			this.gl.STATIC_DRAW
 		);
 
-		const colors = [
+		/*const colors = [
 			1.0, 1.0, 1.0, 1.0,    // white
 			1.0, 0.0, 0.0, 1.0,    // red
 			0.0, 1.0, 0.0, 1.0,    // green
 			0.0, 0.0, 1.0, 1.0,    // blue
+		];*/
+		const faceColors = [
+			[1.0, 1.0, 1.0, 1.0],    // Front face: white
+			[1.0, 0.0, 0.0, 1.0],    // Back face: red
+			[0.0, 1.0, 0.0, 1.0],    // Top face: green
+			[0.0, 0.0, 1.0, 1.0],    // Bottom face: blue
+			[1.0, 1.0, 0.0, 1.0],    // Right face: yellow
+			[1.0, 0.0, 1.0, 1.0],    // Left face: purple
 		];
+		var colors = [];
+		for (var j = 0; j < faceColors.length; j++) {
+			const c = faceColors[j];
+
+			//Repeat each color 4 times (WebGL colors by vertex and each face has 4 vertexes)
+			colors = colors.concat(c, c, c, c);
+		}
+
+
 		const colorBuffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, colorBuffer);
 		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(colors), this.gl.STATIC_DRAW);
 
+		const indexBuffer = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+		//Define each face of the cube as 2 triangles
+		const indices = [
+			0, 1, 2, 0, 2, 3, //Front Face
+			4, 5, 6, 4, 6, 7, //Back Face
+			8, 9, 10, 8, 10, 11, //Top Face
+			12, 13, 14, 12, 14, 15, //Bottom
+			16, 17, 18, 16, 18, 19, //Right
+			20, 21, 22, 20, 22, 23, //Left
+		]
+		this.gl.bufferData(
+			this.gl.ELEMENT_ARRAY_BUFFER,
+			new Uint16Array(indices),
+			this.gl.STATIC_DRAW
+		)
+
 		this.buffers = {
 			position: positionBuffer,
-			color: colorBuffer
+			color: colorBuffer,
+			indices: indexBuffer,
 		}
 	}
 	render() {
@@ -163,48 +237,64 @@ export class Rendererer {
 			modelViewMatrix, //Matrix to tranlate
 			[0.0, 0.0, -6.0] //Amount to tranlate
 		)
+		mat4.rotate(
+			modelViewMatrix,
+			modelViewMatrix,
+			this.gameState.rotation,
+			[0,0,1]
+		)
+		mat4.rotate( //Rotate cube around x axis too
+			modelViewMatrix,
+			modelViewMatrix,
+			this.gameState.rotation * 0.7,
+			[0, 1, 0] //Only x axis
+		);
 
 		//Tell webgl how to get the positions from the position buffer into the vertexPosition attribute	
-
-		var componentCount = 2; //Pull 2 values per iteration
-		var type = this.gl.FLOAT; //The buffer is in 32 bit floats
-		var normalize = false; //don't normalize
-		var stride = false;// how many bytes to get from one set of values to the next, 0=use type & componentCount above.
-		var offset = 0;     //how many bytes inside the buffer to start from
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.position);
-		this.gl.vertexAttribPointer(
-			this.shader.info.attribLocations.vertexPosition,
-			componentCount,
-			type,
-			normalize,
-			stride,
-			offset
-		)
-		this.gl.enableVertexAttribArray(
-			this.shader.info.attribLocations.vertexPosition
-		);
+		{
+			const componentCount = 3; //Pull 3 values per iteration (x y and z)
+			const type = this.gl.FLOAT; //The buffer is in 32 bit floats
+			const normalize = false; //don't normalize
+			const stride = false;// how many bytes to get from one set of values to the next, 0=use type & componentCount above.
+			const offset = 0;     //how many bytes inside the buffer to start from
+			this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.position);
+			this.gl.vertexAttribPointer(
+				this.shader.info.attribLocations.vertexPosition,
+				componentCount,
+				type,
+				normalize,
+				stride,
+				offset
+			)
+			this.gl.enableVertexAttribArray(
+				this.shader.info.attribLocations.vertexPosition
+			);
+		}
 
 		//How to get color from color buffer to vertexColor
 		//A guide for webgl
-		var componentCount = 4; //Pull 2 values per iteration
-		var type = this.gl.FLOAT; //The buffer is in 32 bit floats
-		var normalize = false; //don't normalize
-		var stride = 0;// how many bytes to get from one set of values to the next, 0=use type & componentCount above.
-		var offset = 0;     //how many bytes inside the buffer to start from
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.color);
-		this.gl.vertexAttribPointer(
-			this.shader.info.attribLocations.vertexColor,
-			componentCount,
-			type,
-			normalize,
-			stride,
-			offset
-		)
-		this.gl.enableVertexAttribArray(
-			this.shader.info.attribLocations.vertexColor
-		);
+		{
+			const componentCount = 4; //Pull 4 values per iteration (rgba)
+			const type = this.gl.FLOAT; //The buffer is in 32 bit floats
+			const normalize = false; //don't normalize
+			const stride = 0;// how many bytes to get from one set of values to the next, 0=use type & componentCount above.
+			const offset = 0;     //how many bytes inside the buffer to start from
+			this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.color);
+			this.gl.vertexAttribPointer(
+				this.shader.info.attribLocations.vertexColor,
+				componentCount,
+				type,
+				normalize,
+				stride,
+				offset
+			)
+			this.gl.enableVertexAttribArray(
+				this.shader.info.attribLocations.vertexColor
+			);
+		}
+		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices);
 
-		
+
 
 		//Tell webgl to use our shader program
 		this.gl.useProgram(this.shader.shader);
@@ -220,9 +310,11 @@ export class Rendererer {
 			false,
 			modelViewMatrix
 		)
-
-		var offset = 0;
-		const vertexCount = 4;
-		this.gl.drawArrays(this.gl.TRIANGLE_STRIP, offset, vertexCount);
+		{ //Special code block so constants don't interfere
+			const vertexCount = 36;
+			const type = this.gl.UNSIGNED_SHORT;
+			const offset = 0;
+			this.gl.drawElements(this.gl.TRIANGLES, vertexCount, type, offset);
+		}
 	}
 }
