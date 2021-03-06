@@ -231,7 +231,7 @@ export class Rendererer {
 		mat4.targetTo(
 			testMatrix,//Matrix to operate on
 			this.gameState.player.pos,
-			this.gameState.player.direction,
+			vec3.add(vec3.create(), this.gameState.player.pos, vec3.fromValues(0,0,-1)),
 			vec3.fromValues(0,1,0)
 		)
 
