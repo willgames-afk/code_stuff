@@ -58,9 +58,19 @@ class Shader {
 		this.info = { program: this.shader };
 	}
 }
-class Prism {
-	constructor(x, y, z, width, height, depth) {
-
+class Camera {
+	constructor(gl, position, pointingTo) {
+		this.gl = gl;
+		this.position = position;
+		this.target = pointingTo;
+		this.direction = vec3.create();
+		this.right = vec3.create();
+		this.up = vec3.create();
+		console.log(this)
+		vec3.normalize(this.direction, vec3.subtract(vec3.create(), this.position, this.target));
+		vec3.normalize(this.right, vec3.cross(vec3.create(), vec3.fromValues(0,1,0),this.direction));
+		vec3.cross(this.up, this.direction, this.right);
+		console.log(this)
 	}
 }
 export class Rendererer {
@@ -92,6 +102,8 @@ export class Rendererer {
 		this.initShaders();
 		this.initBuffers();
 		this.gameState = gameState;
+		console.log(this)
+		this.camera = new Camera(this.gl, this.gameState.player.pos, this.gameState.player.direction)
 	}
 	initShaders() {
 		this.shader = new Shader(this.gl, this.vsSource, this.fsSource);
@@ -205,6 +217,7 @@ export class Rendererer {
 		}
 	}
 	render() {
+
 		this.gl.clearColor(0.0, 0.0, 0.0, 1.0); //Clear to opaque black
 		this.gl.clearDepth(1.0);               //Clear all
 		this.gl.enable(this.gl.DEPTH_TEST);        //Enable depth testing
@@ -213,6 +226,14 @@ export class Rendererer {
 
 		//Clear Canvas
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+
+		var testMatrix = mat4.create();
+		mat4.targetTo(
+			testMatrix,//Matrix to operate on
+			this.gameState.player.pos,
+			this.gameState.player.direction,
+			vec3.fromValues(0,1,0)
+		)
 
 		//Create perspective matrix
 		const fov = 45 * Math.PI / 180;                                      //Field of view (In Radians)
@@ -229,7 +250,8 @@ export class Rendererer {
 		);
 
 		//set draw position to identity point (Center of scene)
-		const modelViewMatrix = mat4.create();
+		//const modelViewMatrix = mat4.create();
+		const modelViewMatrix = testMatrix;
 
 		//Move the draw position a bit to where we want to draw the square
 		mat4.translate(
