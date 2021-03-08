@@ -1,13 +1,51 @@
 import {log, optLog, error} from "./logging.js";
 import {isPowerOf2} from "./math.js"
 export class ResourceManager {
-	constructor() {
-		
+	constructor(gl, gs,requiredResources) {
+		this.gl = gl;
+		this.gs = gs; //Game State
+		this.requiredResources= requiredResources;
+		if (!this.gs.textures) {
+			this.gs.textures = {};
+		}
+		for (var i=0; i<requiredResources.length; i++) {
+			this.loadResource(this.requiredResources[i] )
+		}
 	}
-	loadResource() {
-		
+	loadResource(name) {
+		//Loads a resource.
+
+		var xhr = new XMLHttpRequest(); //Set up XML Http Request
+
+		xhr.onreadystatechange = (e) => {
+
+			if (xhr.readyState === XMLHttpRequest.DONE) { //If done
+
+				if (xhr.status === 0 || (xhr.status >= 200 && xhr.status < 400)) { //If successful
+
+					var resObj = JSON.parse(xhr.responseText); //Parse describer json
+
+					if (resObj.type == "texture") { 
+
+						this.gs.textures[name] = {};
+						
+						for (var key in resObj.faceTextures) { //For each face texture
+
+							this.gs.textures[name][key] = this.loadTexture(
+								this.gl,
+								resObj.textureSrcs[resObj.faceTextures[key].img],
+								resObj.faceTextures[key]
+							);
+						}
+						console.log(this.gs)
+					}
+				}
+			}
+		}
+		xhr.open("GET","res/" + name+ ".json");
+		xhr.send();
 	}
-	loadTexture(gl, url, useNearest) {
+	loadTexture(gl, url, options) {
 		const texture = gl.createTexture();
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -51,17 +89,24 @@ export class ResourceManager {
 				gl.generateMipmap(gl.TEXTURE_2D);
 			} else {
 				//No mipmaps, clamp to edge and prevents wrapping (repeating)
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-				if (useNearest) {
-					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); //Linear smooths images, gl.NEAREST leaves them pixelated.
+				if (options.wrappingX) {
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl[options.wrappingX]);
 				} else {
-					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); //Linear smooths images, gl.NEAREST leaves them pixelated.
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl[options.wrapping]);
 				}
+
+				if (options.wrappingY) {
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl[options.wrappingY]);
+				} else {
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl[options.wrapping]);
+				}
+				
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl[options.filter]); 
+		
+				
 			}
 		};
-		image.src = "../res/"+url; //Start it loading
+		image.src = "res/"+url; //Start it loading
 
 		return texture;
 	}

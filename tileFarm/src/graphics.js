@@ -1,16 +1,21 @@
 import { log, optLog, error } from "./logging.js"
 export class Display {
 	constructor(parentElement, width, height, style) {
+
+		//Canvas Setup
 		this.canvas = document.createElement("canvas");
 		this.canvas.width = width;
 		this.canvas.height = height;
-		optLog("Successful Display init!");
-		optLog(this);
 		parentElement.appendChild(this.canvas);
+
+		//WebGL creation
 		this.renderingContext = this.canvas.getContext("webgl");
 		if (this.renderingContext === null) {
 			throw "WebGL Not Initialized; Cannot continue.";
 		}
+
+		optLog("Successful Display init!");
+		optLog(this);
 	}
 	get width() {
 		return this.canvas.width;
@@ -27,12 +32,15 @@ export class Display {
 		return this.canvas.height;
 	}
 }
+
 class Shader {
 	constructor(gl, vsSource, fsSource) {
-		this.gl = gl;
-		this.vsSource = vsSource;
-		this.fsSource = fsSource;
+		this.gl = gl; //WebGL instance
+		this.vsSource = vsSource; //Vertex Shader Source Code
+		this.fsSource = fsSource; //Fragment Shader Source Code
+
 		function loadShader(type, source) {
+			//Make shader
 			const shader = this.gl.createShader(type);
 			this.gl.shaderSource(shader, source);
 			this.gl.compileShader(shader);
@@ -44,40 +52,34 @@ class Shader {
 			}
 			return shader
 		}
+
+		//Create vertex and fragment shaders
 		this.vertexShader = loadShader.bind(this)(this.gl.VERTEX_SHADER, this.vsSource);
 		this.fragmentShader = loadShader.bind(this)(this.gl.FRAGMENT_SHADER, this.fsSource);
+
+		//Link them into a shader program
 		this.shader = this.gl.createProgram();
 		this.gl.attachShader(this.shader, this.vertexShader);
 		this.gl.attachShader(this.shader, this.fragmentShader);
 		this.gl.linkProgram(this.shader);
+
+		//Error Handling
 		if (!this.gl.getProgramParameter(this.shader, this.gl.LINK_STATUS)) {
 			error('LoadShader Error: Unable to initialize the shader program. Info: ' + this.gl.getProgramInfoLog(shaderProgram));
 			return null;
 		}
 
+
 		this.info = { program: this.shader };
-	}
-}
-class Camera {
-	constructor(gl, position, pointingTo) {
-		this.gl = gl;
-		this.position = position;
-		this.target = pointingTo;
-		this.direction = vec3.create();
-		this.right = vec3.create();
-		this.up = vec3.create();
-		console.log(this)
-		vec3.normalize(this.direction, vec3.subtract(vec3.create(), this.position, this.target));
-		vec3.normalize(this.right, vec3.cross(vec3.create(), vec3.fromValues(0,1,0),this.direction));
-		vec3.cross(this.up, this.direction, this.right);
-		console.log(this)
 	}
 }
 export class Rendererer {
 	constructor(display, gameState) {
-		this.display = display;
-		this.gl = this.display.renderingContext;
+		this.display = display; 
+		this.gameState = gameState;
+		this.gl = this.display.renderingContext; //WebGL instance
 
+		//Vertex Shader Source code- will be compiled
 		this.vsSource = `
 			attribute vec4 aVertexPosition;
 			attribute vec4 aVertexColor;
@@ -92,6 +94,7 @@ export class Rendererer {
 				vColor = aVertexColor;
     		}
 		  `;
+		//Fragment shader source code
 		this.fsSource = `
 			varying lowp vec4 vColor;
 
@@ -99,15 +102,18 @@ export class Rendererer {
       			gl_FragColor = vColor;
     		}
 		  `;
+
+		//Inits
 		this.initShaders();
 		this.initBuffers();
-		this.gameState = gameState;
-		console.log(this)
-		this.camera = new Camera(this.gl, this.gameState.player.pos, this.gameState.player.direction)
+		optLog(this)
 	}
 	initShaders() {
+		//Create shader
 		this.shader = new Shader(this.gl, this.vsSource, this.fsSource);
 		const shaderProgram = this.shader.shader
+
+		//Add attribute locations
 		this.shader.info.attribLocations = {
 			vertexPosition: this.gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
 			vertexColor: this.gl.getAttribLocation(shaderProgram, 'aVertexColor')
@@ -118,6 +124,8 @@ export class Rendererer {
 		}
 	}
 	initBuffers() {
+
+		//Set up vertex positions of test cube
 		const positionBuffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer);
 		const positions = [
@@ -157,7 +165,7 @@ export class Rendererer {
 			-1.0, 1.0, 1.0,
 			-1.0, 1.0, -1.0,
 		];
-		//We need different vertexes per face because they're colored by vertex (So )
+		//We need different vertexes per face because they're colored by vertex, not by face.
 
 		this.gl.bufferData(
 			this.gl.ARRAY_BUFFER,
@@ -171,6 +179,8 @@ export class Rendererer {
 			0.0, 1.0, 0.0, 1.0,    // green
 			0.0, 0.0, 1.0, 1.0,    // blue
 		];*/
+
+		//Face colors of the cube
 		const faceColors = [
 			[1.0, 1.0, 1.0, 1.0],    // Front face: white
 			[1.0, 0.0, 0.0, 1.0],    // Back face: red
@@ -218,7 +228,7 @@ export class Rendererer {
 	}
 	render() {
 
-		this.gl.clearColor(0.0, 0.0, 0.0, 1.0); //Clear to opaque black
+		this.gl.clearColor(0.0, 0.0, 0.0, 1.0); //Background color clear black
 		this.gl.clearDepth(1.0);               //Clear all
 		this.gl.enable(this.gl.DEPTH_TEST);        //Enable depth testing
 		this.gl.depthFunc(this.gl.LEQUAL);        //Near things block far things
@@ -226,14 +236,6 @@ export class Rendererer {
 
 		//Clear Canvas
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-
-		var testMatrix = mat4.create();
-		mat4.targetTo(
-			testMatrix,//Matrix to operate on
-			this.gameState.player.pos,
-			vec3.add(vec3.create(), this.gameState.player.pos, vec3.fromValues(0,0,-1)),
-			vec3.fromValues(0,1,0)
-		)
 
 		//Create perspective matrix
 		const fov = 45 * Math.PI / 180;                                      //Field of view (In Radians)
@@ -249,16 +251,23 @@ export class Rendererer {
 			zFar
 		);
 
-		//set draw position to identity point (Center of scene)
-		//const modelViewMatrix = mat4.create();
-		const modelViewMatrix = testMatrix;
+		var testMatrix = mat4.create();
 
-		//Move the draw position a bit to where we want to draw the square
+		//set draw position to identity point (Center of scene)
+		var modelViewMatrix = mat4.create();
+		mat4.lookAt(
+			modelViewMatrix,//Matrix to operate on
+			this.gameState.player.pos, //Player Position
+			vec3.add(vec3.create(), this.gameState.player.pos, this.gameState.player.direction), //LookingAt
+			vec3.fromValues(0,1,0)
+		)
+
+		/*Move the draw position a bit to where we want to draw the square
 		mat4.translate(
 			modelViewMatrix, //Destination
 			modelViewMatrix, //Matrix to tranlate
 			[0.0, 0.0, -6.0] //Amount to tranlate
-		)
+		)*/
 		mat4.rotate(
 			modelViewMatrix,
 			modelViewMatrix,

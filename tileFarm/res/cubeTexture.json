@@ -1,6 +1,7 @@
 {
+	"type": "texture",
 	"textureSrcs": {
-		"all": "cubeTexture.png"
+		"all": "container.jpg"
 	},
 	"faceTextures": {
 		"all": {

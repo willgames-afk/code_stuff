@@ -2,12 +2,13 @@ export class InputManager {
 	constructor(DOMElement,gameLogic) {
 		this.DOMElement = DOMElement;
 		this.gameLogic = gameLogic;
-		this.initateEventListeners();
+		this.initEventListeners();
 	}
-	initateEventListeners() {
+	initEventListeners() {
 		this.DOMElement.addEventListener("keydown", this.onkeydown.bind(this));
 		this.DOMElement.addEventListener("keyup", this.onkeyup.bind(this));
 		this.DOMElement.addEventListener("mousemove", this.onmousemove.bind(this));
+		this.DOMElement.addEventListener("click", this.DOMElement.requestPointerLock)
 	}
 	onkeydown(e) {
 		this.gameLogic.gameState.keys[e.code] = true;
@@ -16,7 +17,6 @@ export class InputManager {
 		this.gameLogic.gameState.keys[e.code] = false;
 	}
 	onmousemove(e) {
-		console.log(e)
-		this.gameLogic.gameState.mouse.x
+		this.gameLogic.updateDirection.bind(this.gameLogic)(e.movementX,e.movementY)
 	}
 }
