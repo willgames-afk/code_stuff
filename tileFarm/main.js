@@ -11,9 +11,15 @@ class Game {
 		this.logic = new Logic.GameLogic(this.state); //Create Game Logic
 		this.display = new Graphics.Display(document.body, window.innerWidth, window.innerHeight); //Make and configure Webgl Canvas (display)
 		this.resourceManager = new RM.ResourceManager(this.display.renderingContext, this.state,REQUIRED);
-		this.inputManager = new Input.InputManager(document.body,this.logic);
-		this.renderer = new Graphics.Rendererer(this.display,this.state); //Self Explanitory
-		this.timeLastRendered = 0;
+		this.resourceManager.onCompleteLoad = (e) => {
+			log("Assets have loaded, finishing intialization")
+			this.inputManager = new Input.InputManager(document.body,this.logic);
+			this.renderer = new Graphics.Rendererer(this.display,this.state); //Self Explanitory
+			this.timeLastRendered = 0;
+			log("Starting Main loop!!")
+			this.start();
+		}
+		this.resourceManager.start(); //Prevent race condition
 	}
 	mainLoop(now) {
 		//Calculate Delta
@@ -35,4 +41,3 @@ class Game {
 }
 
 var game = new Game();
-game.start();

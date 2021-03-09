@@ -81,25 +81,33 @@ export class Rendererer {
 
 		//Vertex Shader Source code- will be compiled
 		this.vsSource = `
+
 			attribute vec4 aVertexPosition;
 			attribute vec4 aVertexColor;
+			attribute vec2 aTexCoord;
 
     		uniform mat4 uModelViewMatrix;
     		uniform mat4 uProjectionMatrix;
 
 			varying lowp vec4 vColor;
 
+			varying highp vec2 TexCoord;
+
     		void main() {
 				gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
 				vColor = aVertexColor;
+				TexCoord = aTexCoord;
     		}
 		  `;
 		//Fragment shader source code
 		this.fsSource = `
 			varying lowp vec4 vColor;
+			varying lowp vec2 TexCoord;
+
+			uniform sampler2D ourTexture;
 
     		void main() {
-      			gl_FragColor = vColor;
+      			gl_FragColor = texture2D(ourTexture, TexCoord);
     		}
 		  `;
 
@@ -116,7 +124,8 @@ export class Rendererer {
 		//Add attribute locations
 		this.shader.info.attribLocations = {
 			vertexPosition: this.gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-			vertexColor: this.gl.getAttribLocation(shaderProgram, 'aVertexColor')
+			vertexColor: this.gl.getAttribLocation(shaderProgram, 'aVertexColor'),
+			texCoord: this.gl.getAttribLocation(shaderProgram,'aTexCoord')
 		}
 		this.shader.info.uniformLocations = {
 			projectionMatrix: this.gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
@@ -126,8 +135,6 @@ export class Rendererer {
 	initBuffers() {
 
 		//Set up vertex positions of test cube
-		const positionBuffer = this.gl.createBuffer();
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer);
 		const positions = [
 			// Front face
 			-1.0, -1.0, 1.0,
@@ -167,18 +174,9 @@ export class Rendererer {
 		];
 		//We need different vertexes per face because they're colored by vertex, not by face.
 
-		this.gl.bufferData(
-			this.gl.ARRAY_BUFFER,
-			new Float32Array(positions),
-			this.gl.STATIC_DRAW
-		);
-
-		/*const colors = [
-			1.0, 1.0, 1.0, 1.0,    // white
-			1.0, 0.0, 0.0, 1.0,    // red
-			0.0, 1.0, 0.0, 1.0,    // green
-			0.0, 0.0, 1.0, 1.0,    // blue
-		];*/
+		const positionBuffer = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array(positions),this.gl.STATIC_DRAW);
 
 		//Face colors of the cube
 		const faceColors = [
@@ -197,13 +195,21 @@ export class Rendererer {
 			colors = colors.concat(c, c, c, c);
 		}
 
-
+		//Set up WebGL buffer
 		const colorBuffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, colorBuffer);
 		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(colors), this.gl.STATIC_DRAW);
 
-		const indexBuffer = this.gl.createBuffer();
-		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+		const textureCoords = this.gameState.textures.cubeTexture.all.coords;
+		var  txcoords = [];
+		for (var j=0; j< 6; j++) { //texture all sides of the cube
+			txcoords.concat(textureCoords);
+		}
+		//Set up webgl buffer
+		const txcoordbuffer = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, txcoordbuffer)
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(txcoords),this.gl.STATIC_DRAW);
+
 
 		//Define each face of the cube as 2 triangles
 		const indices = [
@@ -214,16 +220,21 @@ export class Rendererer {
 			16, 17, 18, 16, 18, 19, //Right
 			20, 21, 22, 20, 22, 23, //Left
 		]
+		const indexBuffer = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 		this.gl.bufferData(
 			this.gl.ELEMENT_ARRAY_BUFFER,
 			new Uint16Array(indices),
 			this.gl.STATIC_DRAW
 		)
 
+		
+
 		this.buffers = {
 			position: positionBuffer,
 			color: colorBuffer,
 			indices: indexBuffer,
+			texture: txcoordbuffer
 		}
 	}
 	render() {
@@ -302,6 +313,26 @@ export class Rendererer {
 			);
 		}
 
+		{
+			const componentCount = 2; //Pull 3 values per iteration (x y and z)
+			const type = this.gl.FLOAT; //The buffer is in 32 bit floats
+			const normalize = false; //don't normalize
+			const stride = false;// how many bytes to get from one set of values to the next, 0=use type & componentCount above.
+			const offset = 0;     //how many bytes inside the buffer to start from
+			this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.texture);
+			this.gl.vertexAttribPointer(
+				this.shader.info.attribLocations.texCoord,
+				componentCount,
+				type,
+				normalize,
+				stride,
+				offset
+			)
+			this.gl.enableVertexAttribArray(
+				this.shader.info.attribLocations.texCoord
+			);
+		}
+
 		//How to get color from color buffer to vertexColor
 		//A guide for webgl
 		{
@@ -323,13 +354,15 @@ export class Rendererer {
 				this.shader.info.attribLocations.vertexColor
 			);
 		}
+
+
 		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices);
 
 
 
 		//Tell webgl to use our shader program
 		this.gl.useProgram(this.shader.shader);
-
+		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.all.texture)
 		//Set shader uniforms
 		this.gl.uniformMatrix4fv(
 			this.shader.info.uniformLocations.projectionMatrix,

@@ -8,16 +8,30 @@ export class ResourceManager {
 		if (!this.gs.textures) {
 			this.gs.textures = {};
 		}
-		for (var i=0; i<requiredResources.length; i++) {
-			this.loadResource(this.requiredResources[i] )
+		this.leftToLoad = this.requiredResources;
+		this.leftToLoad = this.leftToLoad;
+	}
+	start() {
+		for (var i=0; i<this.requiredResources.length; i++) {
+			this.loadResource(this.requiredResources[i], this._checkifcomplete)
 		}
 	}
-	loadResource(name) {
+	onCompleteLoad() { //Placeholder
+
+	}
+	_checkifcomplete(name) {
+		optLog("Asset Loaded");
+		this.leftToLoad.splice(this.leftToLoad.indexOf(name),1);
+		if (this.leftToLoad.length == 0) {
+			this.onCompleteLoad();
+		}
+	}
+	loadResource(name, onload) {
 		//Loads a resource.
 
 		var xhr = new XMLHttpRequest(); //Set up XML Http Request
 
-		xhr.onreadystatechange = (e) => {
+		function orsc (onload){
 
 			if (xhr.readyState === XMLHttpRequest.DONE) { //If done
 
@@ -31,17 +45,22 @@ export class ResourceManager {
 						
 						for (var key in resObj.faceTextures) { //For each face texture
 
-							this.gs.textures[name][key] = this.loadTexture(
+							this.gs.textures[name][key] = {};
+							this.gs.textures[name][key].texture = this.loadTexture(
 								this.gl,
 								resObj.textureSrcs[resObj.faceTextures[key].img],
-								resObj.faceTextures[key]
+								resObj.faceTextures[key],
 							);
+							console.log(resObj)
+							this.gs.textures[name][key].coords = resObj.faceTextures[key].coords;
 						}
 						console.log(this.gs)
 					}
+					onload.bind(this)(name);
 				}
 			}
 		}
+		xhr.onreadystatechange = orsc.bind(this,onload);
 		xhr.open("GET","res/" + name+ ".json");
 		xhr.send();
 	}
@@ -105,7 +124,7 @@ export class ResourceManager {
 		
 				
 			}
-		};
+		}
 		image.src = "res/"+url; //Start it loading
 
 		return texture;
