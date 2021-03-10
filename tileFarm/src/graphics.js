@@ -1,4 +1,6 @@
-import { log, optLog, error } from "./logging.js"
+import {aerror,alog,aoptLog,configureLogs} from "./logging.js"
+import * as Conf from "./config.js"
+configureLogs("graphics");
 export class Display {
 	constructor(parentElement, width, height, style) {
 
@@ -14,8 +16,10 @@ export class Display {
 			throw "WebGL Not Initialized; Cannot continue.";
 		}
 
-		optLog("Successful Display init!");
-		optLog(this);
+		console.log("%cSuccessful Display init!","color: 7f7;");
+		if (Conf.VERBOSE) {
+			console.log("Display: ", this);
+		}
 	}
 	get width() {
 		return this.canvas.width;
@@ -33,7 +37,7 @@ export class Display {
 	}
 }
 
-class Shader {
+export class Shader {
 	constructor(gl, vsSource, fsSource) {
 		this.gl = gl; //WebGL instance
 		this.vsSource = vsSource; //Vertex Shader Source Code
@@ -79,58 +83,12 @@ export class Rendererer {
 		this.gameState = gameState;
 		this.gl = this.display.renderingContext; //WebGL instance
 
-		//Vertex Shader Source code- will be compiled
-		this.vsSource = `
-
-			attribute vec4 aVertexPosition;
-			attribute vec4 aVertexColor;
-			attribute vec2 aTexCoord;
-
-    		uniform mat4 uModelViewMatrix;
-    		uniform mat4 uProjectionMatrix;
-
-			varying lowp vec4 vColor;
-
-			varying highp vec2 TexCoord;
-
-    		void main() {
-				gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-				vColor = aVertexColor;
-				TexCoord = aTexCoord;
-    		}
-		  `;
-		//Fragment shader source code
-		this.fsSource = `
-			varying lowp vec4 vColor;
-			varying lowp vec2 TexCoord;
-
-			uniform sampler2D ourTexture;
-
-    		void main() {
-      			gl_FragColor = texture2D(ourTexture, TexCoord);
-    		}
-		  `;
-
-		//Inits
-		this.initShaders();
+		this.initShaders()
 		this.initBuffers();
-		optLog(this)
 	}
 	initShaders() {
 		//Create shader
-		this.shader = new Shader(this.gl, this.vsSource, this.fsSource);
-		const shaderProgram = this.shader.shader
-
-		//Add attribute locations
-		this.shader.info.attribLocations = {
-			vertexPosition: this.gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-			vertexColor: this.gl.getAttribLocation(shaderProgram, 'aVertexColor'),
-			texCoord: this.gl.getAttribLocation(shaderProgram,'aTexCoord')
-		}
-		this.shader.info.uniformLocations = {
-			projectionMatrix: this.gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-			modelViewMatrix: this.gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-		}
+		this.shader = this.gameState.shaders.shader
 	}
 	initBuffers() {
 
@@ -201,10 +159,12 @@ export class Rendererer {
 		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(colors), this.gl.STATIC_DRAW);
 
 		const textureCoords = this.gameState.textures.cubeTexture.all.coords;
+		
 		var  txcoords = [];
 		for (var j=0; j< 6; j++) { //texture all sides of the cube
-			txcoords.concat(textureCoords);
+			txcoords = txcoords.concat(textureCoords);
 		}
+	
 		//Set up webgl buffer
 		const txcoordbuffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, txcoordbuffer)

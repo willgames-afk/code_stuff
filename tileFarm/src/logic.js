@@ -1,8 +1,12 @@
-import { log, error, optLog } from "./logging.js";
+import {aerror,alog,aoptLog, configureLogs} from "./logging.js"
+import * as Conf from "./config.js"
+configureLogs("logic");
 export class GameState {
 	constructor() {
 		this.rotation = 0;
+		this.paused = true;
 		this.run = true;
+		this.started = false;
 		this.player = {
 			speed: 2.5,
 			friction: 0.9,
@@ -22,8 +26,13 @@ export class GameState {
 			xChange: 0,
 			yChange: 0
 		}
-		log("Successful Game State Init!");
-		optLog(this)
+		this.shaders = {};
+		log("main", "Successful Game State Init!");
+		optLog("main", "Main Object: ", this)
+	}
+	pause() {
+		this.paused = true;
+
 	}
 }
 export class GameLogic {
@@ -44,35 +53,61 @@ export class GameLogic {
 		var speed = player.speed * deltaTime;
 
 		//Position calculation
-		if (k.KeyW || k.ArrowUp) {
+		if (k.KeyW || k.ArrowUp) { //Forwards-Backwards
 			vec3.add(
-				this.gameState.player.vel,
-				this.gameState.player.vel,
-				vec3.scale(vec3.create(), this.gameState.player.direction, speed)
+				this.gameState.player.vel, //Can't use shortcut here
+				player.vel,
+				vec3.scale(vec3.create(), player.direction, speed)
 			)
 		} else if (k.KeyS || k.ArrowDown) {
 			vec3.subtract(
 				this.gameState.player.vel,
-				this.gameState.player.vel,
-				vec3.scale(vec3.create(), this.gameState.player.direction, speed)
+				player.vel,
+				vec3.scale(vec3.create(), player.direction, speed)
 			)
 		}
 
-		/*
-		if (k.KeyA || k.ArrowRight) {
-			vec3.add(
+		//Helper Var for Strafe
+		var rightVector = vec3.create();
+		vec3.normalize(
+			rightVector,
+			vec3.cross(
+				vec3.create(),
+				this.gameState.player.direction,
+				vec3.fromValues(0,1,0)
+			)
+		)
+		
+		if (k.KeyA || k.ArrowRight) { //Strafing (Left-Right)
+			vec3.subtract(
 				this.gameState.player.vel,
 				this.gameState.player.vel,
-				vec3.scale(vec3.create(), vec3.fromValues(1, 0, 0), speed)
+				vec3.scale(vec3.create(), rightVector, speed)
 			)
 		} else if (k.KeyD || k.ArrowLeft) {
 			vec3.add(
 				this.gameState.player.vel,
 				this.gameState.player.vel,
-				vec3.scale(vec3.create(), vec3.fromValues(-1, 0, 0), speed)
+				vec3.scale(vec3.create(), rightVector, speed)
 			)
 		}
-		*/
+
+		if (k.Space) { //Up-Down
+			vec3.add(
+				this.gameState.player.vel,
+				this.gameState.player.vel,
+				vec3.scale(vec3.create(), vec3.fromValues(0,1,0), speed)
+			)
+		} else if (k.ShiftLeft) {
+			vec3.add(
+				this.gameState.player.vel,
+				this.gameState.player.vel,
+				vec3.scale(vec3.create(), vec3.fromValues(0,-1,0), speed)
+			)
+		}
+
+	
+		
 
 		//Decrease velocity by friction
 		vec3.scale(

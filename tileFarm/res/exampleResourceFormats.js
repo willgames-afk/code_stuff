@@ -1,7 +1,10 @@
 //NOT JAVASCRIPT, USING IT TO GET COMMENTS IN JSON.
+
+//--------------------------TEXTURE EXAMPLE-------------------------//
 var _ = {
-	"textureSrcs": { //Contains the urls to the images used as textures
-		"referenceName": "/path/to/image.extention",
+	"type" : "texture", //What kind of resource the file is
+	"srcFiles": { //Contains the urls all the raw resources (images and such) to be refrerenced 
+		"referenceName": "/path/to/image.extention", // Throughout the json
 		"secondImage": "/different/path/to/image.extention"
 	},
 	"faceTextures": {/*
@@ -46,5 +49,22 @@ var _ = {
 			"filter-mag": "LINEAR",//Only when upscaling (magnifying) textures
 			"filter-min": "LINEAR" //Only when downscaling (minifying) textures
 		}
+	}
+}
+_={
+	"type" : "shader", //Identifies the resource as a shader
+	"srcFiles": {
+		//Must contain fragmentShader and vertexShader
+		"fragmentShader" : "adsfadf.fs",
+		"vertexShader" : "adasdfawx.vs"
+	},
+	"attributes" : { 
+		"vertexPosition": "variable refecenced in shader that the vertexPosition var will be passed to",
+		"vertexColor": "aVertexColor",
+		"textureCoordanate": "aTexCoord"
+	},
+	"uniforms" : {
+		"viewMatrix": "uModelViewMatrix",
+		"projectionMatrix": "uProjectionMatrix"
 	}
 }

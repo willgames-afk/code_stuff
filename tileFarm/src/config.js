@@ -1,3 +1,5 @@
 export const REQUIRED = [
-	"cubeTexture"
+	"cubeTexture",
+	"shader"
 ]
+export const VERBOSE = true;

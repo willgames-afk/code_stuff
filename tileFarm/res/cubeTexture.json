@@ -1,6 +1,6 @@
 {
 	"type": "texture",
-	"textureSrcs": {
+	"srcFiles": {
 		"all": "container.jpg"
 	},
 	"faceTextures": {

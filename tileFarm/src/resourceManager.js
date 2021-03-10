@@ -1,10 +1,14 @@
-import {log, optLog, error} from "./logging.js";
-import {isPowerOf2} from "./math.js"
+import {aerror,alog, aoptLog, configureLogs} from "./logging.js"
+import * as Conf from "./config.js"
+import { isPowerOf2 } from "./math.js";
+import { Shader } from "./graphics.js";
+configureLogs("resource-manager")
+
 export class ResourceManager {
-	constructor(gl, gs,requiredResources) {
-		this.gl = gl;
+	constructor(gl, gs, requiredResources) {
+		this.gl = gl; //WebGL context, for loading shaders, textures, etc
 		this.gs = gs; //Game State
-		this.requiredResources= requiredResources;
+		this.requiredResources = requiredResources;
 		if (!this.gs.textures) {
 			this.gs.textures = {};
 		}
@@ -12,59 +16,79 @@ export class ResourceManager {
 		this.leftToLoad = this.leftToLoad;
 	}
 	start() {
-		for (var i=0; i<this.requiredResources.length; i++) {
-			this.loadResource(this.requiredResources[i], this._checkifcomplete)
+		for (var i = 0; i < this.requiredResources.length; i++) {
+			this.loadResource(this.requiredResources[i], this._checkifcomplete.bind(this))
 		}
 	}
 	onCompleteLoad() { //Placeholder
 
 	}
 	_checkifcomplete(name) {
-		optLog("Asset Loaded");
-		this.leftToLoad.splice(this.leftToLoad.indexOf(name),1);
-		if (this.leftToLoad.length == 0) {
+		optLog("ResourceManager",`%cAsset "${name}" Loaded!`);
+		this.leftToLoad.splice(this.leftToLoad.indexOf(name), 1);
+		if (this.leftToLoad.length === 0) {
 			this.onCompleteLoad();
 		}
 	}
 	loadResource(name, onload) {
-		//Loads a resource.
+		//Loads a resource. Looks in the res folder for a json file with the name probided by the name parmeter
+		// and looks inside to figure out the details.
 
 		var xhr = new XMLHttpRequest(); //Set up XML Http Request
 
-		function orsc (onload){
+		function orsc(onload) { //On ready state change
 
 			if (xhr.readyState === XMLHttpRequest.DONE) { //If done
 
 				if (xhr.status === 0 || (xhr.status >= 200 && xhr.status < 400)) { //If successful
 
-					var resObj = JSON.parse(xhr.responseText); //Parse describer json
+					//Parse describer json
+					var resObj = JSON.parse(xhr.responseText);
 
-					if (resObj.type == "texture") { 
-
+					if (resObj.type == "texture") {
+						//Initialize
 						this.gs.textures[name] = {};
-						
 						for (var key in resObj.faceTextures) { //For each face texture
 
 							this.gs.textures[name][key] = {};
 							this.gs.textures[name][key].texture = this.loadTexture(
 								this.gl,
-								resObj.textureSrcs[resObj.faceTextures[key].img],
+								resObj.srcFiles[resObj.faceTextures[key].img],
 								resObj.faceTextures[key],
+								onload.bind(this, name)
 							);
-							console.log(resObj)
 							this.gs.textures[name][key].coords = resObj.faceTextures[key].coords;
 						}
-						console.log(this.gs)
+					
+					} else if (resObj.type == "shader") {
+
+						//initialize
+						this.gs.shaders[name] = {};
+
+						function onshaderload(shader) {
+							this.gs.shaders[name] = shader;
+							this.gs.shaders[name].info.attribLocations = {
+								vertexPosition: this.gl.getAttribLocation(shader.shader, resObj.attributes.vertexPosition),
+								vertexColor: this.gl.getAttribLocation(shader.shader, resObj.attributes.vertexColor),
+								textureCoordanate: this.gl.getAttribLocation(shader.shader, resObj.attributes.textureCoordanate)
+							}
+							this.gs.shaders[name].info.uniformLocations = {
+								projectionMatrix: this.gl.getUniformLocation(shader.shader, resObj.uniforms.projectionMatrix),
+								modelViewMatrix: this.gl.getUniformLocation(shader.shader, resObj.uniforms.viewMatrix),
+							}
+							onload(name)
+						}
+						this.loadShader(this.gl, "res/" + resObj.srcFiles.vert, "res/" + resObj.srcFiles.frag, onshaderload.bind(this));
 					}
-					onload.bind(this)(name);
+					
 				}
 			}
 		}
-		xhr.onreadystatechange = orsc.bind(this,onload);
-		xhr.open("GET","res/" + name+ ".json");
+		xhr.onreadystatechange = orsc.bind(this, onload);
+		xhr.open("GET", "res/" + name + ".json");
 		xhr.send();
 	}
-	loadTexture(gl, url, options) {
+	loadTexture(gl, url, options, whenload) {
 		const texture = gl.createTexture();
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -77,9 +101,9 @@ export class ResourceManager {
 		const border = 0;
 		const srcFormat = gl.RGBA;
 		const srcType = gl.UNSIGNED_BYTE;
-		const pixel = new Uint8Array([0,255,0,255]); //Opaque Green
+		const pixel = new Uint8Array([0, 255, 0, 255]); //Opaque Green
 		gl.texImage2D(
-			gl.TEXTURE_2D, 
+			gl.TEXTURE_2D,
 			level,
 			internalFormat,
 			width,
@@ -92,8 +116,8 @@ export class ResourceManager {
 
 		//Load the actual texture
 		const image = new Image();
-		image.onload = function() {
-			gl.bindTexture(gl.TEXTURE_2D,texture);
+		image.onload = function () {
+			gl.bindTexture(gl.TEXTURE_2D, texture);
 			gl.texImage2D(
 				gl.TEXTURE_2D,
 				level,
@@ -119,51 +143,51 @@ export class ResourceManager {
 				} else {
 					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl[options.wrapping]);
 				}
-				
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl[options.filter]); 
-		
-				
+
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl[options.filter]);
+
+
 			}
+			whenload();
 		}
-		image.src = "res/"+url; //Start it loading
+		image.src = "res/" + url; //Start it loading
 
 		return texture;
 	}
-	loadShader(vsURL, fsURL) {
+	loadShader(gl, vsURL, fsURL, onload) {
 		var vsSource = "";
 		var fsSource = "";
 		function checkIfBothLoaded() {
-			if (vsSource.length > 0) {
-
-			}
 			if (vsSource != "" && fsSource != "") {
 				//Continue
+				onload(new Shader(gl, vsSource, fsSource));
 			}
 		}
-		this.requestFile(vsURL,function (file) {
+		this.requestFile(vsURL, function (file) {
 			vsSource = file;
-		}.bind(this), "text");
+			checkIfBothLoaded();
+		}.bind(this), "");
 		this.requestFile(fsURL, function (file) {
 			fsSource = file;
-		}, "text");
+			checkIfBothLoaded();
+		}, "");
 	}
-	requestFile(url, onload, type) {
+	requestFile(url, onload, type, id) {
 		var xhr = new XMLHttpRequest();
-		xhr.method = "GET";
-		xhr.url = url;
 		xhr.onreadystatechange = () => {
 			if (xhr.readyState === XMLHttpRequest.DONE) {
-				if (xhr.status === 0 || (xhr.status >= 200 && xhr < 400)) {
+				if (xhr.status === 0 || (xhr.status >= 200 && xhr.status < 400)) {
 					if (xhr.responseType !== type) {
-						error("LoadError: File Type "+xhr.responseType+" does not equal paramter type: "+type)
+						error("LoadError: File Type " + xhr.responseType + " does not equal paramter type: " + type)
 					} else {
-						onload(xhr.response);
+						onload(xhr.response, id);
 					}
 				} else {
 					error("LoadError: XMLHttpRequest Failed to load resource, returned status code " + xhr.status + ".");
 				}
 			}
 		}
+		xhr.open("GET", url);
 		xhr.send();
 	}
 }
