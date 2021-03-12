@@ -1,8 +1,8 @@
-import {aerror,alog, aoptLog, configureLogs} from "./logging.js"
+
 import * as Conf from "./config.js"
 import { isPowerOf2 } from "./math.js";
 import { Shader } from "./graphics.js";
-configureLogs("resource-manager")
+
 
 export class ResourceManager {
 	constructor(gl, gs, requiredResources) {
@@ -24,7 +24,7 @@ export class ResourceManager {
 
 	}
 	_checkifcomplete(name) {
-		optLog("ResourceManager",`%cAsset "${name}" Loaded!`);
+		console.log("ResourceManager-",`Asset "${name}" Loaded!`);
 		this.leftToLoad.splice(this.leftToLoad.indexOf(name), 1);
 		if (this.leftToLoad.length === 0) {
 			this.onCompleteLoad();

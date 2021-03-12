@@ -1,6 +1,6 @@
-import {aerror,alog,aoptLog,configureLogs} from "./logging.js"
+
 import * as Conf from "./config.js"
-configureLogs("graphics");
+
 export class Display {
 	constructor(parentElement, width, height, style) {
 
@@ -17,9 +17,9 @@ export class Display {
 		}
 
 		console.log("%cSuccessful Display init!","color: 7f7;");
-		if (Conf.VERBOSE) {
-			console.log("Display: ", this);
-		}
+	
+		console.log("Display: ", this);
+		
 	}
 	get width() {
 		return this.canvas.width;

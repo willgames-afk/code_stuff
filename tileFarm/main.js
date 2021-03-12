@@ -1,10 +1,10 @@
-import {aerror,alog,aoptLog, configureLogs} from "./src/logging.js"
+
 import * as Graphics from "./src/graphics.js";
 import * as Logic from "./src/logic.js";
 import * as Input from "./src/input.js";
 import * as RM from "./src/resourceManager.js";
 import {REQUIRED} from "./src/config.js"
-configureLogs("main")
+
 console.log("%cTile Farm%c\nMade by %cWill Kam", "font-size: 35px;font-weight: bold; padding: 10px 0;", "color: #aaa", "color: #7f7");
 class Game {
 	constructor() {

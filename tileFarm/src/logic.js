@@ -1,6 +1,6 @@
-import {aerror,alog,aoptLog, configureLogs} from "./logging.js"
+
 import * as Conf from "./config.js"
-configureLogs("logic");
+
 export class GameState {
 	constructor() {
 		this.rotation = 0;
@@ -27,8 +27,8 @@ export class GameState {
 			yChange: 0
 		}
 		this.shaders = {};
-		log("main", "Successful Game State Init!");
-		optLog("main", "Main Object: ", this)
+		console.log("Successful Game State Init!");
+		console.log("Main Object: ", this)
 	}
 	pause() {
 		this.paused = true;
@@ -38,7 +38,7 @@ export class GameState {
 export class GameLogic {
 	constructor(gameState) {
 		this.gameState = gameState;
-		log("GameLogic Init!")
+		console.log("GameLogic Init!")
 	}
 	tick(deltaTime) {
 		//Animate Cube
