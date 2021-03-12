@@ -16,34 +16,41 @@ class TinyInterpereter {
         //Remove unnecicary whitespace and whatnot
         this.code = this.sanitize(this.inputElement.value);
         //If no code, don't do anything
-        console.log(this.code)
+        console.log("%cINPUT: %c" + this.code, "color:green;", "color:white;")
         if (!(this.code && ((this.code.length > 0) && (this.code[0].length > 0)))) { this.throw('No code to interperet');  return false };
 
         //Tokenize
-        var outCode = [];
-        for (var i = 0; i<this.code.length; i++) {
-            outCode[i] = [];
-            var line = this.code[i];
-            outCode[i] = this.code[i].split(" ")
-            if (outCode[i].includes("=")) {
-                var loc = outCode[i].indexOf("=");
-                outCode[i][loc+1] = objectifyExpression(outCode[i][loc+1]);
+        var tokens = this.tokenize();
+        console.log(tokens)
 
-                
-            }
-            console.log(outCode[i])
-        }
+        var outCode = tokens.join(", ");
 
         //Evaluate tokens
 
-        return this.code
+        return outCode
+    }
+    tokenize() {
+        var tokens = [];
+        var i = 0;
+        var ct = 0;
+        while (i < this.code.length) {
+            if (this.code[i] == " ") {
+                i++; //Ignore spaces; who likes them anyway?
+                ct++
+            } else if (this.code[i] == "(") {
+                ct++
+            } else {
+                if (!tokens[ct]) {tokens[ct] = ""}
+                tokens[ct] += this.code[i];
+                i++
+            }
+        }
+        return tokens
     }
     sanitize(t = '') {
-        var lines = t.split('\n');
-        for (var i = 0; i < lines.length; i++) {
-            lines[i] = lines[i].split(';')[0].replace(/^\s+/, "").replace(/\s+$/, "");
-        }
-        return lines
+        //var lines = t.split('\n');
+        t = t.replace(/^\s+/, "").replace(/\s+$/, "");
+        return t
     }
     print(t) {
         this.output += t;
@@ -61,3 +68,20 @@ class TinyInterpereter {
         console.error('AnyInterpereter Error: ' + e);
     }
 };
+
+function demoProgram() {
+    var test = "this is a test";
+    const object = {
+        string: "I am an object",
+        number: 42,
+        "Multi Word Key": `Backticked String!!`,
+        list: [
+            "bannanas",
+            243,
+            {},
+            [],
+            true,
+        ],
+        boolean: false,
+    }
+}
