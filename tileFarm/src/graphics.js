@@ -16,10 +16,10 @@ export class Display {
 			throw "WebGL Not Initialized; Cannot continue.";
 		}
 
-		console.log("%cSuccessful Display init!","color: 7f7;");
-	
+		console.log("%cSuccessful Display init!", "color: 7f7;");
+
 		console.log("Display: ", this);
-		
+
 	}
 	get width() {
 		return this.canvas.width;
@@ -79,7 +79,7 @@ export class Shader {
 }
 export class Rendererer {
 	constructor(display, gameState) {
-		this.display = display; 
+		this.display = display;
 		this.gameState = gameState;
 		this.gl = this.display.renderingContext; //WebGL instance
 
@@ -129,12 +129,17 @@ export class Rendererer {
 			-1.0, -1.0, 1.0,
 			-1.0, 1.0, 1.0,
 			-1.0, 1.0, -1.0,
-		];
-		//We need different vertexes per face because they're colored by vertex, not by face.
 
+			/* Top face x2
+			-3.0, 1.0, -1.0,
+			-3.0, 1.0, 1.0,
+			-1.0, 1.0, 1.0,
+			-1.0, 1.0, -1.0,*/
+		];
+		console.log(positions.length)
 		const positionBuffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer);
-		this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array(positions),this.gl.STATIC_DRAW);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(positions), this.gl.STATIC_DRAW);
 
 		//Face colors of the cube
 		const faceColors = [
@@ -143,7 +148,8 @@ export class Rendererer {
 			[0.0, 1.0, 0.0, 1.0],    // Top face: green
 			[0.0, 0.0, 1.0, 1.0],    // Bottom face: blue
 			[1.0, 1.0, 0.0, 1.0],    // Right face: yellow
-			[1.0, 0.0, 1.0, 1.0],    // Left face: purple
+			[1.0, 0.0, 1.0, 1.0],    // Left face: purple	
+			//[1.0, 0.0, 1.0, 1.0],    // Left face: purple
 		];
 		var colors = [];
 		for (var j = 0; j < faceColors.length; j++) {
@@ -158,17 +164,23 @@ export class Rendererer {
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, colorBuffer);
 		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(colors), this.gl.STATIC_DRAW);
 
-		const textureCoords = this.gameState.textures.cubeTexture.all.coords;
-		
-		var  txcoords = [];
-		for (var j=0; j< 6; j++) { //texture all sides of the cube
-			txcoords = txcoords.concat(textureCoords);
-		}
+		const ct = this.gameState.textures.cubeTexture
+		console.log(ct)
+		//texture all sides of the cube
+		var txcoords = [];
 	
+		txcoords = txcoords.concat(ct.front.coords);
+		txcoords = txcoords.concat(ct.back.coords);
+		txcoords = txcoords.concat(ct.top.coords);
+		txcoords = txcoords.concat(ct.bottom.coords);
+		txcoords = txcoords.concat(ct.left.coords);
+		txcoords = txcoords.concat(ct.right.coords);
+		
+
 		//Set up webgl buffer
 		const txcoordbuffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, txcoordbuffer)
-		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(txcoords),this.gl.STATIC_DRAW);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(txcoords), this.gl.STATIC_DRAW);
 
 
 		//Define each face of the cube as 2 triangles
@@ -179,7 +191,9 @@ export class Rendererer {
 			12, 13, 14, 12, 14, 15, //Bottom
 			16, 17, 18, 16, 18, 19, //Right
 			20, 21, 22, 20, 22, 23, //Left
+			24, 25, 26, 24, 26, 27
 		]
+		console.log(indices.length)
 		const indexBuffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 		this.gl.bufferData(
@@ -188,13 +202,14 @@ export class Rendererer {
 			this.gl.STATIC_DRAW
 		)
 
-		
+
 
 		this.buffers = {
 			position: positionBuffer,
 			color: colorBuffer,
 			indices: indexBuffer,
-			texture: txcoordbuffer
+			texture: txcoordbuffer,
+			indicesLength: indices.length,
 		}
 	}
 	render() {
@@ -222,15 +237,13 @@ export class Rendererer {
 			zFar
 		);
 
-		var testMatrix = mat4.create();
-
 		//set draw position to identity point (Center of scene)
 		var modelViewMatrix = mat4.create();
 		mat4.lookAt(
 			modelViewMatrix,//Matrix to operate on
 			this.gameState.player.pos, //Player Position
 			vec3.add(vec3.create(), this.gameState.player.pos, this.gameState.player.direction), //LookingAt
-			vec3.fromValues(0,1,0)
+			vec3.fromValues(0, 1, 0)
 		)
 
 		/*Move the draw position a bit to where we want to draw the square
@@ -243,7 +256,7 @@ export class Rendererer {
 			modelViewMatrix,
 			modelViewMatrix,
 			this.gameState.rotation,
-			[0,0,1]
+			[0, 0, 1]
 		)
 		mat4.rotate( //Rotate cube around x axis too
 			modelViewMatrix,
@@ -322,7 +335,16 @@ export class Rendererer {
 
 		//Tell webgl to use our shader program
 		this.gl.useProgram(this.shader.shader);
-		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.all.texture)
+
+
+		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.front.texture)
+		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.back.texture)
+		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.top.texture)
+		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.bottom.texture)
+		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.left.texture)
+		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.right.texture)
+
+
 		//Set shader uniforms
 		this.gl.uniformMatrix4fv(
 			this.shader.info.uniformLocations.projectionMatrix,
@@ -334,11 +356,27 @@ export class Rendererer {
 			false,
 			modelViewMatrix
 		)
-		{ //Special code block so constants don't interfere
-			const vertexCount = 36;
+
+		{
+			const vertexCount = this.buffers.indicesLength;
 			const type = this.gl.UNSIGNED_SHORT;
 			const offset = 0;
 			this.gl.drawElements(this.gl.TRIANGLES, vertexCount, type, offset);
+		}
+	}
+	addFace(x, y, z, dir, texture) {
+		if (dir == "north") {
+
+		} else if (dir == "south") {
+
+		} else if (dir == "west") {
+
+		} else if (dir == "east") {
+
+		} else if (dir == "up") {
+
+		} else if (dir == "down") {
+
 		}
 	}
 }

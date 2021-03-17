@@ -1,5 +1,5 @@
 
-import * as Conf from "./config.js"
+import * as Conf from "./config.js";
 
 export class GameState {
 	constructor() {
@@ -27,8 +27,12 @@ export class GameState {
 			yChange: 0
 		}
 		this.shaders = {};
+		this.textures = {};
+		this.objects = [
+		];
 		console.log("Successful Game State Init!");
-		console.log("Main Object: ", this)
+		console.log("Main Object: ", this);
+
 	}
 	pause() {
 		this.paused = true;

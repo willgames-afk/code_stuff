@@ -33,7 +33,7 @@ class TinyInterpereter {
         var tokens = [];
         var i = 0;
         var ct = 0;
-        while (i < this.code.length) {
+        while (i <= this.code.length) {
             if (this.code[i] == " ") {
                 i++; //Ignore spaces; who likes them anyway?
                 ct++

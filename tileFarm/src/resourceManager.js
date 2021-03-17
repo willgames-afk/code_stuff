@@ -24,9 +24,32 @@ export class ResourceManager {
 
 	}
 	_checkifcomplete(name) {
-		console.log("ResourceManager-",`Asset "${name}" Loaded!`);
+		console.log(`Asset "${name}" Loaded!`);
 		this.leftToLoad.splice(this.leftToLoad.indexOf(name), 1);
 		if (this.leftToLoad.length === 0) {
+			//Everythink is loaded; clean up some stuff
+
+			for (var tex in this.gs.textures) { //Define top bottom left and rights for blocks when only "all" or "sides" are defined
+				if (this.gs.textures[tex].all) {
+					const all = this.gs.textures[tex].all;
+					this.gs.textures[tex].top = all;
+					this.gs.textures[tex].bottom = all;
+					this.gs.textures[tex].left = all;
+					this.gs.textures[tex].right = all;
+					this.gs.textures[tex].front = all;
+					this.gs.textures[tex].back = all;
+					delete this.gs.textures[tex].all;
+				}
+				if (this.gs.textures[tex].sides) {
+					const sides = this.gs.textures[tex].sides;
+					this.gs.textures[tex].left = sides;
+					this.gs.textures[tex].right = sides;
+					this.gs.textures[tex].front = sides;
+					this.gs.textures[tex].back = sides;
+					delete this.gs.textures[tex].sides;
+				}
+			}
+
 			this.onCompleteLoad();
 		}
 	}
@@ -50,12 +73,12 @@ export class ResourceManager {
 						this.gs.textures[name] = {};
 						for (var key in resObj.faceTextures) { //For each face texture
 
-							this.gs.textures[name][key] = {};
-							this.gs.textures[name][key].texture = this.loadTexture(
+							this.gs.textures[name][key] = {}; //Create subtexture
+							this.gs.textures[name][key].texture = this.loadTexture( //Load the texture
 								this.gl,
-								resObj.srcFiles[resObj.faceTextures[key].img],
-								resObj.faceTextures[key],
-								onload.bind(this, name)
+								resObj.srcFiles[resObj.faceTextures[key].img], //Find src name
+								resObj.faceTextures[key], //Options for texture loader
+								onload.bind(this, name) //Callback
 							);
 							this.gs.textures[name][key].coords = resObj.faceTextures[key].coords;
 						}
@@ -178,12 +201,12 @@ export class ResourceManager {
 			if (xhr.readyState === XMLHttpRequest.DONE) {
 				if (xhr.status === 0 || (xhr.status >= 200 && xhr.status < 400)) {
 					if (xhr.responseType !== type) {
-						error("LoadError: File Type " + xhr.responseType + " does not equal paramter type: " + type)
+						console.error("LoadError: File Type " + xhr.responseType + " does not equal paramter type: " + type)
 					} else {
 						onload(xhr.response, id);
 					}
 				} else {
-					error("LoadError: XMLHttpRequest Failed to load resource, returned status code " + xhr.status + ".");
+					console.error("LoadError: XMLHttpRequest Failed to load resource, returned status code " + xhr.status + ".");
 				}
 			}
 		}
