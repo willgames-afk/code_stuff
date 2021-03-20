@@ -4,26 +4,27 @@ export class Cube {
 		this.position = new Point(x, y, z)
 		this.size = size;
 		this.texture = texture;
+		console.log("Cube Texture: ",this.texture)
 		this.faces = [
-			new SquareFace( //Top Face
-				this.position,
-				this.position.add(size, 0, 0),
-				this.position.add(size, 0, size),
-				this.position.add(0, 0, size),
-				this.texture
-			),
-			new SquareFace( //Left face
-				this.position,
-				this.position.add(size, 0, 0),
-				this.position.add(size, -size, 0),
-				this.position.add(0, -size, 0),
-				this.texture
-			),
 			new SquareFace( //Front face
 				this.position,
 				this.position.add(0, 0, size),
 				this.position.add(0, -size, size),
 				this.position.add(0, -size, 0),
+				this.texture
+			),
+			new SquareFace(// Back face
+				this.position.add(0,0,size),
+				this.position.add(size, 0, size),
+				this.position.add(size, -size, size),
+				this.position.add(0, -size, size),
+				this.texture
+			),
+			new SquareFace( //Top Face
+				this.position,
+				this.position.add(size, 0, 0),
+				this.position.add(size, 0, size),
+				this.position.add(0, 0, size),
 				this.texture
 			),
 			new SquareFace( //Bottom Face
@@ -33,18 +34,18 @@ export class Cube {
 				this.position.add(0, -size, size),
 				this.texture
 			),
+			new SquareFace( //Left face
+				this.position,
+				this.position.add(size, 0, 0),
+				this.position.add(size, -size, 0),
+				this.position.add(0, -size, 0),
+				this.texture
+			),
 			new SquareFace( //Right face
 				this.position.add(size, 0, 0),
 				this.position.add(size, 0, size),
 				this.position.add(size, -size, size),
 				this.position.add(size, -size, 0),
-				this.texture
-			),
-			new SquareFace(// Back face
-				this.position.add(0,0,size),
-				this.position.add(size, 0, size),
-				this.position.add(size, -size, size),
-				this.position.add(0, -size, size),
 				this.texture
 			)
 		];
@@ -62,7 +63,7 @@ export class Cube {
 		for (var face of this.faces) {
 			out = out.concat(face.getRawPoints());
 		}
-		return out;
+		return new Float32Array(out);
 	}
 	getFaceIndices() {
 		var out = [];
@@ -74,11 +75,14 @@ export class Cube {
 				out = out.concat(imod4times4 + faceIndices[k]);
 			}
 		}
-		return out
+		return new Uint16Array(out);
+	}
+	getFaceColors() {
+		this.color = new Array(4*6).fill(1.0);
 	}
 }
 export class SquareFace {
-	constructor(p1, p2, p3, p4, texture) {
+	constructor(p1, p2, p3, p4, texture, color) {
 		this.points = [
 			p1,
 			p2,

@@ -78,9 +78,11 @@ export class Shader {
 	}
 }
 export class Rendererer {
-	constructor(display, gameState) {
+	constructor(display, gameState, assets) {
 		this.display = display;
 		this.gameState = gameState;
+		this.assets = assets;
+		console.log(assets)
 		this.gl = this.display.renderingContext; //WebGL instance
 
 		this.initShaders()
@@ -88,58 +90,15 @@ export class Rendererer {
 	}
 	initShaders() {
 		//Create shader
-		this.shader = this.gameState.shaders.shader
+		this.shader = this.assets.shaders.shader
 	}
 	initBuffers() {
 
-		//Set up vertex positions of test cube
-		const positions = [
-			// Front face
-			-1.0, -1.0, 1.0,
-			1.0, -1.0, 1.0,
-			1.0, 1.0, 1.0,
-			-1.0, 1.0, 1.0,
+		const obj = this.gameState.objects[0];
 
-			// Back face
-			-1.0, -1.0, -1.0,
-			-1.0, 1.0, -1.0,
-			1.0, 1.0, -1.0,
-			1.0, -1.0, -1.0,
-
-			// Top face
-			-1.0, 1.0, -1.0,
-			-1.0, 1.0, 1.0,
-			1.0, 1.0, 1.0,
-			1.0, 1.0, -1.0,
-
-			// Bottom face
-			-1.0, -1.0, -1.0,
-			1.0, -1.0, -1.0,
-			1.0, -1.0, 1.0,
-			-1.0, -1.0, 1.0,
-
-			// Right face
-			1.0, -1.0, -1.0,
-			1.0, 1.0, -1.0,
-			1.0, 1.0, 1.0,
-			1.0, -1.0, 1.0,
-
-			// Left face
-			-1.0, -1.0, -1.0,
-			-1.0, -1.0, 1.0,
-			-1.0, 1.0, 1.0,
-			-1.0, 1.0, -1.0,
-
-			/* Top face x2
-			-3.0, 1.0, -1.0,
-			-3.0, 1.0, 1.0,
-			-1.0, 1.0, 1.0,
-			-1.0, 1.0, -1.0,*/
-		];
-		console.log(positions.length)
 		const positionBuffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer);
-		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(positions), this.gl.STATIC_DRAW);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, obj.getRawPoints(), this.gl.STATIC_DRAW);
 
 		//Face colors of the cube
 		const faceColors = [
@@ -154,7 +113,6 @@ export class Rendererer {
 		var colors = [];
 		for (var j = 0; j < faceColors.length; j++) {
 			const c = faceColors[j];
-
 			//Repeat each color 4 times (WebGL colors by vertex and each face has 4 vertexes)
 			colors = colors.concat(c, c, c, c);
 		}
@@ -164,52 +122,32 @@ export class Rendererer {
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, colorBuffer);
 		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(colors), this.gl.STATIC_DRAW);
 
-		const ct = this.gameState.textures.cubeTexture
+		const ct = obj.texture
 		console.log(ct)
 		//texture all sides of the cube
-		var txcoords = [];
-	
-		txcoords = txcoords.concat(ct.front.coords);
-		txcoords = txcoords.concat(ct.back.coords);
-		txcoords = txcoords.concat(ct.top.coords);
-		txcoords = txcoords.concat(ct.bottom.coords);
-		txcoords = txcoords.concat(ct.left.coords);
-		txcoords = txcoords.concat(ct.right.coords);
-		
+		var txcoords = [
+		]
+		for (var tx in ct) {
+			txcoords = txcoords.concat(ct[tx].coords);
+		}
+		console.log(new Float32Array(txcoords))
 
 		//Set up webgl buffer
 		const txcoordbuffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, txcoordbuffer)
 		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(txcoords), this.gl.STATIC_DRAW);
 
-
-		//Define each face of the cube as 2 triangles
-		const indices = [
-			0, 1, 2, 0, 2, 3, //Front Face
-			4, 5, 6, 4, 6, 7, //Back Face
-			8, 9, 10, 8, 10, 11, //Top Face
-			12, 13, 14, 12, 14, 15, //Bottom
-			16, 17, 18, 16, 18, 19, //Right
-			20, 21, 22, 20, 22, 23, //Left
-			24, 25, 26, 24, 26, 27
-		]
-		console.log(indices.length)
+		//Point indices
 		const indexBuffer = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-		this.gl.bufferData(
-			this.gl.ELEMENT_ARRAY_BUFFER,
-			new Uint16Array(indices),
-			this.gl.STATIC_DRAW
-		)
-
-
+		this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, obj.getFaceIndices(), this.gl.STATIC_DRAW)
 
 		this.buffers = {
 			position: positionBuffer,
 			color: colorBuffer,
 			indices: indexBuffer,
 			texture: txcoordbuffer,
-			indicesLength: indices.length,
+			indicesLength: obj.getFaceIndices().length,
 		}
 	}
 	render() {
@@ -336,13 +274,13 @@ export class Rendererer {
 		//Tell webgl to use our shader program
 		this.gl.useProgram(this.shader.shader);
 
-
-		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.front.texture)
-		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.back.texture)
-		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.top.texture)
-		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.bottom.texture)
-		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.left.texture)
-		this.gl.bindTexture(this.gl.TEXTURE_2D, this.gameState.textures.cubeTexture.right.texture)
+		const texture = this.assets.textures.cubeTexture;
+		this.gl.bindTexture(this.gl.TEXTURE_2D, texture.front.texture)
+		this.gl.bindTexture(this.gl.TEXTURE_2D, texture.back.texture)
+		this.gl.bindTexture(this.gl.TEXTURE_2D, texture.top.texture)
+		this.gl.bindTexture(this.gl.TEXTURE_2D, texture.bottom.texture)
+		this.gl.bindTexture(this.gl.TEXTURE_2D, texture.left.texture)
+		this.gl.bindTexture(this.gl.TEXTURE_2D, texture.right.texture)
 
 
 		//Set shader uniforms

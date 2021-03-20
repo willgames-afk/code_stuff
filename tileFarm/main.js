@@ -13,18 +13,19 @@ class Game {
 		this.state = new Logic.GameState(); //Create Gamestate
 		this.logic = new Logic.GameLogic(this.state); //Create Game Logic
 		this.display = new Graphics.Display(document.body, window.innerWidth, window.innerHeight); //Make and configure Webgl Canvas (display)
-		this.resourceManager = new RM.ResourceManager(this.display.renderingContext, this.state,REQUIRED);
-		this.resourceManager.onCompleteLoad = (e) => {
+		this.resManager = new RM.ResourceManager(this.display.renderingContext, this.state,REQUIRED);
+
+		this.resManager.onCompleteLoad = (e) => {
 			console.log("Assets have loaded, finishing intialization")
-			this.state.objects.push(new Obj.Cube(-1,0,-1,2,this.state.textures.cubeTexture))
-			console.log(this.state.objects[0])
+			this.state.objects.push(new Obj.Cube(-1,0,-1,2,this.resManager.res.textures.cubeTexture))
+			console.log("Cube Obj: ",this.state.objects[0], this.state.objects[0].getFaceIndices(), this.state.objects[0].getRawPoints())
 
 			this.inputManager = new Input.InputManager(document.body,this.logic);
-			this.renderer = new Graphics.Rendererer(this.display,this.state); //Self Explanitory
+			this.renderer = new Graphics.Rendererer(this.display,this.state,this.resManager.res); //Self Explanitory
 			this.timeLastRendered = 0;
 			this.start();
 		}
-		this.resourceManager.start(); //Prevent race condition
+		this.resManager.start(); //Prevent race condition
 	}
 	mainLoop(now) {
 		//Calculate Delta

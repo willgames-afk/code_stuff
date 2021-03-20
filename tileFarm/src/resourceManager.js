@@ -7,11 +7,16 @@ import { Shader } from "./graphics.js";
 export class ResourceManager {
 	constructor(gl, gs, requiredResources) {
 		this.gl = gl; //WebGL context, for loading shaders, textures, etc
-		this.gs = gs; //Game State
-		this.requiredResources = requiredResources;
-		if (!this.gs.textures) {
-			this.gs.textures = {};
+		//this.gs = gs; //Game State
+		this.res = {
+			textures: {
+
+			},
+			shaders: {
+
+			}
 		}
+		this.requiredResources = requiredResources;
 		this.leftToLoad = this.requiredResources;
 		this.leftToLoad = this.leftToLoad;
 	}
@@ -28,25 +33,24 @@ export class ResourceManager {
 		this.leftToLoad.splice(this.leftToLoad.indexOf(name), 1);
 		if (this.leftToLoad.length === 0) {
 			//Everythink is loaded; clean up some stuff
-
-			for (var tex in this.gs.textures) { //Define top bottom left and rights for blocks when only "all" or "sides" are defined
-				if (this.gs.textures[tex].all) {
-					const all = this.gs.textures[tex].all;
-					this.gs.textures[tex].top = all;
-					this.gs.textures[tex].bottom = all;
-					this.gs.textures[tex].left = all;
-					this.gs.textures[tex].right = all;
-					this.gs.textures[tex].front = all;
-					this.gs.textures[tex].back = all;
-					delete this.gs.textures[tex].all;
+			for (var tex in this.res.textures) { //Define top bottom left and rights for blocks when only "all" or "sides" are defined
+				if (this.res.textures[tex].all) {
+					const all = this.res.textures[tex].all;
+					this.res.textures[tex].top = all;
+					this.res.textures[tex].bottom = all;
+					this.res.textures[tex].left = all;
+					this.res.textures[tex].right = all;
+					this.res.textures[tex].front = all;
+					this.res.textures[tex].back = all;
+					delete this.res.textures[tex].all;
 				}
-				if (this.gs.textures[tex].sides) {
-					const sides = this.gs.textures[tex].sides;
-					this.gs.textures[tex].left = sides;
-					this.gs.textures[tex].right = sides;
-					this.gs.textures[tex].front = sides;
-					this.gs.textures[tex].back = sides;
-					delete this.gs.textures[tex].sides;
+				if (this.res.textures[tex].sides) { //"sides" will override "all"
+					const sides = this.res.textures[tex].sides;
+					this.res.textures[tex].left = sides;
+					this.res.textures[tex].right = sides;
+					this.res.textures[tex].front = sides;
+					this.res.textures[tex].back = sides;
+					delete this.res.textures[tex].sides;
 				}
 			}
 
@@ -70,32 +74,32 @@ export class ResourceManager {
 
 					if (resObj.type == "texture") {
 						//Initialize
-						this.gs.textures[name] = {};
+						this.res.textures[name] = {};
 						for (var key in resObj.faceTextures) { //For each face texture
 
-							this.gs.textures[name][key] = {}; //Create subtexture
-							this.gs.textures[name][key].texture = this.loadTexture( //Load the texture
+							this.res.textures[name][key] = {}; //Create subtexture
+							this.res.textures[name][key].texture = this.loadTexture( //Load the texture
 								this.gl,
 								resObj.srcFiles[resObj.faceTextures[key].img], //Find src name
 								resObj.faceTextures[key], //Options for texture loader
 								onload.bind(this, name) //Callback
 							);
-							this.gs.textures[name][key].coords = resObj.faceTextures[key].coords;
+							this.res.textures[name][key].coords = resObj.faceTextures[key].coords;
 						}
 					
 					} else if (resObj.type == "shader") {
 
 						//initialize
-						this.gs.shaders[name] = {};
+						this.res.shaders[name] = {};
 
 						function onshaderload(shader) {
-							this.gs.shaders[name] = shader;
-							this.gs.shaders[name].info.attribLocations = {
+							this.res.shaders[name] = shader;
+							this.res.shaders[name].info.attribLocations = {
 								vertexPosition: this.gl.getAttribLocation(shader.shader, resObj.attributes.vertexPosition),
 								vertexColor: this.gl.getAttribLocation(shader.shader, resObj.attributes.vertexColor),
 								textureCoordanate: this.gl.getAttribLocation(shader.shader, resObj.attributes.textureCoordanate)
 							}
-							this.gs.shaders[name].info.uniformLocations = {
+							this.res.shaders[name].info.uniformLocations = {
 								projectionMatrix: this.gl.getUniformLocation(shader.shader, resObj.uniforms.projectionMatrix),
 								modelViewMatrix: this.gl.getUniformLocation(shader.shader, resObj.uniforms.viewMatrix),
 							}

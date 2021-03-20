@@ -26,8 +26,10 @@ export class GameState {
 			xChange: 0,
 			yChange: 0
 		}
-		this.shaders = {};
-		this.textures = {};
+		this.resources = {
+			shaders: {},
+			textures: {},
+		}
 		this.objects = [
 		];
 		console.log("Successful Game State Init!");
