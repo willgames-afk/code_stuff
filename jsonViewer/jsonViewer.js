@@ -7,7 +7,7 @@ class EditableObject {
 			color: '#c89175',
 			fontFamily: "Menlo, Monaco, 'Source Sans Pro', 'Courier New',monospace",
 			border: '0px',
-			fontSize: '11.5px',
+			fontSize: '11.5px'
 		},
 		number: {
 			color: 'palegreen',
@@ -139,7 +139,7 @@ class EditableObject {
 			});
 		}
 	}
-	makeInput(parentNode, type, propertyName, value, onInput, style) {
+	makeInput(parentNode, type, propertyName, value, onInput, style, useParentnode=true) {
 		function applyStyle(element, style) {
 			for (var s in style) {
 				element.style[s] = style[s];
@@ -160,8 +160,9 @@ class EditableObject {
 		}
 		input.setAttribute("propertyname", propertyName)// The corrosponding property in the object
 		input.addEventListener("input", onInput); //Callback for editing purposes
-		parentNode.appendChild(input); //Add the element
+		if (useParentnode) {parentNode.appendChild(input)}; //Add the element
 		this.resizeInput(input); //Resize if necessary
+		return input
 	}
 	resizeInput(input) {
 		//input.style.width = '1em';
@@ -204,9 +205,14 @@ class JSONEditor extends EditableObject {
 						if (!property.type) { //If no type, default to strings.
 							this.make(name, "");
 						} else if (property.type == "dropdown") { //Dropdowns are special, deal with them seperately.
+
 							var li = document.createElement("li");
+							//Make label
 							li.appendChild(document.createTextNode(name + ': '));
-							li.appendChild(this.makeDropdown(property.options,true,false,0));
+							//Make dropdown
+							li.appendChild(this.makeDropdown(property.options, false, false, 0));
+
+							//If items have commas after, add them
 							if (this.style.includeComma) {
 								li.appendChild(document.createTextNode(","));
 							}
@@ -226,7 +232,7 @@ class JSONEditor extends EditableObject {
 		}.bind(this)(this.format.template);
 		this.parentNode.appendChild(this.container);
 	}
-	makeDropdown(options, includeOther = false, multiple = false, preselected = -1) {
+	makeDropdown(options, includeOther = false, multiple = false, preselected = -1, propertyName, onEdit) {
 		var a = document.createElement('select');
 		if (multiple === true) {
 			a.multiple = true;
@@ -238,9 +244,22 @@ class JSONEditor extends EditableObject {
 			}
 			//b.value = options[i];
 			if (typeof options[i] == 'string') {
-				b.innerText = '"' + options[i].displayText + '"';
+				b.innerText = '"' + options[i] + '"';
 			} else {
 				b.innerText = options[i].displayText;
+				if (options[i].type) {
+					console.log(`${options[i].displayText} HAS TYPE`)
+					a.addEventListener("input", function (i) {
+						return function (e) {
+							console.log("Selected Index: ", a.selectedIndex)
+							console.log("Index: ",i)
+							console.log(`"This: "`,this)
+							if (a.selectedIndex == i) {
+								a.insertAdjacentElement('afterEnd', this.makeInput(a.parentElement, this.lookup[options[i].type], propertyName, options[i].value, onEdit, [this.style.allInputs, this.style[options[i].type]], false));
+							}
+						}.bind(this);
+					}.bind(this)(i))
+				}
 			}
 			a.appendChild(b);
 		}
@@ -266,6 +285,11 @@ class JSONEditor extends EditableObject {
 			}(a, a.length - 1))
 		}
 		return a;
+	}
+	lookup = {
+		"string": "text",
+		"number": "number",
+		"bool": "checkbox",
 	}
 }
 /*

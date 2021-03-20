@@ -24,8 +24,8 @@ var makeGiveCommand = {
 						},
 						{
 							displayText: "Player Name",
-							type: "string",
-							value: "-Insert Player Name Here-",
+							type: "number",
+							value: 0,
 						},
 					]
 				},

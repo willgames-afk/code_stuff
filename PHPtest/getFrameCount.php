@@ -14,8 +14,8 @@ function frame_count($filename) {
    
     // We read through the file til we reach the end of the file, checking for headers as we go
     while(!feof($fh) {
-
-        $chunk = fread($fh, 1024 * 100 ) ; //read 100kb at a time
+//read 100kb at a time
+        $chunk = fread($fh , 102400 );
         $count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches);
    }
    

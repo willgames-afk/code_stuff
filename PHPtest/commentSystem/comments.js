@@ -173,7 +173,7 @@ function addCommentInterface(container) {
 				}
 
 				refreshComments();
-				document.getElementById('submit-comment').scrollIntoView()
+				document.getElementById('submit-comment').scrollIntoView(true);
 				
 				console.groupEnd();
 

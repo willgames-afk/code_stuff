@@ -17,7 +17,7 @@
 				if ($_SESSION["loggedin"] == true) {
 					$user = $_SESSION["username"];
 					if (!$comment) {
-						echo "{\"success\":false,\"errorCode\":\"400\",\"desc\":\"You forgot to write your comment.\"}";
+						echo "{\"success\":false,\"errorCode\":\"400\",\"desc\":\"You forgot to write a comment!\"}";
 						break;
 					}
 					if (!$user) {
