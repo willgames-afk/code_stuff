@@ -11,7 +11,7 @@
 	border: 0px;
 	font-size: 11.5px;
 }
-.widget a{
+.widget .showhide{
 	color: #337dff;
 	font-weight: bold;
 	text-decoration: none;

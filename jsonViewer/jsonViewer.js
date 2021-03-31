@@ -1,6 +1,5 @@
 class EditableObject {
-	constructor(parentNode, object, setCallback, style = {
-
+	static defaultStyle = {
 		includeComma: true,
 		allInputs: {
 			backgroundColor: 'transparent',
@@ -9,42 +8,67 @@ class EditableObject {
 			border: '0px',
 			fontSize: '11.5px'
 		},
+		labels: {
+			fontFamily: "Menlo, Monaco, 'Source Sans Pro', 'Courier New',monospace",
+			color: "#95C4E2",
+			fontSize: "11.5px"
+		},
 		number: {
 			color: 'palegreen',
-		},
-
-	}, propertyName) {
-		//console.log(parentNode);
+		}
+	}
+	constructor(parentNode, object, setCallback=()=>{}, style = EditableObject.defaultStyle, propertyName) {
 		this.parentNode = parentNode;
 		this.value = object;
 		this.style = style;
+		this.setCallback = setCallback;
+		this.propertyName = propertyName;
+		this.applyStyle = EditableObject.applyStyle
 
 		if (this.value) {
 			this.makeObj();
 		}
 	}
 	makeObj() {
+		//Create container for obj
 		this.container = document.createElement("ul");
-		if (Array.isArray(this.value)) { //Use "for (start, end, inc)" instead of "for(in)" for loops
-			this.applyStyle(this.container, this.style.array)
+		if (this.propertyName) {
+			this.container.setAttribute("propertyname", this.propertyName);
+		}
+		this.applyStyle(this.container,this.style.labels);
+
+		//iterate and number array, loop with in for objs.
+		if (Array.isArray(this.value)) { 
+
+			this.applyStyle(this.container, this.style.array);
 			for (var i = 0; i < this.value.length; i++) {
 
-				this.make.bind(this)(i, this.value[i]);
+				this.container.appendChild(this.make.bind(this)(i, this.value[i]));
 			}
-			this.parentNode.appendChild(this.container);
-			var edit = document.createElement('div');
-
-			this.parentNode.appendChild(edit);
 		} else {
-			this.applyStyle(this.container, this.style.object)
+			this.applyStyle(this.container, this.style.object);
 			for (var key in this.value) {
-				this.make.bind(this)(key, this.value[key]);
+				this.container.appendChild(this.make.bind(this)(key, this.value[key]));
 			}
-			this.parentNode.appendChild(this.container);
-			var edit = document.createElement('div');
-
-			this.parentNode.appendChild(edit);
 		}
+
+		//Element editing for arrays and objs.
+		var edit = document.createElement('div'); //Container
+		edit.setAttribute("class","editObj");
+		var addElement = document.createElement("button"); //AddElement button
+		addElement.innerHTML = "+";
+		addElement.style.padding = "3px";
+		addElement.style.fontSize = "11.5px";
+		addElement.addEventListener("click",((c, make, edit)=> {
+			return () => {
+				this.container.insertBefore(make("idk",""),edit)
+			}
+		})(this.container, this.make.bind(this), edit))
+		edit.appendChild(addElement);
+
+		this.container.appendChild(edit);
+
+		this.parentNode.appendChild(this.container);
 	}
 	make(label, value) {
 		//Create list element to contain input element
@@ -61,27 +85,34 @@ class EditableObject {
 			this.makeInput(li, "checkbox", label, value, this.onInput.bind(this), [this.style.allInputs, this.style.bool])
 
 		} else if (typeof value == "string") {
-
-			//Surround strings with doublequotes
-			li.appendChild(document.createTextNode('"'))
+		
+			li.appendChild(document.createTextNode(`"`));
 			this.makeInput(li, "text", label, value, this.onInput.bind(this), [this.style.allInputs, this.style.string])
-			li.appendChild(document.createTextNode('"'))
+			li.appendChild(document.createTextNode(`"`));
 
 		} else if (typeof value == "object") {
-			//If Array or Object, add Show/Hide button
-			var showhide = document.createElement('a');
 
-			showhide.href = 'javascript:void(0)';
-			var internals = document.createElement('span');
-			internals.innerText = "H"
-			showhide.appendChild(internals);
+			//If Array or Object, add Show/Hide button
+			var showhide = document.createElement('a'); //Show/Hide button; link so it looks clickable
+			var placeHolder = document.createElement('div'); //Placeholder (...); 
+			placeHolder.style.display = "none";
+			placeHolder.innerHTML = "&#8230"
+			
+
+			showhide.href = "javascript:void(0);"      //Don't actually redirect
+			showhide.innerText = "H";  //Start showing with option to hide
+
+			showhide.setAttribute("class", "showhide");
 
 			showhide.addEventListener("click", (e) => {
+				console.log(e.target)
 				if (e.target.innerText == "H") {
-					e.target.parentElement.parentElement.childNodes[3].style.display = 'none';
+					e.target.parentElement.childNodes[3].style.display = 'inline';
+					e.target.parentElement.childNodes[4].style.display = 'none';
 					e.target.innerText = "S"
 				} else {
-					e.target.parentElement.parentElement.childNodes[3].style.display = 'list-item';
+					e.target.parentElement.childNodes[3].style.display = 'none';
+					e.target.parentElement.childNodes[4].style.display = 'list-item';
 					e.target.innerText = "H"
 				}
 			})
@@ -89,27 +120,28 @@ class EditableObject {
 			li.appendChild(showhide);
 
 			if (Array.isArray(value)) {
-
 				//If array, surround in brackets
 				li.appendChild(document.createTextNode('['))
+				li.appendChild(placeHolder);
 				new EditableObject(li, value, this.onInput.bind(this), this.style, label)
 				li.appendChild(document.createTextNode(']'))
 			} else {
 
 				//Otherwise just a plain old object, surround in curly braces
 				li.appendChild(document.createTextNode('{'))
+				li.appendChild(placeHolder);
 				new EditableObject(li, value, this.onInput.bind(this), this.style, label)
 				li.appendChild(document.createTextNode('}'))
 			}
 		}
 		//Add comma for decor
-		if (this.style.addComma) {
+		if (this.style.includeComma) {
 			li.appendChild(document.createTextNode(','));
 		}
-		this.container.appendChild(li);
+		return li;
 	}
-
 	onInput(e) {
+		console.log(e)
 		var elem = e.target;
 		if (elem.type == "checkbox") {
 			//If checkbox, the value is stored in checked property
@@ -120,7 +152,7 @@ class EditableObject {
 			this.value[elem.propertyName] = elem.value;
 		} else {
 			//Otherwise it's a resizeable element
-			this.resizeInput(elem)
+			this.resizeInput(elem);
 			if (elem.type == "number") {
 				//Number is stored as a string and must be parsed
 				this.value[elem.getAttribute("propertyname")] = parseFloat(elem.value)
@@ -129,22 +161,17 @@ class EditableObject {
 				this.value[elem.getAttribute("propertyname")] = elem.value;
 			}
 		}
-		if (setCallback) {
-			setCallback({ //This is a callback to a parent EditableObject or other code that runs on edit.
+		if (this.setCallback) {
+			this.setCallback({ //This is a callback to a parent EditableObject or other code that runs on edit.
 				target: {
 					type: "object",
-					propertyName: propertyName,
+					propertyName: this.propertyName,
 					value: this.value
 				}
 			});
 		}
 	}
-	makeInput(parentNode, type, propertyName, value, onInput, style, useParentnode=true) {
-		function applyStyle(element, style) {
-			for (var s in style) {
-				element.style[s] = style[s];
-			}
-		}
+	makeInput(parentNode, type, propertyName, value, onInput, style, useParentnode = true) {
 		//Creates an input element
 		var input = document.createElement("input");
 		input.type = type;
@@ -154,41 +181,56 @@ class EditableObject {
 			input.value = value;
 		}
 		if (style) {
-			for (var s of style) {
-				applyStyle(input, s);
-			}
+
+			this.applyStyle(input, style);
+			
 		}
 		input.setAttribute("propertyname", propertyName)// The corrosponding property in the object
-		input.addEventListener("input", onInput); //Callback for editing purposes
-		if (useParentnode) {parentNode.appendChild(input)}; //Add the element
+		input.addEventListener("input", onInput.bind(this)); //Callback for editing purposes
+		if (useParentnode) { parentNode.appendChild(input) }; //Add the element
 		this.resizeInput(input); //Resize if necessary
 		return input
-	}
-	resizeInput(input) {
-		//input.style.width = '1em';
-		//console.dir(input)
-		if (input.value.length > 0) {
-			input.size = input.value.length;
-		}
-		//input.style.width = input.value + 'em'
 	}
 	remove() {
 		//Deletes the HTML of the object
 		this.parentNode.removeChild(this.container);
 
 	}
-	applyStyle(element, style) {
-		for (var s in style) {
-			element.style[s] = style[s];
+	static applyStyle(element, style) {
+		console.log(style)
+		if (Array.isArray(style)) {
+			for (var i=0;i<style.length;i++) {
+				if (style[i]) {
+					for (var s in style[i]) {
+						if (style[i][s]) {
+							element.style[s] = style[i][s];
+						}
+					}
+				}
+			}
+		} else {
+			for (var s in style) {
+				if (style[s]) {
+					element.style[s] = style[s];
+				}
+			}
+		}
+	}
+	resizeInput(input) {
+		if (input.value.length > 0) {
+			input.size = input.value.length;
 		}
 	}
 }
 class JSONEditor extends EditableObject {
-	constructor(parentNode, format, setCallback, style) {
-
+	constructor(parentNode, format, setCallback=()=>{}, style) {
 		super(parentNode, {}, setCallback, style);
+		console.log(this.style)
 		this.format = format;
+
 		this.container = document.createElement("ul");
+		this.applyStyle(this.container,this.style.labels);
+
 		var defaultObj = function check(t) {
 			var o = {};
 			for (var name in t) { //For every property
@@ -200,17 +242,19 @@ class JSONEditor extends EditableObject {
 				} else {
 					if (property.default) {
 						//If it has a default, make it
-						this.make(name, property.default);
+						this.container.appendChild(this.make(name, property.default));
 					} else {
 						if (!property.type) { //If no type, default to strings.
-							this.make(name, "");
+
+							this.container.appendChild(this.make(name, ""));
+
 						} else if (property.type == "dropdown") { //Dropdowns are special, deal with them seperately.
 
 							var li = document.createElement("li");
 							//Make label
 							li.appendChild(document.createTextNode(name + ': '));
 							//Make dropdown
-							li.appendChild(this.makeDropdown(property.options, false, false, 0));
+							li.appendChild(this.makeDropdown(property.options, [this.style.string, this.style.dropdown], false, false, 0));
 
 							//If items have commas after, add them
 							if (this.style.includeComma) {
@@ -218,11 +262,11 @@ class JSONEditor extends EditableObject {
 							}
 							this.container.appendChild(li);
 						} else if (property.type == "boolean") {
-							this.make(name, false);
+							this.container.appendChild(this.make(name, false));
 						} else if (property.type == "number") {
-							this.make(name, 0);
+							this.container.appendChild(this.make(name, 0));
 						} else {
-							this.make(name, "");
+							this.container.appendChild(this.make(name, ""));
 						}
 					}
 				}
@@ -232,17 +276,33 @@ class JSONEditor extends EditableObject {
 		}.bind(this)(this.format.template);
 		this.parentNode.appendChild(this.container);
 	}
-	makeDropdown(options, includeOther = false, multiple = false, preselected = -1, propertyName, onEdit) {
+	static makeDropdown(options, style, includeOther = false, multiple = false, preselected = -1, propertyName, onEdit) {
+		//Create selector element
 		var a = document.createElement('select');
-		if (multiple === true) {
+		if (style) {
+			EditableObject.applyStyle(a,style);
+		} else {
+			const style = EditableObject.defaultStyle
+			EditableObject.applyStyle(a,[style.allInputs, style.string])
+		}
+
+		//Allow multiple selections if available
+		if (multiple === true) {ksf
 			a.multiple = true;
 		}
-		for (i = 0; i < options.length; i++) {
+
+		//Iterate through options
+		for (var i = 0; i < options.length; i++) {
+
+			//Create option element
 			var b = document.createElement('option');
+
+			//Select it if necesary
 			if (i == preselected) {
 				b.selected = true;
 			}
-			//b.value = options[i];
+
+			//Strings should be surrounded by quotes
 			if (typeof options[i] == 'string') {
 				b.innerText = '"' + options[i] + '"';
 			} else {
@@ -252,8 +312,8 @@ class JSONEditor extends EditableObject {
 					a.addEventListener("input", function (i) {
 						return function (e) {
 							console.log("Selected Index: ", a.selectedIndex)
-							console.log("Index: ",i)
-							console.log(`"This: "`,this)
+							console.log("Index: ", i)
+							console.log(`"This: "`, this)
 							if (a.selectedIndex == i) {
 								a.insertAdjacentElement('afterEnd', this.makeInput(a.parentElement, this.lookup[options[i].type], propertyName, options[i].value, onEdit, [this.style.allInputs, this.style[options[i].type]], false));
 							}
@@ -263,6 +323,8 @@ class JSONEditor extends EditableObject {
 			}
 			a.appendChild(b);
 		}
+
+		//If includeOther, then add "other" input box
 		if (includeOther === true) {
 			console.dir(a)
 			var b = document.createElement('option');
@@ -284,6 +346,7 @@ class JSONEditor extends EditableObject {
 				}
 			}(a, a.length - 1))
 		}
+
 		return a;
 	}
 	lookup = {
@@ -292,8 +355,7 @@ class JSONEditor extends EditableObject {
 		"bool": "checkbox",
 	}
 }
-/*
-FormatJSON-
+/* FormatJSON-
 {
 	style: { Contains styling info
 
@@ -329,48 +391,4 @@ FormatJSON-
 		}
 	}
 }
-
-
 */
-
-
-
-function makeDropdown(options, includeOther = false, multiple = false, preselected = -1) {
-	var a = document.createElement('select');
-	if (multiple === true) {
-		a.multiple = true;
-	}
-	for (i = 0; i < options.length; i++) {
-		var b = document.createElement('option');
-		if (i == preselected) {
-			b.selected = true;
-		}
-		//b.value = options[i];
-		if (typeof options[i] == 'string') {
-			b.innerText = '"' + options[i] + '"';
-		} else {
-			b.innerText = options[i];
-		}
-		a.appendChild(b);
-	}
-	if (includeOther === true) {
-		console.dir(a)
-		var b = document.createElement('option');
-		b.innerText = 'Other';
-		a.appendChild(b);
-		a.addEventListener("input", function (a, index) {
-			return (e) => {
-				console.log(a.selectedIndex)
-				console.log(index)
-				if (a.selectedIndex == index) {
-					var i = document.createElement("input");
-					i.type = 'text'
-					a.insertAdjacentElement('afterEnd', i);
-				} else {
-					a.parentElement.removeChild(a.nextElementSibling)
-				}
-			}
-		}(a, a.length - 1))
-	}
-	return a;
-}
