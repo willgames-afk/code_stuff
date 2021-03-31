@@ -1,6 +1,4 @@
 
-import * as Conf from "./config.js"
-
 export class Display {
 	constructor(parentElement, width, height, style) {
 

@@ -1,5 +1,4 @@
 
-import * as Conf from "./config.js"
 import { isPowerOf2 } from "./math.js";
 import { Shader } from "./graphics.js";
 
