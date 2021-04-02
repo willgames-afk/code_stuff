@@ -1,13 +1,14 @@
 {
   "name": "testapp",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "My Helloworld Electron App",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start":"electron ."
   },
   "keywords": [],
-  "author": "",
+  "author": "William Kam; Willgames-afk",
   "license": "ISC",
   "devDependencies": {
     "electron": "^12.0.2"
