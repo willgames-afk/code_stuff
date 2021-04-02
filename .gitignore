@@ -13,3 +13,6 @@ PHPtest/users.txt
 # Output files
 rom.bin
 a.out
+
+#nodeJs
+node_modules/
