@@ -1,0 +1,24 @@
+Test Blog Post
+A blog post that is a test.
+4-1-2021 5:00 PM
+
+Hello! This is a test blog post, as you are probably already aware if you read the above message. dfhalshfkjhflakshflkhflaksjhlkahsflkajsfh.
+This should be a new paragraph. I can use HTML tags in here like <b>Bold (&lt;b&gt;)</b>, <strong>Strong (&lt;strong&gt;)</strong>, <i>italic (&lt;i&gt;)</i>and <em>Emphasis (&lt;em&gt;)</em>, and should be able to make lists: 
+<list>
+Walk nonexistant dog
+Feed nonexistant dog
+Feed nonexistant cat
+write some code
+</list>
+I can even make ordered lists!
+
+how to ride bike
+<olist>
+get bike
+get on
+fall off
+learn to not fall off
+you did it!
+</olist>
+
+also, what about both <b>bold AND <i>itatlic? Looks pretty emphasizy.</i></b>

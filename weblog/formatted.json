@@ -1,0 +1,50 @@
+{
+	"title": "Test Blog Post\n",
+	"desc": "A blog post that is a test.\n",
+	"date": "4-1-2021 5:00 PM\n",
+	"content": "Hello! This is a test blog post, as you are probably already aware if you read the above message. dfhalshfkjhflakshflkhflaksjhlkahsflkajsfh.\nThis should be a new paragraph. I can use HTML tags in here like <b>Bold (&lt;b&gt;)<\/b>, <strong>Strong (&lt;strong&gt;)<\/strong>, <i>italic (&lt;i&gt;)<\/i>and <em>Emphasis (&lt;em&gt;)<\/em>, and should be able to make lists: \n<list>\nWalk nonexistant dog\nFeed nonexistant dog\nFeed nonexistant cat\nwrite some code\n<\/list>\nI can even make ordered lists!\n\nhow to ride bike\n<olist>\nget bike\nget on\nfall off\nlearn to not fall off\nyou did it!\n<\/olist>\n\nalso, what about both <b>bold AND <i>itatlic? Looks pretty emphasizy.<\/i><\/b>",
+	"tester": [
+		{
+			"#text": "Hello! This is a test blog post, as you are probably already aware if you read the above message. dfhalshfkjhflakshflkhflaksjhlkahsflkajsfh.\nThis should be a new paragraph. I can use HTML tags in here like "
+		},
+		{
+			"b": "Bold (<b>)"
+		},
+		{
+			"#text": ", "
+		},
+		{
+			"strong": "Strong (<strong>)"
+		},
+		{
+			"#text": ", "
+		},
+		{
+			"i": "italic (<i>)"
+		},
+		{
+			"#text": "and "
+		},
+		{
+			"em": "Emphasis (<em>)"
+		},
+		{
+			"#text": ", and should be able to make lists: \n"
+		},
+		{
+			"list": "\nWalk nonexistant dog\nFeed nonexistant dog\nFeed nonexistant cat\nwrite some code\n"
+		},
+		{
+			"#text": "\nI can even make ordered lists!\n\nhow to ride bike\n"
+		},
+		{
+			"olist": "\nget bike\nget on\nfall off\nlearn to not fall off\nyou did it!\n"
+		},
+		{
+			"#text": "\n\nalso, what about both "
+		},
+		{
+			"b": "bold AND itatlic? Looks pretty emphasizy."
+		}
+	]
+}
