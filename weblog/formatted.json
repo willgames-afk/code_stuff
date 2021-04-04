@@ -1,50 +1,209 @@
 {
-	"title": "Test Blog Post\n",
-	"desc": "A blog post that is a test.\n",
-	"date": "4-1-2021 5:00 PM\n",
-	"content": "Hello! This is a test blog post, as you are probably already aware if you read the above message. dfhalshfkjhflakshflkhflaksjhlkahsflkajsfh.\nThis should be a new paragraph. I can use HTML tags in here like <b>Bold (&lt;b&gt;)<\/b>, <strong>Strong (&lt;strong&gt;)<\/strong>, <i>italic (&lt;i&gt;)<\/i>and <em>Emphasis (&lt;em&gt;)<\/em>, and should be able to make lists: \n<list>\nWalk nonexistant dog\nFeed nonexistant dog\nFeed nonexistant cat\nwrite some code\n<\/list>\nI can even make ordered lists!\n\nhow to ride bike\n<olist>\nget bike\nget on\nfall off\nlearn to not fall off\nyou did it!\n<\/olist>\n\nalso, what about both <b>bold AND <i>itatlic? Looks pretty emphasizy.<\/i><\/b>",
-	"tester": [
-		{
-			"#text": "Hello! This is a test blog post, as you are probably already aware if you read the above message. dfhalshfkjhflakshflkhflaksjhlkahsflkajsfh.\nThis should be a new paragraph. I can use HTML tags in here like "
+	"root": {
+		"_": "Test Blog Post\nA blog post that is a test.\n4-1-2021 5:00 PM\n\nHello! This is a test blog post, as you are probably already aware if you read the above message. dfhalshfkjhflakshflkhflaksjhlkahsflkajsfh.\nThis should be a new paragraph. I can use HTML tags in here like , , and , and should be able to make lists: \n\nI can even make ordered lists!\n\nhow to ride bike\n\n\nalso, what about both ",
+		"#name": "root",
+		"children": [
+			{
+				"#name": "__text__",
+				"_": "Test Blog Post\nA blog post that is a test.\n4-1-2021 5:00 PM\n\nHello! This is a test blog post, as you are probably already aware if you read the above message. dfhalshfkjhflakshflkhflaksjhlkahsflkajsfh.\nThis should be a new paragraph. I can use HTML tags in here like "
+			},
+			{
+				"_": "Bold (<b>)",
+				"#name": "b",
+				"children": [
+					{
+						"#name": "__text__",
+						"_": "Bold (<b>)"
+					}
+				]
+			},
+			{
+				"#name": "__text__",
+				"_": ", "
+			},
+			{
+				"_": "Strong (<strong>)",
+				"#name": "strong",
+				"children": [
+					{
+						"#name": "__text__",
+						"_": "Strong (<strong>)"
+					}
+				]
+			},
+			{
+				"#name": "__text__",
+				"_": ", "
+			},
+			{
+				"_": "italic (<i>)",
+				"#name": "i",
+				"children": [
+					{
+						"#name": "__text__",
+						"_": "italic (<i>)"
+					}
+				]
+			},
+			{
+				"#name": "__text__",
+				"_": "and "
+			},
+			{
+				"_": "Emphasis (<em>)",
+				"#name": "em",
+				"children": [
+					{
+						"#name": "__text__",
+						"_": "Emphasis (<em>)"
+					}
+				]
+			},
+			{
+				"#name": "__text__",
+				"_": ", and should be able to make lists: \n"
+			},
+			{
+				"_": "\nWalk nonexistant dog\nFeed nonexistant dog\nFeed nonexistant cat\nwrite some code\n",
+				"#name": "list",
+				"children": [
+					{
+						"#name": "__text__",
+						"_": "\nWalk nonexistant dog\nFeed nonexistant dog\nFeed nonexistant cat\nwrite some code\n"
+					}
+				]
+			},
+			{
+				"#name": "__text__",
+				"_": "\nI can even make ordered lists!\n\nhow to ride bike\n"
+			},
+			{
+				"_": "\nget bike\nget on\nfall off\nlearn to not fall off\nyou did it!\n",
+				"#name": "olist",
+				"children": [
+					{
+						"#name": "__text__",
+						"_": "\nget bike\nget on\nfall off\nlearn to not fall off\nyou did it!\n"
+					}
+				]
+			},
+			{
+				"#name": "__text__",
+				"_": "\n\nalso, what about both "
+			},
+			{
+				"_": "bold AND ",
+				"#name": "b",
+				"children": [
+					{
+						"#name": "__text__",
+						"_": "bold AND "
+					},
+					{
+						"_": "itatlic? Looks pretty emphasizy.",
+						"#name": "i",
+						"children": [
+							{
+								"#name": "__text__",
+								"_": "itatlic? Looks pretty emphasizy."
+							}
+						]
+					}
+				],
+				"i": {
+					"_": "itatlic? Looks pretty emphasizy.",
+					"children": [
+						{
+							"#name": "__text__",
+							"_": "itatlic? Looks pretty emphasizy."
+						}
+					]
+				}
+			}
+		],
+		"b": [
+			{
+				"_": "Bold (<b>)",
+				"children": [
+					{
+						"#name": "__text__",
+						"_": "Bold (<b>)"
+					}
+				]
+			},
+			{
+				"_": "bold AND ",
+				"children": [
+					{
+						"#name": "__text__",
+						"_": "bold AND "
+					},
+					{
+						"_": "itatlic? Looks pretty emphasizy.",
+						"#name": "i",
+						"children": [
+							{
+								"#name": "__text__",
+								"_": "itatlic? Looks pretty emphasizy."
+							}
+						]
+					}
+				],
+				"i": {
+					"_": "itatlic? Looks pretty emphasizy.",
+					"children": [
+						{
+							"#name": "__text__",
+							"_": "itatlic? Looks pretty emphasizy."
+						}
+					]
+				}
+			}
+		],
+		"strong": {
+			"_": "Strong (<strong>)",
+			"children": [
+				{
+					"#name": "__text__",
+					"_": "Strong (<strong>)"
+				}
+			]
 		},
-		{
-			"b": "Bold (<b>)"
+		"i": {
+			"_": "italic (<i>)",
+			"children": [
+				{
+					"#name": "__text__",
+					"_": "italic (<i>)"
+				}
+			]
 		},
-		{
-			"#text": ", "
+		"em": {
+			"_": "Emphasis (<em>)",
+			"children": [
+				{
+					"#name": "__text__",
+					"_": "Emphasis (<em>)"
+				}
+			]
 		},
-		{
-			"strong": "Strong (<strong>)"
+		"list": {
+			"_": "\nWalk nonexistant dog\nFeed nonexistant dog\nFeed nonexistant cat\nwrite some code\n",
+			"children": [
+				{
+					"#name": "__text__",
+					"_": "\nWalk nonexistant dog\nFeed nonexistant dog\nFeed nonexistant cat\nwrite some code\n"
+				}
+			]
 		},
-		{
-			"#text": ", "
-		},
-		{
-			"i": "italic (<i>)"
-		},
-		{
-			"#text": "and "
-		},
-		{
-			"em": "Emphasis (<em>)"
-		},
-		{
-			"#text": ", and should be able to make lists: \n"
-		},
-		{
-			"list": "\nWalk nonexistant dog\nFeed nonexistant dog\nFeed nonexistant cat\nwrite some code\n"
-		},
-		{
-			"#text": "\nI can even make ordered lists!\n\nhow to ride bike\n"
-		},
-		{
-			"olist": "\nget bike\nget on\nfall off\nlearn to not fall off\nyou did it!\n"
-		},
-		{
-			"#text": "\n\nalso, what about both "
-		},
-		{
-			"b": "bold AND itatlic? Looks pretty emphasizy."
+		"olist": {
+			"_": "\nget bike\nget on\nfall off\nlearn to not fall off\nyou did it!\n",
+			"children": [
+				{
+					"#name": "__text__",
+					"_": "\nget bike\nget on\nfall off\nlearn to not fall off\nyou did it!\n"
+				}
+			]
 		}
-	]
+	}
 }
