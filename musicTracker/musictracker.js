@@ -4,6 +4,15 @@ Change all refrences to Duration to Effect, I changed things
 Add "Stop Note" Thing.
 
 */
+class Track extends HTMLElement {
+    constructor () {
+        super();
+        this.attachShadow({mode:'open'});
+
+    }
+}
+customElements.define('track',Track,{extends: "ol"})
+
 
 config = {
     selectTextBackgroundColor: '#1c76fd',
@@ -63,6 +72,8 @@ class Track {
             } (this.instrument),
             notes
         ).start(0); //Start it with Tone.Trasport.start();
+        this.length = notes.length;
+        console.log(this.part._events)
     }
     addNote(note) {
         this.part.add(note)
@@ -72,6 +83,11 @@ class Track {
     }
     getNote(time) {
         return this.part.at(time)
+    }
+    iterateNotes(fn = (note)=>{}) {
+        for (vari=0;i<this.part._events;i++) {
+            fn(this.part._events[0].value);
+        }
     }
 }
 
@@ -172,11 +188,14 @@ class MusicTracker {
 
             console.log(this.currentSong.tracks[currentTrack])
 
-            for (var i = 0; i < this.currentSong.tracks[currentTrack].data.length; i++) {
+            //for (var i = 0; i < this.currentSong.tracks[currentTrack].data.length; i++) {
 
                 //Make a span element to contain note data
-                this.addNote(currentTrack, i,this.currentSong.tracks[currentTrack].data[i].note)
-            }
+               // this.addNote(currentTrack, i,this.currentSong.tracks[currentTrack].data[i].note)
+           //}
+            this.currentSong.tracks[currentTrack].iterateNotes((note)=>{
+                this.addNote(currentTrack,)
+            })
             track.style.verticalAlign = 'top'
         }
         document.addEventListener('keydown', this.keydown.bind(this))
@@ -316,7 +335,7 @@ class MusicTracker {
         }
         return out;
     }
-    addNote(track, index, note, addToPlayableTrack) {
+    addNote(track, index, note, addToPlayableTrack=false) {
         console.log(this.currentSong.tracks[track])
 
         var i = index;
