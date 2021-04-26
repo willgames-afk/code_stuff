@@ -16,8 +16,8 @@ class Block {
         this.y2 = y2
         this.name = name
         this.connections = connections;
-        this.will_explode = false;
-        this.number = 42;
+        //this.will_explode = false;
+        //this.number = 42;
     }
     get width() {
         if (this.state == 0) {
@@ -45,24 +45,24 @@ class BlockDiagram {
     constructor(element, config = {}) {
         //General Init
         this.containerElement = element;
-        this.state = 1; //0 = creating block, 1 = stable, 2 = editing block, 3 = deleting block
+        this.state = 1; //0 = creating block, 1 = stable, 1.5 = moving editor, 2 = editing block, 3 = deleting block
         this.blocks = [];
         this.mouse = {
             x: 0,
             y: 0,
         }
         this.style = {
-            canvas: {
+            /*canvas: {
                 position: 'absolute',
                 top: 0,
                 left: 0,
                 backgroundColor: 'grey',
                 zIndex: -1
-            },
+            },*/
             blocks: {
                 textColor: "rgb(200,200,200)",
                 blockColor: "rgb(20,20,20)"
-            },
+            },/*
             sidebar: {
                 container: {
                     width: 0,
@@ -85,13 +85,13 @@ class BlockDiagram {
                     padding: 0,
                     color: '#818181',
                 },
-            }
+            }*/
         }
         this.editingIndex = false;
 
         //CANVAS CONFIG
         this.c = document.createElement('canvas')
-        applyStyle(this.c, this.style.canvas)                     //style
+        //applyStyle(this.c, this.style.canvas)                     //style
         this.c.addEventListener('contextmenu', e => { e.preventDefault() }) //Prevent right clicks from opening menu
         this.containerElement.appendChild(this.c)                           //adding it to the doc
         this.ctx = this.c.getContext('2d')
@@ -102,12 +102,12 @@ class BlockDiagram {
         //SIDEBAR CONFIG
         this.sidebar = {
             element: null,//Containing HTML element
-            onClose: function() {
+            onClose: function () {
                 this.sidebar.element.style.width = "0";
                 this.sidebar.viewer.remove();
                 this.sidebar.viewer = null;
             }.bind(this),
-            open: function() {
+            open: function () {
                 if (this.sidebar.viewer) {
                     this.sidebar.viewer.remove();
                     this.sidebar.viewer = null;
@@ -115,7 +115,7 @@ class BlockDiagram {
                 this.sidebar.viewer = new EditableObject(this.sidebar.element, this.blocks[this.editingIndex], this.sidebar.setCallback);
                 this.sidebar.element.style.width = this.sidebar.width;
             }.bind(this),
-            setCallback: function(v) {
+            setCallback: function (v) {
                 this.blocks[this.editingIndex] = v.target.value;
                 this.render(); //Update the
             }.bind(this),
@@ -124,25 +124,25 @@ class BlockDiagram {
         }
         //Sidebar Container Div
         this.sidebar.element = document.createElement('div'); //It's just a div with some special style
-        this.sidebar.element.className = 'gui';
-        applyStyle(this.sidebar.element, this.style.sidebar.container);
+        this.sidebar.element.className = 'sidebar';
+        //applyStyle(this.sidebar.element, this.style.sidebar.container);
         this.containerElement.appendChild(this.sidebar.element);
 
         //Close button
         var a = document.createElement('a');
         a.href = 'javascript:void(0)';  //Makes it so you don't reload the page when clicked
         a.innerHTML = '&times;';        // X char- renders as × in this font
-        a.onclick = this.sidebar.onClose.bind(this); 
+        a.onclick = this.sidebar.onClose.bind(this);
         a.className = 'sidebarui-closebtn';
         this.sidebar.element.appendChild(a);   //Add it to container
-        applyStyle(a, this.style.closebutton); //Styling
+        //applyStyle(a, this.style.closebutton); //Styling
 
 
 
-    
+
 
         //EVENT LISTENER SETUP
-        this.containerElement.addEventListener('resize', this.resize.bind(this))
+        window.addEventListener("resize", this.resize.bind(this))
         this.containerElement.addEventListener('mousemove', this.mouseMove.bind(this))
         this.containerElement.addEventListener('mousedown', this.mouseClick.bind(this))
         //this.containerElement.addEventListener('input', this.getInput.bind(this))
@@ -150,11 +150,11 @@ class BlockDiagram {
     resize() {
         //resize handler
         this.c.width = window.innerWidth;
-        if (document.body.scrollHeight > window.innerHeight) {
+        /*if (document.body.scrollHeight > window.innerHeight) {
             this.c.height = document.body.scrollHeight;
-        } else {
+        } else {*/
             this.c.height = window.innerHeight;
-        };
+        //};
         this.render();
     }
     render() {
@@ -210,35 +210,54 @@ class BlockDiagram {
     mouseClick(e) {
         //mouse click handler
         var collisions = this.detectBlockCollision(this.mouse.x, this.mouse.y)
-        if (e.button == 0) {
 
-            if (this.state == 2) { //Editing Existing Block
-                if (collisions.length == 1) {
-                    this.editingIndex = collisions[0]
-                    this.sidebar.open();
-                }
-            } else if (this.state == 0) { //Creating Block
-                this.cwb = {};
-                this.state = 1;
-            } else {
-                if (collisions.length == 1) {
-                    this.state = 2;
-                    this.editingIndex = collisions[0];
-                    this.sidebar.open(this.blocks, this.setterCallback.bind(this));
-                    this.render()
-                }
+        console.log(e.button)
+        if (e.button == 0) {
+            
+            //Left Click
+            switch (this.state) {
+                case 0: // Clicking while making a block cancels it
+                    this.cwb = {};
+                    this.state = 1;
+                    break;
+                case 1: // If you click on something, open the editor
+                    if (collisions.length == 1) {
+                        this.state = 2;
+                        this.editingIndex = collisions[0];
+                        this.sidebar.open();//this.blocks, this.setterCallback.bind(this));
+                        this.render()
+                    } else if (collisions.length == 0) {
+                        //Clicked on background; sliding editor
+                        //this.state = 1.5;
+                    }
+                    break;
+                case 2:
+                    if (collisions.length == 1) {
+                        this.editingIndex = collisions[0]
+                        this.sidebar.open();
+                    }
+                    break;
             }
+        }else if (e.button == 1) {
+            //Middle click; 
 
         } else if (e.button == 2) {
-            if (this.state == 1) {
-                if (collisions.length == 0) {
+            
+            //Right Click
+            switch (this.state) {
+                case 0: //If Making a block, finish it.
+                    this.makeNewBlock(this.mouse.x, this.mouse.y);
+                    break;
+                case 1: //If not doing anything, start new block
+                    if (collisions.length == 0) {
+                        this.startNewBlock(this.mouse.x, this.mouse.y);
+                    }
+                    break;
+
+                case 2: //If editing a block, close the editor and start the new block
+                    this.sidebar.onClose();
                     this.startNewBlock(this.mouse.x, this.mouse.y);
-                }
-            } else if (this.state == 0) {
-                this.makeNewBlock(this.mouse.x, this.mouse.y);
-            } else if (this.state == 2) {
-                this.sidebar.onClose();
-                this.startNewBlock(this.mouse.x, this.mouse.y);
+                    break;
             }
         }
     }
@@ -283,7 +302,7 @@ class BlockDiagram {
         }
     }
     setterCallback(property, value) {
-        console.log('setting this.'+property+' to '+value+'.')
+        console.log('setting this.' + property + ' to ' + value + '.')
         this[property] = value
     }
 }
@@ -292,4 +311,5 @@ function applyStyle(element, style) {
         element.style[s] = style[s]
     }
 }
-var t = new BlockDiagram(document.body)
+var t = new BlockDiagram(document.getElementById('blockDiagram'))
+

@@ -1,16 +1,14 @@
-# TGL Language Spec
+# TGL Language Specification
 
-TGL is a language for creating dynamic graphic interfaces. Think of it like HTML and CSS combined into one, plus we threw out the DOM so you only have to deal with what you need.
+TGL stands for Tiny Graphics Language, and was designed to be a lightweight replacement for things like HTML and CSS.
 
-In case you're curious, TGL stands for Tiny Graphic Language. It's a tiny language for making graphics.
-
-## Example Program
+Example Program:
 
 ```js
-asd = new text 
-{
-  text: asdf,
-  style1: adsfasdf,
-  style2: sadfasdfasdf,
+text {
+    webdefault;
 }
+
+new text (text: "Title!") {}
+new text editable ("Hi") {}
 ```

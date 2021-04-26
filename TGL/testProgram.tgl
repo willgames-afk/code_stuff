@@ -1,0 +1,6 @@
+text {
+    webdefault;
+}
+
+text.h1 ("Title!")
+text.p ("Hi") {}

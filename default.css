@@ -12,3 +12,5 @@ textarea{background-color: transparent;outline: none;border-radius: 3px;border-w
 textarea:focus{background-color: #505050;border-color:transparent;}
 code{background-color:rgb(100,100,100);color:#000}
 #login{border:0px;}
+.loadBox{display:flex;align-items: center;}
+.loadBox p{margin:0px 0px 0px 10px;}
