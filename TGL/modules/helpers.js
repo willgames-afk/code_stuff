@@ -20,7 +20,8 @@ export function makeTextarea(obj = { value: '', readonly: false, resizable: true
 	if (obj.value) txtarea.value = obj.value;
 	txtarea.readOnly = obj.readonly;
 	txtarea.rows = obj.rows;
-	txtarea.cols = obj.cols;
+	//txtarea.cols = obj.cols;
+	txtarea.spellcheck = false;
 	if (!obj.resizable) {
 		txtarea.style.resize = 'none';
 	}
