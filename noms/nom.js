@@ -37,13 +37,13 @@ class Things {
         document.body.appendChild(this.canvas);
         this.ctx = this.canvas.getContext('2d');
         window.addEventListener('resize',this.resize.bind(this));
-        this.resize();
-        if (!numberofnoms) {
+        this.resize(); //Takes care of making enough noms to fill the screen
+        /*if (!numberofnoms) {
             numberofnoms = Math.floor((this.canvas.width/200) * (this.canvas.height/200))
         }
         for (var i=0;(i<numberofnoms && i<this.configs.max);i++) {
             this.make();
-        }
+        }*/
     }
     make(
         x = this.randomXInCanvas(10),
@@ -312,6 +312,16 @@ class Things {
         this.canvas.height = window.innerHeight;
         if (document.body.scrollHeight > window.innerHeight) {
             this.canvas.height = document.body.scrollHeight;
+        }
+
+        var nomsPerpx2 = 0.00005;
+        //alert(nomsPerpx2 * this.canvas.width * this.canvas.height);
+       
+        while (this.noms.length < nomsPerpx2 * this.canvas.width * this.canvas.height) {
+            this.make();
+        }
+        while (this.noms.length > nomsPerpx2 * this.canvas.width * this.canvas.height) {
+            this.noms.splice(Math.round(Math.random()*this.noms.length-1),1);
         }
     }
 }
