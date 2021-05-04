@@ -2,11 +2,15 @@ body {
 	margin: 0px;
 	padding: 0px;
 }
+body {
+	margin: 0px;
+	padding: 0px;
+}
 
 #blockDiagram {
 	margin: 0px;
 	padding: 0px;
-	display: block;
+	display: contents;
 }
 
 #blockDiagram .canvas {
@@ -16,7 +20,8 @@ body {
 	background-color: grey;
 	z-index: -1;
 	display: block;
-
+	margin: 0px;
+	padding: 0px;
 }
 #blockDiagram .sidebar {
 	width: 0;

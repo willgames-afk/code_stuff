@@ -30,7 +30,7 @@ function endLoad(e) {
 }
 
 function run() {
-	output.value = JSON.stringify(parse(lexer(input.value)), null,'\n	');
+	output.value = JSON.stringify(parse(lexer(input.value))).replace(/},/g,'},\n');
 	resizeTxtarea(output);
 	noms.resize();
 }

@@ -6,6 +6,7 @@ export class Point {
 	get 0() { return this.x };
 	get 1() { return this.y };
 }
+
 export class Rectangle {
 	constructor(x = 0, y = 0, width = 0, height = 0) {
 		this.x = x;
@@ -16,58 +17,31 @@ export class Rectangle {
 	get x1() { return this.x };
 	get y1() { return this.y };
 	set x1(v) {
-		if (v > this.x2) {
-			this.x = this.x2;
-			this.x2 = v;
-		} else {
-			this.x1 = v;
-		}
+		this.x = v;
 	};
 	set y1(v) {
-		if (v > this.y2) {
-			this.y = this.y2;
-			this.y2 = v;
-		} else {
-			this.y1 = v;
-		}
+		this.y = v;
 	};
 	get x2() { return this.x + this.width; }
 	set x2(v) {
-		if (v < this.x) {
-			this.width = this.x - v;
-			this.x = v;
-		} else {
-			this.width = v - this.x;
-		}
+		this.width = v - this.x;
 	}
 	get y2() { return this.y + this.height; }
 	set y2(v) {
-		if (v < this.y) {
-			this.height = this.y - v;
-			this.y = v;
-		} else {
-			this.height = v - this.x;
-		}
+		this.height = v - this.y ;
 	}
+	get position() { return this.p1 }
+	set position(v) { this.p1 = v }
 	get p1() { return new Point(this.x, this.y) };
-	set p1(x, y) {
-		if (arguments.length == 1) {
-			this.x = x.x;
-			this.y = x.y;
-		} else {
-			this.x = x;
-			this.y = y;
-		}
+	set p1(v) {
+		this.x = v[0];
+		this.y = v[1];
 	}
 	get p2() { return new Point(this.x2, this.y2) };
-	set p2(x, y) {
-		if (arguments.length == 1) {
-			this.x2 = x.x;
-			this.y2 = x.y;
-		} else {
-			this.x2 = x;
-			this.y2 = y;
-		}
+	set p2(v) {
+		this.x2 = v[0];
+		this.y2 = v[1];
+
 	}
 }
 export class RenderableRect extends Rectangle {
@@ -105,25 +79,25 @@ export class RenderableRect extends Rectangle {
 
 	}
 }
-class EndPoint extends Point{
-	constructor(x,y,d) {
-		super(x,y);
+class EndPoint extends Point {
+	constructor(x, y, d) {
+		super(x, y);
 		this.direction = d;
 	}
 }
 export class Connection {
-	constructor (x1,y1,d1,x2,y2,d2) {
+	constructor(x1, y1, d1, x2, y2, d2) {
 		this.points = [];
-		this.points.push(new Point(x1,y1));
-		this.points.push(new Point(x2,y2));
+		this.points.push(new Point(x1, y1));
+		this.points.push(new Point(x2, y2));
 		this.endpoints = [
-			new EndPoint(x1,y1,d1),
-			new EndPoint(x2,y2,d2)
+			new EndPoint(x1, y1, d1),
+			new EndPoint(x2, y2, d2)
 		]
 	}
 }
 export class Block extends RenderableRect {
-	constructor(x = 0, y = 0, w = 0, h = 0, l = '',st=1, s = {
+	constructor(x = 0, y = 0, w = 0, h = 0, l = '', st = 1, s = {
 		fill: true,
 		fillColor: 'rgb(20,20,20)',
 		outline: false,

@@ -1,3 +1,5 @@
+import * as TGL from './classes.js'
+
 export function* lexer(string) {
 	function getType(char) {
 		var lexime = leximes.find(e => e[0] == bufferType)

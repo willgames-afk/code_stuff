@@ -1,4 +1,4 @@
-class EditableObject {
+export class EditableObject {
 	static defaultStyle = {
 		includeComma: true,
 		allInputs: {
@@ -17,7 +17,7 @@ class EditableObject {
 			color: 'palegreen',
 		}
 	}
-	constructor(parentNode, object, setCallback=()=>{}, style = EditableObject.defaultStyle, propertyName) {
+	constructor(parentNode, object, setCallback = () => { }, style = EditableObject.defaultStyle, propertyName) {
 		this.parentNode = parentNode;
 		this.value = object;
 		this.style = style;
@@ -35,10 +35,10 @@ class EditableObject {
 		if (this.propertyName) {
 			this.container.setAttribute("propertyname", this.propertyName);
 		}
-		this.applyStyle(this.container,this.style.labels);
+		this.applyStyle(this.container, this.style.labels);
 
 		//iterate and number array, loop with in for objs.
-		if (Array.isArray(this.value)) { 
+		if (Array.isArray(this.value)) {
 
 			this.applyStyle(this.container, this.style.array);
 			for (var i = 0; i < this.value.length; i++) {
@@ -53,15 +53,17 @@ class EditableObject {
 		}
 
 		//Element editing for arrays and objs.
+
 		var edit = document.createElement('div'); //Container
-		edit.setAttribute("class","editObj");
-		var addElement = document.createElement("button"); //AddElement button
+		edit.setAttribute("class", "editObj");
+	
+		var addElement = document.createElement("button"); //Add Element button
 		addElement.innerHTML = "+";
 		addElement.style.padding = "3px";
 		addElement.style.fontSize = "11.5px";
-		addElement.addEventListener("click",((c, make, edit)=> {
+		addElement.addEventListener("click", ((c, make, edit) => {
 			return () => {
-				this.container.insertBefore(make("idk",""),edit)
+				this.container.insertBefore(make("idk", ""), edit)
 			}
 		})(this.container, this.make.bind(this), edit))
 		edit.appendChild(addElement);
@@ -85,7 +87,7 @@ class EditableObject {
 			this.makeInput(li, "checkbox", label, value, this.onInput.bind(this), [this.style.allInputs, this.style.bool])
 
 		} else if (typeof value == "string") {
-		
+
 			li.appendChild(document.createTextNode(`"`));
 			this.makeInput(li, "text", label, value, this.onInput.bind(this), [this.style.allInputs, this.style.string])
 			li.appendChild(document.createTextNode(`"`));
@@ -97,7 +99,7 @@ class EditableObject {
 			var placeHolder = document.createElement('div'); //Placeholder (...); 
 			placeHolder.style.display = "none";
 			placeHolder.innerHTML = "&#8230"
-			
+
 
 			showhide.href = "javascript:void(0);"      //Don't actually redirect
 			showhide.innerText = "H";  //Start showing with option to hide
@@ -123,14 +125,14 @@ class EditableObject {
 				//If array, surround in brackets
 				li.appendChild(document.createTextNode('['))
 				li.appendChild(placeHolder);
-				new EditableObject(li, value, this.onInput.bind(this), this.style, label)
+				new EditableObject(li, value, this.setValue.bind(this), this.style, label)
 				li.appendChild(document.createTextNode(']'))
 			} else {
 
 				//Otherwise just a plain old object, surround in curly braces
 				li.appendChild(document.createTextNode('{'))
 				li.appendChild(placeHolder);
-				new EditableObject(li, value, this.onInput.bind(this), this.style, label)
+				new EditableObject(li, value, this.setValue.bind(this), this.style, label)
 				li.appendChild(document.createTextNode('}'))
 			}
 		}
@@ -140,35 +142,44 @@ class EditableObject {
 		}
 		return li;
 	}
-	onInput(e) {
+	onInput(e) { //Used for getting input from HTML input elements
 		console.log(e)
 		var elem = e.target;
 		if (elem.type == "checkbox") {
+
 			//If checkbox, the value is stored in checked property
 			this.value[elem.getAttribute("propertyname")] = elem.checked;
 
-		} else if (elem.type == "object") {
-			//If array or object, it's from setCallback (another EditableObject); not from raw HTML
-			this.value[elem.propertyName] = elem.value;
 		} else {
+
 			//Otherwise it's a resizeable element
 			this.resizeInput(elem);
 			if (elem.type == "number") {
+
 				//Number is stored as a string and must be parsed
 				this.value[elem.getAttribute("propertyname")] = parseFloat(elem.value)
 			} else {
+
 				//Otherwise, treat as string.
 				this.value[elem.getAttribute("propertyname")] = elem.value;
 			}
 		}
 		if (this.setCallback) {
-			this.setCallback({ //This is a callback to a parent EditableObject or other code that runs on edit.
-				target: {
-					type: "object",
-					propertyName: this.propertyName,
-					value: this.value
-				}
-			});
+
+			//Means it's a child object
+			this.setCallback(this.propertyName, this.value)
+
+		}
+	}
+	setValue(propertyName, value) { //Used for passing updated values back to objects from subobjects.
+		this.value[propertyName] = value;
+		if (this.setCallback) {
+			if (this.propertyName) {
+				//Means it's a child object
+				this.setCallback(this.propertyName, this.value)
+			} else {
+				this.setCallback(this.value)
+			}
 		}
 	}
 	makeInput(parentNode, type, propertyName, value, onInput, style, useParentnode = true) {
@@ -183,7 +194,7 @@ class EditableObject {
 		if (style) {
 
 			this.applyStyle(input, style);
-			
+
 		}
 		input.setAttribute("propertyname", propertyName)// The corrosponding property in the object
 		input.addEventListener("input", onInput.bind(this)); //Callback for editing purposes
@@ -199,7 +210,7 @@ class EditableObject {
 	static applyStyle(element, style) {
 		console.log(style)
 		if (Array.isArray(style)) {
-			for (var i=0;i<style.length;i++) {
+			for (var i = 0; i < style.length; i++) {
 				if (style[i]) {
 					for (var s in style[i]) {
 						if (style[i][s]) {
@@ -222,14 +233,14 @@ class EditableObject {
 		}
 	}
 }
-class JSONEditor extends EditableObject {
-	constructor(parentNode, format, setCallback=()=>{}, style) {
+export class JSONEditor extends EditableObject {
+	constructor(parentNode, format, setCallback = () => { }, style) {
 		super(parentNode, {}, setCallback, style);
 		console.log(this.style)
 		this.format = format;
 
 		this.container = document.createElement("ul");
-		this.applyStyle(this.container,this.style.labels);
+		this.applyStyle(this.container, this.style.labels);
 
 		var defaultObj = function check(t) {
 			var o = {};
@@ -280,14 +291,15 @@ class JSONEditor extends EditableObject {
 		//Create selector element
 		var a = document.createElement('select');
 		if (style) {
-			EditableObject.applyStyle(a,style);
+			EditableObject.applyStyle(a, style);
 		} else {
 			const style = EditableObject.defaultStyle
-			EditableObject.applyStyle(a,[style.allInputs, style.string])
+			EditableObject.applyStyle(a, [style.allInputs, style.string])
 		}
 
 		//Allow multiple selections if available
-		if (multiple === true) {ksf
+		if (multiple === true) {
+			ksf
 			a.multiple = true;
 		}
 
@@ -366,16 +378,16 @@ class JSONEditor extends EditableObject {
 		list- Same
 		object- same
 		boolean- same
-	} 
+	}
 	config: { Contains various config
-		
+
 	}
 	template: {
 		property: {
 			type- String; boolean, number, string, array, object, or dropdown
 			test- Function, should return true if the input is value and false otherwise.
 			default- Any value, default property. If object or array, contains this same format!
-			IF dropdown, should be an array index refering to the item in options you want 
+			IF dropdown, should be an array index refering to the item in options you want
 			to have as a default- will default to first element.
 			options: [
 				for dropdowns only.
@@ -384,7 +396,7 @@ class JSONEditor extends EditableObject {
 					type- the type of input element to use, if you want.
 					test- Function, should return true if the input is value and false otherwise.
 					value- can be any value; what to store when the user selects this value.
-					if type is defined , the value will be whatever the input element's value is, and 
+					if type is defined , the value will be whatever the input element's value is, and
 					this will be the default.
 				}
 			]
