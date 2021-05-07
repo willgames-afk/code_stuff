@@ -17,10 +17,6 @@ export class State { //global state object, holds state info.
 		}
 	}
 	get currentBlock (){
-		if (!(this.makingBlock || this.editingBlock)) {
-			console.error("Not making or editing a block; current block is undefined.")
-			return
-		}
 		return this.blocks[this.editingBlockIndex];
 	}
 	set currentBlock (v){

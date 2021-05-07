@@ -143,7 +143,7 @@ export class EditableObject {
 		return li;
 	}
 	onInput(e) { //Used for getting input from HTML input elements
-		console.log(e)
+		//console.log(e)
 		var elem = e.target;
 		if (elem.type == "checkbox") {
 

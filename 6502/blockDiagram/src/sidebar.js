@@ -14,7 +14,7 @@ export class Sidebar {
 		a.href = 'javascript:void(0)';  //Makes it so you don't reload the page when clicked
 		a.innerHTML = '&times;';        // X char- renders as × in this font
 		a.onclick = this.close.bind(this);
-		a.className = 'closebtn';        //For styling
+		a.className = 'closebutton';        //For styling
 		this.container.appendChild(a);   //Add it to container
 
 		htmlParent.appendChild(this.container);
@@ -24,7 +24,7 @@ export class Sidebar {
 			this.viewer.remove();
 			this.viewer = null;
 		}
-		this.viewer = new EditableObject(this.container, this.state.currentEditingBlock, this.onEdit);
+		this.viewer = new EditableObject(this.container, this.state.currentBlock/*, this.onEdit*/);
 		this.container.style.width = Sidebar.expandedWidth;
 	}
 	close() {
@@ -32,7 +32,7 @@ export class Sidebar {
 		this.viewer.remove();
 		this.viewer = null;
 	}
-	onEdit(editedBlock) {
-		this.state.currentEditingBlock = editedBlock;
-	}
+	/*onEdit(editedBlock) {
+		this.state.currentBlock = editedBlock;
+	}*/
 }

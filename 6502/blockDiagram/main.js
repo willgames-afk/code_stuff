@@ -46,10 +46,6 @@ class BlockDiagram {
 
         //draw current working block
         this.ctx.clearRect(0, 0, this.c.width, this.c.height);
-
-        this.ctx.beginPath
-        this.ctx.arc(this.state.mouse.x,this.state.mouse.y, 10,0,Math.PI * 2);
-        this.ctx.fill();
         this.ctx.beginPath();
         if (this.state.makingBlock) {
             //draw block
@@ -176,7 +172,7 @@ class BlockDiagram {
 }
 
 
-window.addEventListener('load', startApp)  
+window.addEventListener('load', startApp);
 function startApp() {
     new BlockDiagram(document.getElementById('blockDiagram'))
 }
