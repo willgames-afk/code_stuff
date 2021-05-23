@@ -50,6 +50,15 @@
             Number of No-Ops<input type="number" id='numberofnops' value=0>
             <script src='nopRom.js'></script>
         </div>
+
+        <div class="Musiconverter">
+            <h2>Music Converter</h2>
+            <p>Converts music stuff</p>
+            <textarea id ="mcin" oninput="convert();"></textarea><br>
+            <textarea id = "mcout" readonly></textarea><br>
+            <script src="notes.js"></script>
+        </div>
+
         <script src='cookie.js'></script>
         <script>
             cman = new CookieManager();

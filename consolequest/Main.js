@@ -24,11 +24,15 @@ function wrapper() {
     loadmap: 'mapload',
     clear: 'clear',
     rem: 'rem',
-    remember: 'rem'
+    remember: 'rem',
+    move: 'move'
   }
   var commandData = {
     hidden: [
       "soth"
+    ],
+    internal: [
+      "_move"
     ],
     info: {
       north: 'Moves you north.',
@@ -38,6 +42,7 @@ function wrapper() {
       forward: 'Moves you forwards (north).',
       left: 'Moves you left (west).',
       right: 'Moves you right (east).',
+      move: 'Moves you in whatever direction you last went.',
       use: 'Uses any helpful items.',
       help: 'Tells you this!',
       save: 'Saves your game locally in the browser.',
@@ -94,9 +99,9 @@ function wrapper() {
     inventory: {},
     lastMove: 'not'
   }
-  var originalMap = JSON.stringify(map)
-  var originalPlayer = JSON.stringify(player)
-  var loadMessage = ['Loading...', 'Still Loading...', 'Working...', '...', 'Still not done...', 'Almost Kinda Halfway...', 'Processing...']
+  var originalMap = JSON.stringify(map);
+  var originalPlayer = JSON.stringify(player);
+  //var loadMessage = ['Loading...', 'Still Loading...', 'Working...', '...', 'Still not done...', 'Almost Kinda Halfway...', 'Processing...']
   var started = false;
 
 
@@ -121,8 +126,8 @@ function wrapper() {
       }
 
     } else {
-      displayText("Already Running.", '', false)
-      return 'Haha lol'
+      //displayText("Already Running.", '', false)
+      return 'Already Running, Haha lol.'
     }
   }
 
@@ -149,7 +154,7 @@ function wrapper() {
   Object.defineProperty(window, 'START', { get: function () { return startAll() } });
   Object.defineProperty(window, 'Start', { get: function () { return startAll() } });
   Object.defineProperty(window, 'init', { get: function () { return startAll() } });
-  Object.defineProperty(window, 'currentCell', { get: function () { if (map.data) { return map.data[player.y][player.x] } } });
+  Object.defineProperty(this, 'currentCell', { get: function () { if (map.data) { return map.data[player.y][player.x] } } });
 
   function printInventory() { //Prints your inventory. Nothin' else to say 'bout that.
     console.group('Inventory:')
@@ -438,7 +443,7 @@ function wrapper() {
     },
     move() {
       if (player.lastMove != 'not') {
-        _move(player.lastMove)
+        this._move(player.lastMove)
       } else {
         displayText(message.noMoveHistoryAlert, '', false)
       }
@@ -457,9 +462,11 @@ function wrapper() {
   //   Function that takes care of displaying text.
   //   txtras is short for text extras. 
   function displayText(text = '', txtras = '', displayExits = true) {
-    console.log(text, txtras)
-    if (displayExits) {
-      console.log('\nPossible Exits: ' + currentCell.exit.join(', ') + '.', txtras);
+    console.log(text, txtras);
+    if (displayExits && currentCell.exit.length > 0) {
+      console.log(`\nPossible Exits: ${currentCell.exit.join(', ')}.`); //txtras);
+    } else {
+      console.log("Possible Exits: None.")
     }
   }
 
@@ -471,3 +478,25 @@ function wrapper() {
   console.log('Type START to continue.');
 
 }; wrapper(); //Hides all the "global" vars, preventing hacking (somewhat)
+
+console.log("TEST:")
+function ask(question) {
+  var obj = {
+    _: {
+      get yes() {
+        alert("I WAS CLICKED");
+        console.log(obj)
+        delete obj._;
+        console.log(obj)
+      },
+      get no() {
+        alert("I WASN'T CLICKED");
+        delete obj._;
+      }
+    }
+  }
+  console.log(question, "(Choose Yes or No)");
+  console.log(obj._);
+}
+
+ask("YES OR NO")
