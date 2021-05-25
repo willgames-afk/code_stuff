@@ -3,6 +3,7 @@ const fs = require('fs');            //Files
 const express = require('express');  //Server
 const showdown = require("showdown");//Markdown to HTML
 const katex = require("katex");      //LATeX to HTML
+const { getMaxListeners } = require('process');
 
 //Setup
 const app = express();
@@ -23,13 +24,17 @@ const errorMessages = {
 
 //Resource Loading
 const res_dir = "./resources/"
-const basepage = fs.readFileSync(res_dir + "base.html").toString(); //Page Template
+function loadpage(url) {
+	return fs.readFileSync(res_dir + url +".html").toString();
+}
+const basepage = loadpage("post") //Page Template
+const index = loadpage("index")   //Site Index.html
 var publicFiles = searchDir('./public');
 console.dir(publicFiles, {depth: null});
 
 //express app setup
 app.get('/', (req, res) => {
-	res.send(basepage.replace('$content$', "<p>Hello World!</p>"))
+	res.send(index)
 });
 
 //Anything in the images folder is fair game.
@@ -52,10 +57,17 @@ app.use('/blog/', (req, res) => {
 	if (req.path == '/') {
 		res.send(basepage.replace('$content$', "Blog Homepage"))
 		return
+	} else if (req.path ) {
+
 	}
 	const converter = new showdown.Converter(); //Get a converter
-	const file = fs.readFileSync("./posts/" + req.url + '.md') //Get the file
-	const mainPage = basepage.replace("$content$", converter.makeHtml(preconvertLatex(file.toString())))
+	const rawfile = fs.readFileSync("./posts/" + req.url + '.md'); //Get the file
+	const fileObj = splitFile(rawfile.toString());
+	if (!fileObj.timecode) {
+		
+	}
+
+	const mainPage = converter.makeHtml(preconvertLatex(fileObj.file));
 	
 	res.send();
 })
@@ -102,6 +114,20 @@ function searchDir(path) {
 	return dir;
 }
 
-function hasFile(path) {
-	var re
+function splitFile(poststring) { //Splits a md post into metadata and file
+	var index = poststring.indexOf('\n');
+	const title = poststring.substring(0,index);
+	index++;
+	var newIndex = poststring.indexOf('\n',index);
+	const subtitle = poststring.substring(index,newIndex);
+	newIndex++
+	index = poststring.indexOf('\n',newIndex);
+	const timecode = poststring.substring(newIndex,index);
+	const file = poststring.substring(index);
+	return {
+		title: title,
+		subtitle: subtitle,
+		timecode: timecode,
+		file: file
+	}
 }
