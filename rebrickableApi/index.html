@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Rebrickable Api Interface</title>
+    <script src="main.js"></script>
+</head>
+
+<body>
+    <div id="interface">
+        Search By
+        <select id="modeSelector" onchange="newModeSelected()">
+            <option selected value="nameSearch">Name</option>
+            <option value="idSearch">ID</option>
+        </select>
+        <div id="nameSearch">
+            Part Name: <input id="partName" type="text" onchange="textChange()">
+
+        </div>
+        <div id="idSearch" hidden>
+            Part ID: <input id="partID" type="number">
+            <button onclick="run();">Get Part</button>
+        </div>
+        <div id="part">
+            <img id="partImg" src="">
+        </div>
+    </div>
+</body>
+
+</html>
