@@ -1,0 +1,22 @@
+mkdir ~/Minecraft
+cd ~/Minecraft
+wget https://www.dropbox.com/s/chdb4uts1fnm2bn/setupMC1_16_1_3264.sh
+chmod +x setupMC1_16_1_3264.sh
+./setupMC1_16_1_3264.sh
+
+./runLauncher.sh
+
+./optifine1_16_1_G2_pre2Install.sh
+
+./runLauncher.sh
+
+mousepad runMC1_16_1_OptifineG2pre.sh
+
+    Update MINECRAFT_LOGIN, 
+    MINECRAFT_USERNAME and 
+    MINECRAFT_PASSWORD to your own (may need "" for special characters)
+
+cd ~/Minecraft
+./runMC1_16_1_OptifineG2pre.sh
+
+    Change options in Minecraft to reduce render chunks to 3.
