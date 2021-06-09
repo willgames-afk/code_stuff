@@ -94,7 +94,30 @@ export class Connection {
 			new EndPoint(x1, y1, d1),
 			new EndPoint(x2, y2, d2)
 		]
-	}
+    }
+    connect(p1,p2,blocks,lines) {
+        const boundxl = Math.min(p1.x,p2.x), boundxh = Math.max(p1.x,p2.x), boundyl = Math.min(p1.y,p2.y), boundyh = Math.max(p1.y,p2.y)
+        var megaArray = [...Array(boundxh-boundxl + 1)].map(()=>Array(boundyh-boundyl+1));
+        function blockCollision(x,y) {
+            for (var i=0;i<blocks.length;i++) {
+                if (x > blocks[i].x && x < blocks[i].width && y > blocks[i].y && y < blocks[i].height) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        function recursiveFind(x,y,d) {
+            if (x == p2.x && y == p2.y) { //If we found the point
+                return true;
+            }
+            if (x > boundxh || x < boundxl || y > boundyl || y < boundyh) {
+                return false;
+            }
+            if (blockCollision(x,y)) {
+                return false;
+            }
+        }
+    }
 }
 export class Block extends RenderableRect {
 	constructor(x = 0, y = 0, w = 0, h = 0, l = '', st = 1, s = {
