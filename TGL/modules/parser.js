@@ -14,7 +14,9 @@ export function* lexer(string) {
 				//onsole.log(`"${char}" is "${key}" (${value})`)
 				return key;
 			}
-		}
+        }
+        //If we've gotten to here, we have an invalid token on our hands
+        return "error";
 	}
 	var leximes = [
 		["quote", /'/], ["dbquote", /"/], ["backquote", /`/],
@@ -35,16 +37,20 @@ export function* lexer(string) {
 	var buffer = '';
 	var bufferType = '';
 	var stringMode = false;
-	var stringType = '';
+	var stringDelimiter = '';
 	for (var i = 0; i < string.length; i++) {
 		var char = string[i];
-		var type = getType(char);
+        var type = getType(char);
+        
+        if (type == "error") {
+            throw "LexError: Invalid Token"
+        }
 
 		if (stringMode) {
-			if (type == stringType) {
+			if (type == stringDelimiter) {
 				yield {type: "string", value: buffer};
 				buffer = '';
-				stringType = '';
+				stringDelimiter = '';
 				stringMode = false;
 			} else {
 				buffer += char;
@@ -52,7 +58,7 @@ export function* lexer(string) {
 		} else {
 			if (type == "quote" || type== "dbquote" || type == "backquote") {
 				stringMode = true;
-				stringType = type;
+				stringDelimiter = type;
 				if (buffer.length > 0) {
 
 					yield { type: bufferType, value: buffer };
