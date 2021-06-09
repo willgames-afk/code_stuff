@@ -70,6 +70,12 @@ function newModeSelected() {
     }
 }
 
-function textChange(){
+function searchParts(partname) {
+    
+}
 
+function textChange(){
+    var cq = document.getElementById("currentQuery");
+    var input = document.getElementById("partName");
+    cq.innerHTML = input.value;
 }

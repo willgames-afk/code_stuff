@@ -14,8 +14,8 @@
             <option value="idSearch">ID</option>
         </select>
         <div id="nameSearch">
-            Part Name: <input id="partName" type="text" onchange="textChange()">
-
+            Part Name: <input id="partName" type="search" oninput="textChange()">
+            <span id="currentQuery"></span>
         </div>
         <div id="idSearch" hidden>
             Part ID: <input id="partID" type="number">
