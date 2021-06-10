@@ -1,7 +1,7 @@
 import { CameraControls } from "./modules/cameraController.js";
+import * as Config from "./modules/config.js"
 
-THREE.Cache.enabled = false;
-const DEVMODE = true;
+THREE.Cache.enabled = Config.cacheEnabled;
 
 
 const scene = new THREE.Scene();
@@ -31,61 +31,46 @@ for (var x = -1.5; x < 1.5; x++) {
     }
 }
 
-const loader = new THREE.FontLoader();
-loader.load('style/menlo.typeface.json', (font) => {
-    console.log("Loaded!");
-    console.log(font)
-    const txgeo = new THREE.TextGeometry('Hi!', {
-        font: font,
-        size: 1,
-        height: 1,
-        curveSegments: 12,
-    });
-    const txmat = new THREE.MeshLambertMaterial({ color: 0xff0000 });
-    const text = new THREE.Mesh(txgeo, txmat);
-    //scene.add(text);
+camera.position.z = 5;
 
-    camera.position.z = 5;
+document.getElementById("loadingmessage").remove();
+document.body.appendChild(renderer.domElement);
+var controls = new CameraControls(camera, renderer.domElement)
 
-    document.getElementById("loadingmessage").remove();
-    document.body.appendChild(renderer.domElement);
-    var controls = new CameraControls(camera, renderer.domElement)
+var doControls = true;
+var prevTime = 0;
+var counter = 0;
+function animate(ct) {
+    requestAnimationFrame(animate); //Set up next animation frame
 
-    var doControls = true;
-    var prevTime = 0;
-    var counter = 0;
-    function animate(ct) {
-        requestAnimationFrame(animate); //Set up next animation frame
+    var dt = ((ct - prevTime) / 16) || 1
+    prevTime = ct;
 
-        var dt = ((ct - prevTime) / 16) || 1
-        prevTime = ct;
+    counter += dt;
 
-        counter += dt;
+    //console.log(dt)
 
-        //console.log(dt)
-
-        //Render the scene
-        if (doControls) {
-            try {
-                controls.tick(dt);
-            } catch (e) {
-                console.error(e);
-                doControls = false;
-            }
+    //Render the scene
+    if (doControls) {
+        try {
+            controls.tick(dt);
+        } catch (e) {
+            console.error(e);
+            doControls = false;
         }
-        renderer.render(scene, camera);
-
-        //Animate the cube
-        /*if (camera.position.z < 20) {
-            camera.position.z += 0.1;
-        }*/
-        //text.position.x -= 0.06
-        spinny.rotation.x += (0.01 * dt);
-        spinny.rotation.y += (0.017 * dt);
-        spinny.position.y = (Math.sin(counter / 50) + 1) / 2
     }
-    animate();
-})
+    renderer.render(scene, camera);
+
+    //Animate the cube
+    /*if (camera.position.z < 20) {
+        camera.position.z += 0.1;
+    }*/
+    //text.position.x -= 0.06
+    spinny.rotation.x += (0.01 * dt);
+    spinny.rotation.y += (0.017 * dt);
+    spinny.position.y = (Math.sin(counter / 50) + 1) / 2
+}
+animate();
 
 function cube(x, y, z, s = 1, c = 0x00ff00) {
     const geo = new THREE.BoxGeometry(s, s, s);
@@ -96,6 +81,6 @@ function cube(x, y, z, s = 1, c = 0x00ff00) {
     return cube;
 }
 
-function colorcubefield(x,z) {
+function colorcubefield(x, z) {
     //Make a field of differently colored unit cubes x by z cubes long
 }
