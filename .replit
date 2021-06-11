@@ -1,2 +1,2 @@
 language = "html"
-run = ""
+run = "node other/repl-launch.js"
