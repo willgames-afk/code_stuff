@@ -1,15 +1,17 @@
+//import * as THREE from "https://unpkg.com/three@latest/build/three.module.js"
 import { CameraControls } from "./modules/cameraController.js";
+//import { Assets } from "./modules/loader.js";
 import * as Config from "./modules/config.js"
 
 THREE.Cache.enabled = Config.cacheEnabled;
 
-
 const scene = new THREE.Scene();
+
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 console.log(camera);
 
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer();//{ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 window.addEventListener("resize", () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -19,58 +21,84 @@ window.addEventListener("resize", () => {
 })
 
 const sun = new THREE.DirectionalLight(0xffffff, 0.5);
-const antiPitchBlack = new THREE.AmbientLight(0x333333);
 scene.add(sun);
+
+const antiPitchBlack = new THREE.AmbientLight(0x333333);
 scene.add(antiPitchBlack);
+
+//const assets = new Assets(start.bind(this));
 
 const spinny = cube(0, 0, 0, 1, 0xffff00);
 
 for (var x = -1.5; x < 1.5; x++) {
     for (var z = -1.5; z < 1.5; z++) {
-        cube(x * 1.20 + 0.5, -2, z * 1.20 + 0.5, 1, 0x00ff00)
+        cube(x * 1.20 + 0.5, -2, z * 1.20 + 0.5, 1, 0x00ff00);
     }
 }
 
 camera.position.z = 5;
 
-document.getElementById("loadingmessage").remove();
-document.body.appendChild(renderer.domElement);
-var controls = new CameraControls(camera, renderer.domElement)
+//assets.load();
+start();
+function start() {
+    //const db = assets.createBlock("dirt");
+    //console.log(db);
+    //document.body.appendChild(db.material.map.image);
+    //scene.add(db);
 
-var doControls = true;
-var prevTime = 0;
-var counter = 0;
-function animate(ct) {
-    requestAnimationFrame(animate); //Set up next animation frame
+    const l = new THREE.TextureLoader();
+    l.magFilter = THREE.NearestFilter;
+    l.minFilter = THREE.NearestFilter;
+    l.needsToUpdate = true;
+    const dirtTexture = l.load("./assets/dirt.png")
+    const dirtBox = new THREE.BoxGeometry(1,1,1);
+    const dirtMat = new THREE.MeshBasicMaterial({map: dirtTexture});
+    const dirtBlock = new THREE.Mesh(dirtBox,dirtMat);
+    dirtBlock.y = 4;
+    scene.add(dirtBlock)
 
-    var dt = ((ct - prevTime) / 16) || 1
-    prevTime = ct;
+    //Remove Loading Message
+    document.getElementById("loadingmessage").style.display = 'none';
 
-    counter += dt;
+    //Display Graphics
+    document.body.appendChild(renderer.domElement);
+    var controls = new CameraControls(camera, renderer.domElement)
 
-    //console.log(dt)
+    var doControls = true;
+    var prevTime = 0;
+    var counter = 0;
+    function animate(ct) {
+        requestAnimationFrame(animate); //Set up next animation frame
 
-    //Render the scene
-    if (doControls) {
-        try {
-            controls.tick(dt);
-        } catch (e) {
-            console.error(e);
-            doControls = false;
+        var dt = ((ct - prevTime) / 16) || 1
+        prevTime = ct;
+
+        counter += dt;
+
+        //console.log(dt)
+
+        //Render the scene
+        if (doControls) {
+            try {
+                controls.tick(dt);
+            } catch (e) {
+                console.error(e);
+                doControls = false;
+            }
         }
-    }
-    renderer.render(scene, camera);
+        renderer.render(scene, camera);
 
-    //Animate the cube
-    /*if (camera.position.z < 20) {
-        camera.position.z += 0.1;
-    }*/
-    //text.position.x -= 0.06
-    spinny.rotation.x += (0.01 * dt);
-    spinny.rotation.y += (0.017 * dt);
-    spinny.position.y = (Math.sin(counter / 50) + 1) / 2
+        //Animate the cube
+        /*if (camera.position.z < 20) {
+            camera.position.z += 0.1;
+        }*/
+        //text.position.x -= 0.06
+        spinny.rotation.x += (0.01 * dt);
+        spinny.rotation.y += (0.017 * dt);
+        spinny.position.y = (Math.sin(counter / 50) + 1) / 2
+    }
+    animate();
 }
-animate();
 
 function cube(x, y, z, s = 1, c = 0x00ff00) {
     const geo = new THREE.BoxGeometry(s, s, s);

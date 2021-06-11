@@ -1,4 +1,5 @@
-import {loadCrossOrigin,assetPath} from "./config.js"
+//import * as THREE from "https://unpkg.com/three@latest/build/three.module.js"
+import { loadCrossOrigin, assetPath } from "./config.js"
 
 export const Load = { //Maps filenames to specific face textures efficiently, see below
     blockTextures: {
@@ -7,7 +8,8 @@ export const Load = { //Maps filenames to specific face textures efficiently, se
             sides: "log.png",
             py: "log-top.png",
             ny: "log-top.png"
-        }
+        },
+        "yellow": "#FFFF00"
     },
     terrainTextures: {
         "grass": "#0FFF00"
@@ -38,17 +40,9 @@ export const Load = { //Maps filenames to specific face textures efficiently, se
 
 
 export class Assets {
-    constructor(onloadCallback) {
+    constructor(onloadCallback = () => { return }) {
         this.onloadCallback = onloadCallback
 
-        //Setup of THREEjs Asset Manager- Keeps track of loads and such
-        this.manager = new THREE.LoadingManager();
-        this.manager.onStart = (url) => {
-            console.log(`Started loading ${url}`);
-        }
-        this.manager.onProgress = this.onProgress;
-        this.manager.onLoad = this.onload;
-        this.manager.onError = this.onError;
 
         this.state = 0;
         /*  State Info:
@@ -61,67 +55,122 @@ export class Assets {
         this.blockTextures = {}; //Holds block textures.
     }
     onload() {
-        console.log("Fully Loaded!");
-        this.onloadCallback();
+        if (this.total !== false) { // !== because I need to diferentiate between '0' and 'false'
+            console.log(`${this.total} files still loading...`);
+            this.total--
+            if (this.total === 0) {
+                console.log("Fully Loaded!");
+                this.state = 3;
+                this.onloadCallback();
+            }
+        } else {
+            console.log("No Total")
+        }
     }
-    onProgress(url,loaded,total) {
-        console.log(`loading file ${url} (${loaded} of ${total} files loaded)`)
-    }
-    startload() {
-        const loader = new THREE.ImageLoader(this.manager);
+    load() {
+        if (this.state > 0) {
+            console.error("Already started loading!")
+            return
+        }
+        this.state = 1;
+
+        const loader = new THREE.ImageLoader(this.manager); //Set up loader
         loader.setPath(assetPath);
+
+        var total = 1; //Number of assets to load; has to be incremented by one because I call it an extra time 
+        this.total = false; //Invalid; have to figure out how many to load first
 
         for (var blockName in Load.blockTextures) {
             var data = Load.blockTextures[blockName]
             if (typeof data == "string") {
                 if (/#[\da-fA-F]{6}/.test(data)) { //If Color Code
-                    this.blockTextures[blockName] = data; //Transfer
+                    this.addFaceTexture(blockName, 'all', data); //Transfer
                 } else {
                     //If filename, load file
-                    loader.load(data, this.wOnBlockTxload(this.blockTextures[blockname]));
+                    total++
+                    loader.load(data, this.wOnBlockTxload(blockName));
                 }
                 continue;
             } //else 
+            console.log(blockName, "required per-face texture")
             for (var faceName in Load.blockTextures[blockName]) {
+                data = Load.blockTextures[blockName][faceName]
                 if (typeof data == "string") {
                     if (/#[\da-fA-F]{6}/.test(data)) { //If Color Code
-                        addFaceTexture(this.blockTextures[blockName],faceName,data); //Transfer
+                        this.addFaceTexture(blockName, faceName, data); //Transfer
                     } else {
                         //If filename, load file
-                        loader.load(data, this.wOnBlockTxload(this.blockTextures[blockname]));
+                        total++
+                        loader.load(data, this.wOnBlockTxload(blockName, faceName));
                     }
                     continue;
                 } //else 
             }
         }
+        this.total = total;
 
+        this.onload(); //Prevents an edge case where all images load before this.total is registered
     }
-    wOnBlockTxload(block,face) { //Wrapped onBlockTextureload
-        if (arguments.length == 1) {
-            return function (img) {
-                block = new THREE.Texture(img);
-            }
-        }
+    wOnBlockTxload(blockName, face = 'all') { //Wrapped onBlockTextureload
         return function (img) {
-            addFaceTexture(block,face,img)
-        }
+            this.addFaceTexture(blockName, face, img)
+            console.log(`Loaded ${blockName} (${face})!`)
+            this.onload();
+        }.bind(this)
     }
-    addFaceTexture(block,faceName,imgOrColor) {
-        const texture = (typeof imgOrColor == "string") ? img :  new THREE.Texture(img);
-        if (faceName === "sides" || faceName === "all") {
-            if (!block.px) block.px = texture;
-            if (!block.nx) block.nx = texture;
-            if (!block.pz) block.pz = texture;
-            if (!block.nz) block.nz = texture;
-            if (faceName === "all") {
-                if (!block.pz) block.py = texture;
-                if (!block.nz) block.ny = texture;
+    addFaceTexture(blockName, faceName, imgOrColor) {
+        if (!this.blockTextures[blockName]) {
+            this.blockTextures[blockName] = {};
+        }
+
+        const texture = imgOrColor
+        console.log(texture)
+        //console.log(blockName, faceName, texture, this.blockTextures[blockName])
+        const block = this.blockTextures[blockName];
+        if (faceName == "sides") {
+            if (!this.blockTextures[blockName]) {
+                this.blockTextures[blockName] = {};
             }
+            //console.log(this.blockTextures[blockName])
+            if (!block.px) this.blockTextures[blockName].px = texture; //Have to edit directly; editing `block` wouldn't change this.blockTexturs...
+            if (!block.nx) this.blockTextures[blockName].nx = texture;
+            if (!block.pz) this.blockTextures[blockName].pz = texture;
+            if (!block.nz) this.blockTextures[blockName].nz = texture;
+            /*if (faceName == "all") {
+                if (!block.py) this.blockTextures[blockName].py = texture;
+                if (!block.ny) this.blockTextures[blockName].ny = texture;
+            }*/
+        } else if (faceName == "all") {
+            console.log(`Single Texture Loaded, building ${blockName} cube.`);
+            this.blockTextures[blockName].texture = new THREE.Texture(texture);
+            return
         } else {
-            block[faceName] = texture;
+            this.blockTextures[blockName][faceName] = texture;
+        }
+        if (block.px && block.nx && block.py && block.ny && block.pz && block.nz) {
+            console.log(`All textures present, building ${blockName} cube.`)
+            this.blockTextures[blockName].texture = new THREE.CubeTexture([
+                block.px, block.nx,
+                block.py, block.ny,
+                block.pz, block.nz,
+            ])
         }
     }
     onError(url) {
         console.error(`Error loading ${url}`)
+    }
+    createBlock(type) {
+        const texture = this.blockTextures[type].texture
+        const geo = new THREE.BoxGeometry(1, 1, 1);
+        var mats = [];
+
+        if (typeof texture == "string") {
+            //It's a color, make a colored material
+            return new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: texture }));
+        } //Else
+
+        console.log(texture)
+        return new THREE.Mesh(geo, new THREE.MeshBasicMaterial( {map: texture }));
+        
     }
 }

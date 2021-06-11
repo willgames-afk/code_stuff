@@ -1,3 +1,6 @@
+
+
+
 export class CameraControls {
     constructor(camera,domElement, sensitivity = 0.05, friction = 0.9, maxSpeed = 1) {
 

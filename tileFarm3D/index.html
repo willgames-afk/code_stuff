@@ -1,12 +1,30 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
-		<link href="style/index.css" rel="stylesheet">
-		<script type= "module" src="https://unpkg.com/three@latest/build/three.min.js"></script>
+        <link href="style/index.css" rel="stylesheet">
+        <script src="https://unpkg.com/three@latest/build/three.js"></script>
 	</head>
 	<body>
-		<p id="loadingmessage">Loading...</p>
+		<div id="loadingmessage" class="loadBox">
+			<svg id= "animate" width="30" height="30">
+				<path stroke="#505050" stroke-width="4" stroke-linecap="round" fill="none"
+					d="M 5,15 A 10 10 90 0 0 25, 15" transform="rotate(0)">
+					<!--<animateTransform attributeName="transform" attrubuteType="XML" type="rotate" from="0 15 15"
+						to="360 15 15" dur="1s" repeatCount="indefinite" />-->
+				</path>
+            </svg>
+            <script>
+                document.getElementById("animate").animate([
+                    {transform: "rotate(0deg)"},
+                    {transform: "rotate(360deg)"},
+                ], {
+                    duration: 1000,
+                    easing: "linear",
+                    iterations: Infinity,
+                })
+            </script>
+			<span>Loading...</span>
+		</div>
         <script src="main.js" type="module"></script>
-        <!--<img src="assets/curvedBelt.svg" >-->
 	</body>
 </html>
