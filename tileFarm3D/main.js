@@ -1,6 +1,6 @@
-//import * as THREE from "https://unpkg.com/three@latest/build/three.module.js"
+import * as THREE from "https://unpkg.com/three@latest/build/three.module.js"
 import { CameraControls } from "./modules/cameraController.js";
-//import { Assets } from "./modules/loader.js";
+import { Assets } from "./modules/loader.js";
 import * as Config from "./modules/config.js"
 
 THREE.Cache.enabled = Config.cacheEnabled;
@@ -20,42 +20,39 @@ window.addEventListener("resize", () => {
     camera.updateProjectionMatrix();
 })
 
-const sun = new THREE.DirectionalLight(0xffffff, 0.5);
+const sun = new THREE.DirectionalLight("#ffffff", 0.5);
 scene.add(sun);
 
-const antiPitchBlack = new THREE.AmbientLight(0x333333);
+const antiPitchBlack = new THREE.AmbientLight("#333333");
 scene.add(antiPitchBlack);
 
-//const assets = new Assets(start.bind(this));
+const assets = new Assets(start.bind(this));
 
-const spinny = cube(0, 0, 0, 1, 0xffff00);
 
-for (var x = -1.5; x < 1.5; x++) {
-    for (var z = -1.5; z < 1.5; z++) {
-        cube(x * 1.20 + 0.5, -2, z * 1.20 + 0.5, 1, 0x00ff00);
-    }
-}
+assets.load();
 
-camera.position.z = 5;
-
-//assets.load();
-start();
 function start() {
     //const db = assets.createBlock("dirt");
     //console.log(db);
     //document.body.appendChild(db.material.map.image);
     //scene.add(db);
 
-    const l = new THREE.TextureLoader();
-    l.magFilter = THREE.NearestFilter;
-    l.minFilter = THREE.NearestFilter;
-    l.needsToUpdate = true;
-    const dirtTexture = l.load("./assets/dirt.png")
-    const dirtBox = new THREE.BoxGeometry(1,1,1);
-    const dirtMat = new THREE.MeshBasicMaterial({map: dirtTexture});
-    const dirtBlock = new THREE.Mesh(dirtBox,dirtMat);
-    dirtBlock.y = 4;
-    scene.add(dirtBlock)
+    console.log(assets)
+
+    const spinny = cube(0, 0, 0, 1, 0xffff00);
+
+    for (var x = -1.5; x < 1.5; x++) {
+        for (var z = -1.5; z < 1.5; z++) {
+            cube(x * 1.20 + 0.5, -2, z * 1.20 + 0.5, 1, 0x00ff00);
+        }
+    }
+
+    camera.position.z = 5;
+
+    const dirtBox = new THREE.BoxGeometry(1, 1, 1);
+    const dirtMat = new THREE.MeshLambertMaterial({  map: assets.blockTextures.log.texture});
+    const dirtBlock = new THREE.Mesh(dirtBox, dirtMat);
+    scene.add(dirtBlock);
 
     //Remove Loading Message
     document.getElementById("loadingmessage").style.display = 'none';
@@ -101,8 +98,9 @@ function start() {
 }
 
 function cube(x, y, z, s = 1, c = 0x00ff00) {
+    console.log(assets)
     const geo = new THREE.BoxGeometry(s, s, s);
-    const mat = new THREE.MeshLambertMaterial({ color: c });
+    const mat = new THREE.MeshLambertMaterial({map: assets.blockTextures.dirt.texture});
     const cube = new THREE.Mesh(geo, mat);
     cube.position.x = x, cube.position.y = y, cube.position.z = z;
     scene.add(cube)

@@ -1,4 +1,4 @@
-//import * as THREE from "https://unpkg.com/three@latest/build/three.module.js"
+import * as THREE from "https://unpkg.com/three@latest/build/three.module.js"
 import { loadCrossOrigin, assetPath } from "./config.js"
 
 export const Load = { //Maps filenames to specific face textures efficiently, see below
@@ -74,14 +74,16 @@ export class Assets {
         }
         this.state = 1;
 
-        const loader = new THREE.ImageLoader(this.manager); //Set up loader
+        var loader = new THREE.TextureLoader(); //Set up loader
         loader.setPath(assetPath);
 
         var total = 1; //Number of assets to load; has to be incremented by one because I call it an extra time 
         this.total = false; //Invalid; have to figure out how many to load first
 
         for (var blockName in Load.blockTextures) {
+
             var data = Load.blockTextures[blockName]
+            
             if (typeof data == "string") {
                 if (/#[\da-fA-F]{6}/.test(data)) { //If Color Code
                     this.addFaceTexture(blockName, 'all', data); //Transfer
@@ -113,8 +115,10 @@ export class Assets {
     }
     wOnBlockTxload(blockName, face = 'all') { //Wrapped onBlockTextureload
         return function (img) {
+            console.log(img)
             this.addFaceTexture(blockName, face, img)
             console.log(`Loaded ${blockName} (${face})!`)
+            document.body.appendChild(img.image)
             this.onload();
         }.bind(this)
     }
@@ -140,9 +144,12 @@ export class Assets {
                 if (!block.py) this.blockTextures[blockName].py = texture;
                 if (!block.ny) this.blockTextures[blockName].ny = texture;
             }*/
-        } else if (faceName == "all") {
+        } else if (faceName == "all" && !(typeof imgOrColor == "string")) {
             console.log(`Single Texture Loaded, building ${blockName} cube.`);
-            this.blockTextures[blockName].texture = new THREE.Texture(texture);
+            console.log(this.blockTextures[blockName],texture);
+            this.blockTextures[blockName].texture = texture;
+            console.log(this.blockTextures[blockName])
+            this.blockTextures[blockName].texture.magFilter = THREE.NearestFilter;
             return
         } else {
             this.blockTextures[blockName][faceName] = texture;
@@ -154,6 +161,7 @@ export class Assets {
                 block.py, block.ny,
                 block.pz, block.nz,
             ])
+            this.blockTextures[blockName].texture.magFilter = THREE.NearestFilter
         }
     }
     onError(url) {
