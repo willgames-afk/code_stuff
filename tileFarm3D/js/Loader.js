@@ -68,13 +68,15 @@ export class Assets {
         }
     }
     load() {
+        //TODO- Fix Double-loading- see log texture
+
         if (this.state > 0) {
             console.error("Already started loading!")
             return
         }
         this.state = 1;
 
-        var loader = new THREE.TextureLoader(); //Set up loader
+        const loader = new THREE.ImageLoader(); //Set up loader
         loader.setPath(assetPath);
 
         var total = 1; //Number of assets to load; has to be incremented by one because I call it an extra time 
@@ -83,14 +85,14 @@ export class Assets {
         for (var blockName in Load.blockTextures) {
 
             var data = Load.blockTextures[blockName]
-            
+
             if (typeof data == "string") {
                 if (/#[\da-fA-F]{6}/.test(data)) { //If Color Code
                     this.addFaceTexture(blockName, 'all', data); //Transfer
                 } else {
                     //If filename, load file
                     total++
-                    loader.load(data, this.wOnBlockTxload(blockName));
+                    loader.load(data, this.wrapOnFaceLoad(blockName));
                 }
                 continue;
             } //else 
@@ -103,7 +105,7 @@ export class Assets {
                     } else {
                         //If filename, load file
                         total++
-                        loader.load(data, this.wOnBlockTxload(blockName, faceName));
+                        loader.load(data, this.wrapOnFaceLoad(blockName, faceName));
                     }
                     continue;
                 } //else 
@@ -113,12 +115,12 @@ export class Assets {
 
         this.onload(); //Prevents an edge case where all images load before this.total is registered
     }
-    wOnBlockTxload(blockName, face = 'all') { //Wrapped onBlockTextureload
+    wrapOnFaceLoad(blockName, face = 'all') { //Wrapped onBlockTextureload
         return function (img) {
-            console.log(img)
+            //console.log(img)
             this.addFaceTexture(blockName, face, img)
             console.log(`Loaded ${blockName} (${face})!`)
-            document.body.appendChild(img.image)
+            document.body.appendChild(img)
             this.onload();
         }.bind(this)
     }
@@ -127,8 +129,8 @@ export class Assets {
             this.blockTextures[blockName] = {};
         }
 
-        const texture = imgOrColor
-        console.log(texture)
+        const img = imgOrColor;
+        //console.log(img);
         //console.log(blockName, faceName, texture, this.blockTextures[blockName])
         const block = this.blockTextures[blockName];
         if (faceName == "sides") {
@@ -136,36 +138,35 @@ export class Assets {
                 this.blockTextures[blockName] = {};
             }
             //console.log(this.blockTextures[blockName])
-            if (!block.px) this.blockTextures[blockName].px = texture; //Have to edit directly; editing `block` wouldn't change this.blockTexturs...
-            if (!block.nx) this.blockTextures[blockName].nx = texture;
-            if (!block.pz) this.blockTextures[blockName].pz = texture;
-            if (!block.nz) this.blockTextures[blockName].nz = texture;
+            if (!block.px) this.blockTextures[blockName].px = img; //Have to edit directly; editing `block` wouldn't change this.blockTexturs...
+            if (!block.nx) this.blockTextures[blockName].nx = img;
+            if (!block.pz) this.blockTextures[blockName].pz = img;
+            if (!block.nz) this.blockTextures[blockName].nz = img;
             /*if (faceName == "all") {
                 if (!block.py) this.blockTextures[blockName].py = texture;
                 if (!block.ny) this.blockTextures[blockName].ny = texture;
             }*/
         } else if (faceName == "all" && !(typeof imgOrColor == "string")) {
-            console.log(`Single Texture Loaded, building ${blockName} cube.`);
-            console.log(this.blockTextures[blockName],texture);
-            this.blockTextures[blockName].texture = texture;
-            console.log(this.blockTextures[blockName])
-            this.blockTextures[blockName].texture.magFilter = THREE.NearestFilter;
+            console.log(`Single texture loaded, building '${blockName}'.`)
+            this.blockTextures[blockName] = new THREE.Texture(img);
+            this.blockTextures[blockName].magFilter = THREE.NearestFilter;
+            this.blockTextures[blockName].needsUpdate = true;
             return
         } else {
-            this.blockTextures[blockName][faceName] = texture;
+            this.blockTextures[blockName][faceName] = img;
         }
         if (block.px && block.nx && block.py && block.ny && block.pz && block.nz) {
-            console.log(`All textures present, building ${blockName} cube.`)
-            this.blockTextures[blockName].texture = new THREE.CubeTexture([
+            console.log(`All textures present, building '${blockName}'.`)
+            console.log(block);
+            this.blockTextures[blockName] = new THREE.CubeTexture();
+            this.blockTextures[blockName].images = [
                 block.px, block.nx,
                 block.py, block.ny,
-                block.pz, block.nz,
-            ])
-            this.blockTextures[blockName].texture.magFilter = THREE.NearestFilter
+                block.pz, block.nz
+            ]
+            //this.blockTextures[blockName].magFilter = THREE.NearestFilter
+            this.blockTextures[blockName].needsUpdate = true;
         }
-    }
-    onError(url) {
-        console.error(`Error loading ${url}`)
     }
     createBlock(type) {
         const texture = this.blockTextures[type].texture
@@ -177,8 +178,8 @@ export class Assets {
             return new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: texture }));
         } //Else
 
-        console.log(texture)
-        return new THREE.Mesh(geo, new THREE.MeshBasicMaterial( {map: texture }));
-        
+        //console.log(texture)
+        return new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: texture }));
+
     }
 }

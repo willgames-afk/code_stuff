@@ -7,4 +7,3 @@ export const fullLoadPreStart = false; //Load all the assets before the game lau
 export const loadCrossOrigin = false; //Load cross-origin assets.
 export const assetPath = "./assets/"; //Where assets are located
 export const enableLogs = true //Enable logging
-export const LOG_PREFIX = "Main"

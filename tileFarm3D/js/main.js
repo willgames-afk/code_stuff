@@ -1,14 +1,14 @@
 import * as THREE from "https://unpkg.com/three@latest/build/three.module.js"
-import { CameraControls } from "./modules/cameraController.js";
-import { Assets } from "./modules/loader.js";
-import * as Config from "./modules/config.js"
+import { CameraControls } from "./Player/cameraController.js";
+import { Assets } from "./Loader.js";
+import * as Config from "./config.js"
 
 THREE.Cache.enabled = Config.cacheEnabled;
 
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-console.log(camera);
+//console.log(camera);
 
 
 const renderer = new THREE.WebGLRenderer();//{ antialias: true });
@@ -37,7 +37,7 @@ function start() {
     //document.body.appendChild(db.material.map.image);
     //scene.add(db);
 
-    console.log(assets)
+    //console.log(assets)
 
     const spinny = cube(0, 0, 0, 1, 0xffff00);
 
@@ -50,7 +50,8 @@ function start() {
     camera.position.z = 5;
 
     const dirtBox = new THREE.BoxGeometry(1, 1, 1);
-    const dirtMat = new THREE.MeshLambertMaterial({  map: assets.blockTextures.log.texture});
+    console.log(assets.blockTextures.log)
+    const dirtMat = new THREE.MeshLambertMaterial({  map: assets.blockTextures.log});
     const dirtBlock = new THREE.Mesh(dirtBox, dirtMat);
     scene.add(dirtBlock);
 
@@ -98,9 +99,9 @@ function start() {
 }
 
 function cube(x, y, z, s = 1, c = 0x00ff00) {
-    console.log(assets)
+    console.log(assets.blockTextures.dirt)
     const geo = new THREE.BoxGeometry(s, s, s);
-    const mat = new THREE.MeshLambertMaterial({map: assets.blockTextures.dirt.texture});
+    const mat = new THREE.MeshLambertMaterial({map: assets.blockTextures.dirt});
     const cube = new THREE.Mesh(geo, mat);
     cube.position.x = x, cube.position.y = y, cube.position.z = z;
     scene.add(cube)
