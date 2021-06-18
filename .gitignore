@@ -16,3 +16,6 @@ a.out
 
 #nodeJs
 node_modules/
+
+#electron output files
+out/
