@@ -28,7 +28,7 @@
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "k_studio"
+            "name": "KStudio"
           }
         },
         {

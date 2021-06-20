@@ -7,20 +7,23 @@ const scriptPath = path.join(__dirname, "src/js");
 const isMac = (process.platform === 'darwin');
 const menuTemplate = [ //Menu found at top of screen
     ...(isMac ? [{
-        label: appName,
+        label: "KStudio",
         submenu: [
             {role: 'about'},
-            {role: 'seperator'},
+            {type: 'separator'},
             {role: 'services'},
-            {role: 'seperator'},
+            {type: 'separator'},
             {role: 'hide'},
             {role: 'hideothers'},
             {role: 'unhide'},
-            {role: 'superator'},
+            {type: 'separator'},
             {role: 'quit'},
         ]
     }] : [])
 ]
+
+const menu = Menu.buildFromTemplate(menuTemplate);
+//Menu.setApplicationMenu(menu)
 
 function makeWindow() {
     const win = new BrowserWindow({
@@ -41,9 +44,9 @@ app.whenReady().then(()=>{
 
     app.name = appName
 
-    const menu = Menu.buildFromTemplate(menuTemplate);
+    /*const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu)
-    //app.applicationMenu = menu;
+    //app.applicationMenu = menu;*/
 
     makeWindow();
 
@@ -57,5 +60,5 @@ app.whenReady().then(()=>{
 })
 
 app.on('window-all-closed',function () {
-    if (process.platform !== 'darwin') app.quit(); //MacOS keeps apps running even after all their window are closed
+    app.quit(); //MacOS keeps apps running even after all their window are closed
 })
