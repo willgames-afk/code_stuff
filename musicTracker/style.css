@@ -1,0 +1,31 @@
+body,div {
+    margin: 0px;
+    padding: 0px;
+}
+
+span {
+    font-family: 'Source Code Pro', monospace;
+}
+
+ol {
+    list-style-type: none;
+    display: inline-block;
+}
+
+p {
+    display: inline;
+    font-family: 'Source Code Pro', monospace;
+}
+
+span[class='duration'] {
+    margin-left: 10px;
+}
+
+td[selected] {
+    border-bottom: thick solid #0000FF;
+    background-color: #1c76fd;
+}
+
+td:hover {
+    background-color: #1c76fd54;
+}

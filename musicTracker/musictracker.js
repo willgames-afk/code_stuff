@@ -1,9 +1,15 @@
+import { TrackDOM, Note } from "./DOM.js";
+
 /*
 TO DO:
 Change all refrences to Duration to Effect, I changed things
 Add "Stop Note" Thing.
 
 */
+
+var td = new TrackDOM([new Note().html],document.body)
+
+/*
 class Track extends HTMLElement {
     constructor () {
         super();
@@ -257,7 +263,7 @@ class MusicTracker {
                         /*var durEl = document.querySelector('[index ="' + element.getAttribute('index') + '"][class="duration"]');
                         if (durEl.innerHTML == '--') {
                             durEl.innerHTML = '01';
-                        }*/
+                        }
                     } else if (e.key == 'Backspace' || e.key == ' ' || e.key == '-') {
                         element.innerHTML = '---'
                         this.completeNote(element)
@@ -346,7 +352,7 @@ class MusicTracker {
             if (note) {
                 this.currentSong.tracks[track].data.push({ "note": note.replaceAll('-',""), "time": Math.floor(i/4)+":"+i%4, "duration":'4n' })
             } else {
-                this.currentSong.tracks[track].data.push({ /*"note": '---',*/ "time": Math.floor(i/4)+":"+i%4, "duration":'4n' })
+                this.currentSong.tracks[track].data.push({ /*"note": '---', "time": Math.floor(i/4)+":"+i%4, "duration":'4n' })
             }
         }
         if (!i) {
@@ -400,4 +406,4 @@ function onstart() {
     })
     document.body.appendChild(launchbutton);
 };
-window.addEventListener('load', onstart);
+window.addEventListener('load', onstart);*/
