@@ -1,4 +1,5 @@
 import { TrackDOM, Note } from "./DOM.js";
+const baseElement = document.getElementById("musictracker");
 
 /*
 TO DO:
@@ -7,97 +8,85 @@ Add "Stop Note" Thing.
 
 */
 
-var td = new TrackDOM([new Note().html],document.body)
+var menu = {};
 
-/*
-class Track extends HTMLElement {
-    constructor () {
-        super();
-        this.attachShadow({mode:'open'});
+//set up container object
+menu.container = document.createElement('div');
+menu.container.setAttribute('class', 'menu');
 
-    }
-}
-customElements.define('track',Track,{extends: "ol"})
+//playbutton config
+menu.playbutton = document.createElement('button');
+menu.playbutton.innerText = 'Play';
 
-
-config = {
-    selectTextBackgroundColor: '#1c76fd',
-    hoverTextBackgroundColor: 'rgba(28,118,253,0.33)'
-}
-
-class Song {
-    constructor(json) {
-        if (!json) { this.tracks = {}; return }
-        if (typeof json == 'string') {
-            try {
-                json = JSON.parse(json)
-            } catch (error) {
-                console.error(error)
-                return
-            }
-        }
-        for (var item in json) {
-            this[item] = json[item]
-        }
-
-        for (var trackName in this.tracks) { // Turns the config for each track into actual tracks
-
-            this.tracks[trackName] = new Track(this.tracks[trackName].notes, this.tracks[trackName].instrument)
-        }
-    }
-    play() {
-        console.log(this.tracks)
-        Tone.Transport.start();
-        console.log('success!')
-    }
-    stop() {
+menu.playbutton.addEventListener("click", async function () {
+    await Tone.start()
+    if (Tone.Transport.state == 'started') {
         Tone.Transport.stop();
+        menu.pauseButton.hidden = true;
+        menu.playbutton.innerText = 'Play';
+    } else {
+        Tone.Transport.start();
+        menu.pauseButton.hidden = false;
+        menu.playbutton.innerText = 'Stop';
     }
-    pause() {
+}.bind(this));
+
+menu.pauseButton = document.createElement('button');
+menu.pauseButton.hidden = true;
+menu.pauseButton.innerText = "Pause";
+menu.pauseButton.addEventListener("click",function(){
+    if (Tone.Transport.state == 'started') {
         Tone.Transport.pause();
     }
-    setNote(track, time ,noteObj) {
-        this.tracks[track].part.at(time, noteObj)
-    }
-    getNote(track, time) {
-        return this[track].part.at(time)
-    }
+}.bind(this))
+menu.container.appendChild(menu.pauseButton)
 
-    addTrack(track) {
-        this.tracks.push(track)
-    }
-}
-class Track {
-    constructor(notes, instrumentConfig) {
+menu.container.appendChild(menu.playbutton);
+
+menu.addTrackButton = document.createElement('button');
+menu.addTrackButton.innerText = 'Add Track';
+menu.addTrackButton.addEventListener("click", function () {
+
+})
+menu.container.appendChild(menu.addTrackButton);
+
+baseElement.appendChild(menu.container);
+
+
+class Track extends TrackDOM {
+    constructor(noteList, instrumentConfig, DOMParent) {
+        var noteElements = [];
+        for (var i = 0; i < noteList.length; i++) {
+            noteElements.push(new Note(Note.format(noteList[i].note)));
+        }
+
+        super(noteElements, DOMParent);
+
+        this.noteElements = noteElements;
+        this.notes = noteList;
+
         this.instrument = new Tone.Synth(instrumentConfig).toDestination();
         this.part = new Tone.Part(
             function (synth) {
-                return function(time, note) {
+                return function (time, note) {
                     synth.triggerAttackRelease(note.note, note.duration, time);
                 }
-            } (this.instrument),
-            notes
+            }(this.instrument),
+            this.notes
         ).start(0); //Start it with Tone.Trasport.start();
-        this.length = notes.length;
+        this.length = this.notes.length;
         console.log(this.part._events)
-    }
-    addNote(note) {
-        this.part.add(note)
-    }
-    setNote(time, note) {
-        this.part.at(time, note);
-    }
-    getNote(time) {
-        return this.part.at(time)
-    }
-    iterateNotes(fn = (note)=>{}) {
-        for (vari=0;i<this.part._events;i++) {
-            fn(this.part._events[0].value);
-        }
     }
 }
 
+const k = new Track([
+    { note: 'C4', time: 0, duration: "4n" },
+    { note: 'D4', time: 0, duration: "4n" }
+], {}, baseElement)
 
+Tone.Transport.start();
+
+/*
 //init(document.getElementById('musictracker'))
 class MusicTracker {
     constructor(element) {
@@ -366,10 +355,10 @@ class MusicTracker {
             } else {
                 noteElement.innerHTML = note
             }
-        } else { 
+        } else {
             noteElement.innerHTML = "---"
         }
-        //Set up event listeners to allow for editing 
+        //Set up event listeners to allow for editing
         noteElement.addEventListener('mouseover', this.hover);
         noteElement.addEventListener('click', this.select);
         noteElement.addEventListener('mouseout', this.nothover);

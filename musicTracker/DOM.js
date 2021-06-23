@@ -1,6 +1,6 @@
 
 export class TrackDOM {
-    constructor(notes, DOMParent) {
+    constructor(notes = [], DOMParent) {
         this._notes = notes, this.DOMParent = DOMParent;
 
         this.htmlTable = document.createElement("table"); //Create Table
@@ -23,14 +23,17 @@ export class TrackDOM {
         //Regenerate HTML table here
     }
 
-    addNote(noteHTML) {
+    addNote(note) {
+
+        console.log(note.html)
+
         var row = document.createElement("tr"); //Create row element
 
         var noteNumber = document.createElement("td"); //Create Note number label
         noteNumber.innerText = this.htmlTable.rows.length;         //Set its value
         row.appendChild(noteNumber);    //Add it to row
 
-        row.appendChild(noteHTML);            //Add to row
+        row.appendChild(note.html);            //Add to row
 
         this.htmlTable.appendChild(row);
         //return row;
@@ -38,15 +41,19 @@ export class TrackDOM {
 }
 
 export class Note {
-    constructor() {
-        this.html = document.createElement("td")
+    constructor(value = "---", onComplete) {
+        this.html = document.createElement("td");
         this.noteElement = document.createElement("span");
-        this.noteElement.innerText="---"
-        this.html.appendChild(this.noteElement);
+        this.noteElement.innerText = value;
         this.keycount = 0;
+        this.html.appendChild(this.noteElement);
+        this.html.addEventListener("click", this.select.bind(this));
+        this.onComplete = onComplete;
     }
 
     keydown(e) {
+        console.log(`KEYPRESS ${this.keycount}, "${e.key}"`)
+
         if (this.keycount == 0) { //Key 1 is the key, ABCDEF or G
 
             if (/[a-gA-G]/.test(e.key) && e.key.length == 1) {
@@ -58,7 +65,7 @@ export class Note {
                 }*/
             } else if (e.key == 'Backspace' || e.key == ' ' || e.key == '-') {
                 this.noteElement.innerText = '---'
-                this.onComplete()
+                this._onComplete()
             }
 
         } else if (this.keycount == 1) {
@@ -72,19 +79,22 @@ export class Note {
                 this.keycount++;
             } else if (/[0-9]/.test(e.key)) { //If user types a number, skip ahead to Key 3
                 this.noteElement.innerText = this.noteElement.innerText[0] + '-' + e.key;
-                this.onComplete()
+                this.keycount++;
+                this._onComplete()
             }
 
         } else if (this.keycount == 2) {
 
             if (/[0-9]/.test(e.key)) { //Key 3 is the Octave, 12345678 or 9
-                element.innerHTML = element.innerHTML.slice(0, 2) + e.key;
-                this.onComplete()
+                this.noteElement.innerText = this.noteElement.innerText.slice(0, 2) + e.key;
+                this._onComplete()
             }
         }
     }
-    onComplete() {
-
+    _onComplete() {
+        this.deselect();
+        console.log("completed");
+        this.onComplete();
     }
 
     select() {
@@ -92,11 +102,13 @@ export class Note {
 
         this.selected = true;
         this.keycount = 0;
-        element.setAttribute("selected", '')
+        this.html.setAttribute("selected", '');
+        document.body.addEventListener("keydown", this.keydown.bind(this));
     }
 
     deselect() {
         if (!this.selected) return false;
+        this.selected = false;
 
         console.log(this.noteElement)
         console.log(this.keycount)
@@ -104,6 +116,25 @@ export class Note {
             console.log('Incomplete!');
             this.noteElement.innerHTML = '---';
         }
-        this.noteElement.removeAttribute("selected")
+        this.html.removeAttribute("selected");
+        document.body.removeEventListener("keydown", this.keydown.bind(this))
+    }
+    getNoteFormatted() {
+        var s = this.noteElement.innerText;
+        return s[0] + (s[1] == "#" ? s[1] + s[2] : s[2]); //Ignore dashes
+    }
+    setNoteFromFormatted(string) {
+        if (string.length == 2) {
+            this.noteElement.innerText = string[0] + '-' + string[1];
+        } else {
+            this.noteElement.innerText = string;
+        }
+    }
+    static format(string) {
+        if (string.length == 2) {
+            return string[0] + '-' + string[1];
+        }
+        return string;
     }
 }
+

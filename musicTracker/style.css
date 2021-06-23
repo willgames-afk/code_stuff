@@ -3,25 +3,12 @@ body,div {
     padding: 0px;
 }
 
-span {
+td {
     font-family: 'Source Code Pro', monospace;
+    min-height:max-content;
 }
 
-ol {
-    list-style-type: none;
-    display: inline-block;
-}
-
-p {
-    display: inline;
-    font-family: 'Source Code Pro', monospace;
-}
-
-span[class='duration'] {
-    margin-left: 10px;
-}
-
-td[selected] {
+td[selected] span {
     border-bottom: thick solid #0000FF;
     background-color: #1c76fd;
 }
