@@ -3,10 +3,9 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 640,
         height: 480,
-        resizable: false
-    })
-
-    win.loadFile('index.html')
+    });
+    win.loadFile('index.html');
+    console.dir(win);
 }
 
 app.whenReady().then(() => {
@@ -17,5 +16,5 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', function () {
-    if (process.platform !== 'darwin') app.quit()
+   /* if (process.platform !== 'darwin')*/ app.quit() //Not quitting on window close is annoying during dev
 })
