@@ -1,15 +1,19 @@
+
+
 const { app, BrowserWindow } = require('electron')
 function createWindow() {
     const win = new BrowserWindow({
-        width: 640,
+        width: 640 + 515,
         height: 480,
+        backgroundColor: "white"
     });
     win.loadFile('index.html');
     console.dir(win);
+    win.webContents.openDevTools();
 }
 
 app.whenReady().then(() => {
-    createWindow()
+    createWindow();
     app.on('activate', function () {
         if (BrowserWindow.getAllWindows().length === 0) createWindow()
     })
