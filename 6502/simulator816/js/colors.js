@@ -9,6 +9,7 @@ function colorFrom6bit(r, g, b) {
     return toHexColor(r * 64, g * 64, b * 64);
 }
 
+
 function colorFromByte(b) {
     return colorFrom6bit(b % 4,Math.floor(b/4) % 4, Math.floor(b/16));
 }
