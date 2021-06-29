@@ -1,0 +1,10 @@
+.loadingbar {
+    width: 100%;
+    height: 30px;
+    background-color: darkgrey;
+}
+.loadingbar #progress {
+    width: 100%;
+    height: 30px;
+    background-color: grey
+}

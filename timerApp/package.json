@@ -1,0 +1,14 @@
+{
+  "name": "timerapp",
+  "version": "0.1.0",
+  "description": "A simple timer app to help me and my sister get along.",
+  "main": "app.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "William Kam",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^13.1.4"
+  }
+}
