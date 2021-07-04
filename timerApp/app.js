@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Notification } = require('electron')
+const { app, BrowserWindow, ipcMain, Notification, Tray } = require('electron')
 const  path  = require("path")
 
 var startTime = Date.now();
@@ -32,6 +32,7 @@ function createWindow() {
     win.loadFile('index.html')
 }
 app.whenReady().then(() => {
+    img = new Tray('./icon.png');
     createWindow();
 
     app.on('activate', function () {

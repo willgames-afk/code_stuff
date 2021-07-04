@@ -93,4 +93,4 @@ class VGADisplay {
     }
 }
 
-export { VGADisplay };
+module.exports = { VGADisplay };
