@@ -6,12 +6,57 @@ const config = {
 	rw: 2,
 
 	graphics: {
-		pixelSize: 2,
-		offset: [3, 3],
+		pixelSize: 3,
+		pixelSpacing: 1,
+		charSpacing: 1,
+		offset: [45, 65],
 
+		pixel: "rgb(38,59,53)",
+		noPixel: "#00a010",
+		on: "#00ff6650",
+
+		onBox: [[38, 53], [354, 88]]
 	},
 
 	charMap: '\0\t\n\r !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\134]^_`abcdefghijklmnopqrstuvwxyz{|}~�������������\215�\217\220������������\235��������������������������������������������������������������������������������������������������'
+}
+
+/** Rounded Rectangle drawing function for the Canvas.
+ * 
+ * @param {Number} x 
+ * @param {Number} y 
+ * @param {Number} width 
+ * @param {Number} height 
+ * @param {Number|Object} radius 
+ */
+function fillRoundedRect(ctx, x, y, width, height, radius) {
+	if (typeof stroke === 'undefined') {
+		stroke = true;
+	}
+	if (typeof radius === 'undefined') {
+		radius = 5;
+	}
+	if (typeof radius === 'number') {
+		radius = { tl: radius, tr: radius, br: radius, bl: radius };
+	} else {
+		var defaultRadius = { tl: 0, tr: 0, br: 0, bl: 0 };
+		for (var side in defaultRadius) {
+			radius[side] = radius[side] || defaultRadius[side];
+		}
+	}
+	ctx.beginPath();
+	ctx.moveTo(x + radius.tl, y);
+	ctx.lineTo(x + width - radius.tr, y);
+	ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+	ctx.lineTo(x + width, y + height - radius.br);
+	ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+	ctx.lineTo(x + radius.bl, y + height);
+	ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+	ctx.lineTo(x, y + radius.tl);
+	ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+	ctx.closePath();
+	
+	ctx.fill();
 }
 
 class LCDDisplay {
@@ -35,9 +80,14 @@ class LCDDisplay {
 
 		this.cgram = new Uint8Array(64);
 		this.ddram = new Uint8Array(80);
-		
-		for (var i=0;i<this.ddram.length;i++) {
-			this.ddram[i] = 0x57; //Clears to space chars (0x20) normally, setting it to 9 for debugging purposes
+
+		for (var i = 0; i < this.ddram.length; i++) {
+			this.ddram[i] = 0x20; //Clears to space chars (0x20) normally, setting it to 9 for debugging purposes
+		}
+
+		var string = "Hello, World!";
+		for (var i = 0; i < string.length; i++) {
+			this.ddram[i] = string.charCodeAt(i)
 		}
 
 		this.regDL = 0;//Data length;  4 bits (0) or 8 bits (1)
@@ -49,6 +99,8 @@ class LCDDisplay {
 		this.regOn = 0;//  Entire Display off (0) or on (1)
 		this.regC = 0; //          Cursor off (0) or on (1)
 		this.regB = 0; //    Cursor Blink off (0) or on (1)
+
+		this._regAC = 0;
 
 		this.busy = 0;//Busy Flag
 	}
@@ -151,30 +203,56 @@ class LCDDisplay {
 	}
 	update() {
 		let c = this._ctx;
-		let pixelSize = config.graphics.pixelSize;
+		let pixelSize = config.graphics.pixelSize + config.graphics.pixelSpacing;
 		let offset = config.graphics.offset;
+		let truePixelSize = config.graphics.pixelSize;
+		let charSpacing = config.graphics.charSpacing;
+
+		let pxcolor = config.graphics.pixel;
+		let nopxcolor = config.graphics.noPixel;
+
 		var font = this.font;
 		let cgram = this.cgram;
-		let position = this.regAC
+		let position = this.regAC;
 
 		c.clearRect(0, 0, this._canvas.width, this._canvas.height);
 		c.drawImage(this.img, 0, 0);
-		c.fillStyle = "rgba(2,2,2,1)"
+		c.fillStyle = config.graphics.on;
+		fillRoundedRect(c, config.graphics.onBox[0][0], config.graphics.onBox[0][1], config.graphics.onBox[1][0], config.graphics.onBox[1][1],4)
+
+		/*
+		var pos = pchr.arguments[1] * 8
+		for (var i = 0; i < 7; i += 1) {
+			document['p' + (pos + i)].src = chrtbl[chrnum][i] + '.gif'
+		}
+
+		if (chrnum < 8) {
+			document['p' + (pos + 7)].src = chrtbl[chrnum][7] + '.gif'
+		} else {
+			document['p' + (pos + 7)].src = '0.gif'
+		}
+		*/
 
 		function pxrow(x, y, num) {
 			for (var i = 0; i < 5; i++) {
-				if (num & (1 << i)) {
-					c.fillRect(x + i * pixelSize, y + i * pixelSize, pixelSize, pixelSize);
+				//console.log((num & (1 << i)) == 0)
+				if (num.toString(2).padStart(5, "0")[i] == "1") {
+					c.fillStyle = pxcolor;
+				} else {
+					c.fillStyle = nopxcolor;
 				}
+				c.fillRect(x + i * (pixelSize - 1), y, truePixelSize - 1, truePixelSize);
 			}
 		}
 
 		function char(id, x, y, code) {
-			console.log(code)
-			console.log(font)
+			//console.log(code)
+			//console.log(font)
+			console.log(`id: ${id} pos: ${position}`);
+			var s = ""
 			if (code > 7) {
 				for (var i = 0; i < 7; i++) {
-					console.log(font[code][i])
+					s += font[code][i].toString(2).padStart(5, "0") + "\n"
 					pxrow(x, y + i * pixelSize, font[code][i]);
 
 				}
@@ -186,19 +264,23 @@ class LCDDisplay {
 				}
 			}
 			if (id == position) {
-				pxrow(x, y + 8 * pixelSize, 31); //cursor is a solid line rendered underneath 5x7 font; overwrites 5x8 cgram chars
+				pxrow(x, y + 7 * pixelSize, 31); //cursor is a solid line rendered underneath 5x7 font; overwrites 5x8 cgram chars
+			} else {
+				pxrow(x, y + 7 * pixelSize, 0);
 			}
+			//console.log(s);
+			//console.groupEnd();
 		}
 
-		function charRow(x, y, chars) {
+		function charRow(id, x, y, chars) {
 			for (var i = 0; i < 16; i++) {
-				char(i, x + i * 6 * pixelSize, y, chars[i]);
+				char(id * 40 + i, x + i * 5 * (pixelSize) + charSpacing, y, chars[i]);
 			}
 		}
 
-		console.log(this.ddram.slice(this._shift, this._shift + 16))
-		charRow(offset[0], offset[1], this.ddram.slice(this._shift, this._shift + 16));
-		charRow(offset[0], offset[1] + 9, this.ddram.slice(this._shift, this._shift + 16));
+		//console.log(this.ddram.slice(this._shift, this._shift + 16))
+		charRow(0, offset[0], offset[1], this.ddram.slice(this._shift, this._shift + 16));
+		charRow(1, offset[0], offset[1] + 9 * pixelSize, this.ddram.slice(this._shift + 40, this._shift + 56));
 	}
 	init() {
 		let c = this._ctx;
