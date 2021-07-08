@@ -1,5 +1,8 @@
-const { app, BrowserWindow, ipcMain, Notification, Tray } = require('electron')
+const { app, BrowserWindow, ipcMain, Notification, Dock } = require('electron')
 const  path  = require("path")
+
+
+app.dock.setIcon('./icon.png');
 
 var startTime = Date.now();
 setTimeout(()=>{
@@ -22,17 +25,18 @@ ipcMain.on("time-sync",(e,arg)=>{
 
 function createWindow() {
     const win = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 400,
+        height: 120,
+		backgroundColor: "#17171700",
         webPreferences: {
             preload: path.join(__dirname, "main.js")
-        }
+		}
     })
 
     win.loadFile('index.html')
 }
 app.whenReady().then(() => {
-    img = new Tray('./icon.png');
+    //app.dock.setIcon('./icon.png');
     createWindow();
 
     app.on('activate', function () {

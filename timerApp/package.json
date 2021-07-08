@@ -4,7 +4,7 @@
   "description": "A simple timer app to help me and my sister get along.",
   "main": "app.js",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "electron --trace-warnings .",
     "package": "electron-forge package",
     "make": "electron-forge make"
   },
