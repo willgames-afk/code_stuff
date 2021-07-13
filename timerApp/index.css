@@ -1,3 +1,13 @@
+@keyframes background-flash {
+	from {background-color: #17171700;}
+	to {background-color: yellow;}
+}
+
+@keyframes growshrink {
+	from {font-size: 20vh}
+	to {font-size: 30vh}
+}
+
 .loadingbar {
     width: 100%;
     height: 30px;
@@ -11,4 +21,22 @@
 
 p {
 	color: white;
+}
+
+.flash {
+	animation-duration: 1s;
+	animation-timing-function:linear;
+	animation-direction: alternate;
+	animation-iteration-count: infinite;
+}
+
+body.flash {
+	display: table-cell;
+	animation-name: background-flash;
+}
+p.flash {
+	text-align: center;
+	font-size: 5.7vw;
+	color: black;
+	animation: growshrink alternate 2s infinite
 }

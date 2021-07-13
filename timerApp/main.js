@@ -1,21 +1,29 @@
-const { ipcRenderer, TouchBarSegmentedControl } = require("electron")
+const { ipcRenderer } = require("electron")
 
 window.addEventListener("DOMContentLoaded", () => {
-    var startTime = ipcRenderer.sendSync('time-sync');
-    var bar = document.getElementById("progress").style;
+
+    const startTime = ipcRenderer.sendSync('time-sync');
+	const totalTime = ipcRenderer.sendSync('time-getLength');
+
+    var bar = document.getElementById("progress");
 	var remaining = document.getElementById("remainingTime");
 
+
     (function render() {
-        requestAnimationFrame(render);
+		var timeRemaining = totalTime - (Date.now() - startTime);
+        var percentRemaining = timeRemaining / (totalTime + 1);
 
-        var totalTime = 360; //1 hour
-        var timeElapsed = (Date.now() - startTime) / 1000; //In seconds, not milliseconds
-		var timeRemaining = totalTime - timeElapsed
-        var percentRemaining = timeRemaining / totalTime
-        bar.width = percentRemaining * 100 + "%";
-
-
-		remaining.innerText = toMins(timeRemaining) + " remaining!";
+		if (timeRemaining > 0) {
+			requestAnimationFrame(render);
+			bar.style.width = (percentRemaining * 100) +"%";
+			remaining.innerText = toMins(timeRemaining / 1000) + " remaining!";
+		} else {
+			bar.style.display = "none";
+			bar.parentElement.style.display = "none";
+			remaining.innerText = "TIME TO GET OFF!!!!"
+			remaining.className = "flash"
+			document.body.className = "flash"
+		}
     })();
 
 	function toMins(seconds) {
