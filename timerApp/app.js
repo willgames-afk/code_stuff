@@ -2,14 +2,21 @@ const { app, BrowserWindow, ipcMain, Notification } = require('electron');
 const path = require("path");
 
 //Set up app constants
-const startTime = Date.now();
+var startTime = Date.now();
 const turnLengthMS = 6000//60 * 60 * 1000;
 const fiveMinutesMS = 5000//5 * 60 * 1000;
+var pauseStart = null;
+var paused = false;
 
 var win = null; //Will store current window object once created
 
+var timeouts = {
+	fiveMins: null,
+	noMins: null
+}
+
 function registerNotifications() { //Sets up time warning notifications
-	setTimeout(() => {
+	timeouts.noMins = setTimeout(() => {
 		//Time Up Notification
 
 		if (BrowserWindow.getAllWindows().length === 0) { //Have to make sure window exists before focusing
@@ -22,27 +29,54 @@ function registerNotifications() { //Sets up time warning notifications
 			body: "Your turn is UP!"
 		}).show();
 
-	}, turnLengthMS)
+	}, turnLengthMS - (Date.now() - startTime))
 
-	setTimeout(() => { //5-minute warning
+	timeouts.fiveMins = setTimeout(() => { //5-minute warning
 		new Notification({
 			title: "5 Minute Warning",
 			body: "Your turn is almost up!!"
 		}).show();
 
-	}, turnLengthMS - fiveMinutesMS)
+	},(turnLengthMS - fiveMinutesMS) - (Date.now()- startTime))
 }
 
 
 //Communication with render process
 ipcMain.on("time-sync", (e, arg) => {
+	console.log(`Time Sync!`)
 	//Gets the app's startTime
 	e.returnValue = startTime;
 })
 ipcMain.on("time-getLength", (e, arg) => {
+	console.log(`GetLength!`)
 	//Gets turn length
 	e.returnValue = turnLengthMS;
 })
+
+ipcMain.on("state-update",(e,arg)=>{
+	console.log(`State Update to ${arg}`)
+	if (arg == "pause" && !paused) {
+		pauseStart = Date.now();
+		paused = true;
+		clearTimeout(timeouts.fiveMins);
+		clearTimeout(timeouts.noMins);
+		e.returnValue = true;
+	} else if (arg == "restart" && paused) {
+		startTime += (Date.now()-pauseStart);
+		paused = false;
+		registerNotifications();
+		e.returnValue = startTime;
+	}
+})
+ipcMain.on("state",(e,arg)=>{
+	console.log(`Get State!`)
+	if (paused) {
+		e.returnValue =  "paused";
+	} else {
+		e.returnValue =  "unpaused"
+	}
+})
+
 
 function createWindow() { //Creates a window into the win variable
 	win = new BrowserWindow({
