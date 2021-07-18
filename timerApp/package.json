@@ -5,63 +5,21 @@
   "main": "app.js",
   "scripts": {
     "start": "electron .",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
+    "package": "electron-packager ."
   },
   "author": "William Kam",
   "license": "ISC",
-  "dependencies": {
-    "electron-squirrel-startup": "^1.0.0"
-  },
   "build": {
+    "appId": "com.timer-app.app",
     "productName": "Timer App",
     "copyright": "Copyright © 2021 ${author}",
     "mac": {
       "icon": "icon.icns",
       "category": "public.app-category.utilities"
-    },
-    "files": [
-      "*.*"
-    ],
-    "directories": {
-      "buildResources": "/res"
     }
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.0-beta.57",
-    "@electron-forge/maker-deb": "^6.0.0-beta.57",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.57",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.57",
-    "@electron-forge/maker-zip": "^6.0.0-beta.57",
-    "electron": "^13.1.4"
-  },
-  "config": {
-    "forge": {
-      "packagerConfig": {
-		  "icon": "icon.icns"
-	  },
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "timerapp"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
-        }
-      ]
-    }
+    "electron": "^13.1.4",
+    "electron-packager": "^15.2.0"
   }
 }

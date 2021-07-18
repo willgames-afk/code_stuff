@@ -1,4 +1,4 @@
-class TinyInterpereter {
+export class TinyInterpereter {
     constructor(input, config = {}, outputCallback) {
         if (typeof input == "object") { //If input is not a string (HTML Element), treat it as such.
             this.inputElement = input
@@ -69,7 +69,7 @@ class TinyInterpereter {
     }
 };
 
-function demoProgram() {
+export function demoProgram() {
     var test = "this is a test";
     const object = {
         string: "I am an object",

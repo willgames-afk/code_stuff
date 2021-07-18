@@ -21,6 +21,8 @@
 
 p {
 	color: white;
+	margin: auto;
+	width: 100%;
 }
 
 .flash {
@@ -33,10 +35,17 @@ p {
 body.flash {
 	display: table-cell;
 	animation-name: background-flash;
+	width: 100vw;
+	height: 100vh;
 }
 p.flash {
 	text-align: center;
 	font-size: 5.7vw;
 	color: black;
-	animation: growshrink alternate 2s infinite
+	animation: growshrink alternate 2s infinite;
+	margin: 0;
+  	position: absolute;
+  	top: 50%;
+  	left: 50%;
+  	transform: translate(-50%, -50%);
 }
