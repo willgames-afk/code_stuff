@@ -1,8 +1,9 @@
-text {
-    webdefault;
+defaults: web;
+
+text.h1("Title!")
+text.p("Hi")
+
+button("Press this button to run JS!") {
+	onclick: script.triggerText;
+	background-color: 'green';
 }
-
-text.h1 ("Title!")
-text.p ("Hi") {}
-
-1+1=2

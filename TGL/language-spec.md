@@ -4,11 +4,14 @@ TGL stands for Tiny Graphics Language, and was designed to be a lightweight repl
 
 Example Program:
 
-```js
-text {
-    webdefault;
-}
+```tgl
+defaults: web;
 
-new text (text: "Title!") {}
-new text editable ("Hi") {}
+text.h1("Title!")
+text.p("Hi")
+
+button("Press this button to run JS!") {
+    onclick: script.triggerText;
+    background-color: 'green';
+}
 ```

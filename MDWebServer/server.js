@@ -3,7 +3,7 @@ const fs = require('fs');            //Files
 const express = require('express');  //Server
 const showdown = require("showdown");//Markdown to HTML
 const katex = require("katex");      //LATeX to HTML
-const { getMaxListeners } = require('process');
+const path = require("path");
 
 //Setup
 const app = express();
@@ -11,77 +11,138 @@ const port = 3000;
 
 //error code lookup
 const errorMessages = {
-	ENOENT: "Couldn't find this file :( \n(ENOENT)",
-	EACCES: "Sorry, but you don't have access to that! \n(EACCES)",
-	ECONNREFUSED: "Connection Refused. \n(ECONNREFUSED)",
-	ECONNRESET: "Connection reset by peer. :( \n(ECONNRESET)",
-	EMFILE: "Too many open files in system. (Probably due to Will writing bad code) \n(EMFILE)",
-	ENOTFOUND: "DNS lookup failed. \n(ENOTFOUND)",
-	EPERM: "Sorry,but you don't have the permissions to do that. \n(EPERM)",
-	ETIMEDOUT: "Timed Out :( \nMaybe try refresing? \n(ETIMEDOUT)",
+	"ENOENT": "Couldn't find this file :( \n(ENOENT)",
+	"EACCES": "Sorry, but you don't have access to that! \n(EACCES)",
+	"ECONNREFUSED": "Connection Refused. \n(ECONNREFUSED)",
+	"ECONNRESET": "Connection reset by peer. :( \n(ECONNRESET)",
+	"EMFILE": "Too many open files in system. (Probably due to Will writing bad code) \n(EMFILE)",
+	"ENOTFOUND": "DNS lookup failed. \n(ENOTFOUND)",
+	"EPERM": "Sorry,but you don't have the permissions to do that. \n(EPERM)",
+	"ETIMEDOUT": "Timed Out :( \nMaybe try refresing? \n(ETIMEDOUT)",
 }
 
 
 //Resource Loading
-const res_dir = "./resources/"
-function loadpage(url) {
-	return fs.readFileSync(res_dir + url + ".html").toString();
+const res_dir = "./resources/";
+const public_dir = "./public/";
+function loadRes(url) {
+	return fs.readFileSync(path.join(res_dir, url))
 }
-const basepage = loadpage("post") //Page Template
-const index = loadpage("index")   //Site Index.html
+function preloadPage(url) {
+	return fs.readFileSync(path.join(res_dir, url + ".html")).toString();
+}
+function loadPub(url) {
+	return fs.readFileSync(path.join(public_dir, url))
+}
+const basepage = preloadPage("post") //Page Template
+const index = preloadPage("index")   //Site Index.html
 var publicFiles = searchDir('./public');
 console.dir(publicFiles, { depth: null });
 
-//express app setup
-app.get('/', (req, res) => {
-	res.send(index)
-});
+function loggerMWF(req, res, next) {
+	console.log(`${req.method} ${req.path}`)
+	next();
+}
+app.use('/', loggerMWF);//Log all server requests
 
-//Anything in the images folder is fair game.
-app.use('/public/', (req, res) => {
-	try {
-		res.send(fs.readFileSync("./public/" + req.url));
-	} catch (err) {
-		res.send("<h1>Error</h1>" + errorMessages[err.code].replace(/(?:\r\n|\r|\n)/g, '<br>'))
-	}
-})
+
+app.get('/', (req, res) => {
+	console.log("handled by index handler")
+	res.send(index);
+});
 
 //Resources
 app.use('/resources/', (req, res) => {
-	res.type("." + req.url.replace(/.+\./, "")) //Send correct filetype
-	res.send(fs.readFileSync("./resources/" + req.url));
+	res.type(path.extname(req.url)) //Send correct filetype
+	res.send(loadRes(req.url));
 })
 
-//Blog posts are stored as Markdown which needs to be converted to HTML
-app.use('/blog/', (req, res) => {
-	if (req.path == '/') {
-		res.send(basepage.replace('$content$', "Blog Homepage"))
-		return
-	} else if (req.path) {
-
+//  blog/
+app.get("/blog/", (req, res) => {
+	res.send(fillTemplate(basepage, { content: "Blog Homepage" }))
+})
+// blog/imgs/**
+app.use("/blog/imgs", (req, res) => {
+	var file;
+	try {
+		file = loadPub(path.join("blog/imgs", req.path)); //Get the file
+	} catch (err) {
+		sendErrorMessage(err, res);
+		return;
 	}
-	const converter = new showdown.Converter(); //Get a converter
-	const rawfile = fs.readFileSync("./posts/" + req.url + '.md'); //Get the file
+	res.type(path.extname(req.url));
+	res.send(file);
+})
+// blog/** not including /imgs or /
+app.use('/blog/', (req, res) => {
+	console.log("Handled by Blog Handler")
+	var url = path.join("./public/blog", `${req.url}.md`)
+	var rawfile
+	try {
+		rawfile = fs.readFileSync(url); //Get the file
+	} catch (err) {
+		sendErrorMessage(err, res);
+		return;
+	}
 	const fileObj = splitFile(rawfile.toString());
 	if (!fileObj.timecode) {
-
+		var timecode = addTimecode(url);
+	} else {
+		console.log(fileObj.timecode)
+		var timecode = fileObj.timecode;
 	}
 
-	const mainPage = converter.makeHtml(preconvertLatex(fileObj.file));
+	const date = new Date(parseInt(timecode,10)).toDateString();
+	const converter = new showdown.Converter(); //Get a converter
+	const postContent = converter.makeHtml(preconvertLatex(fileObj.file));
+	const page = fillTemplate(basepage, {
+		content: postContent,
+		title: fileObj.title,
+		subtitle: fileObj.subtitle,
+		postdate: date
+	})
 
-	res.send();
+	res.send(page);
+})
+
+//Anything in the public folder will be served from the root directory
+app.use('/', (req, res) => {
+	//console.log("Used bulk web handler")
+	var file;
+
+	//Attempt to load file
+	try {
+		if (path.extname(req.url) === "") { //Automatically serve index.html s
+			file = fs.readFileSync(path.join("./public", req.url, "index.html"));
+		} else {
+			file = fs.readFileSync(path.join("./public", req.url));
+		}
+
+		//If error is thrown, send error page
+	} catch (err) {
+		sendErrorMessage(err, res);
+		return;
+	}
+
+	//If no errors have been thrown, send file (with correct filetype)
+	if (path.extname(req.url) === "") {
+		res.type("html")
+		res.send(file);
+	} else {
+		res.type("." + path.extname(req.url)) //Send correct filetype
+		res.send(file);
+	}
 })
 
 //Start the app
 app.listen(port, () => {
-	console.log(`Example app listening at http://localhost:${port}`);
+	console.log(`Markdown Web Server listening at http://localhost:${port}`);
 })
 
 
 function preconvertLatex(mdstring) {
-	console.log(mdstring);
-	var convertibles = mdstring.matchAll(/```latex\n[^`]+\n```/g);
-	for (var match of convertibles) {
+	var convertables = mdstring.matchAll(/```latex\n[^`]+\n```/g);
+	for (var match of convertables) {
 		var toConvert = match[0].substring(9, match[0].length - 4)
 		console.log("Converting:" + toConvert);
 		var converted = katex.renderToString(toConvert);
@@ -141,17 +202,34 @@ function splitFile(poststring) { //Splits a md post into metadata and file
  * @param {String | Buffer} [fileContents] If the file to be modified has already been loaded, you can pass it in here and avoid having to load it again.
  */
 
+function addTimecode(filePath) { //Inserts a string into a specific place in a file
+	var code = Date.now();
+	var fileData = fs.readFileSync(filePath).toString();
+	var insertIndex = fileData.indexOf("\n",fileData.indexOf("\n") + 1) + 1; //Get the position after the second newline (So the 3rd line)
 
-function insertStringSync(filePath, position, string, fileContents) { //Inserts a string into a specific place in a file
-	try {
-		var fileData = fileContents ? fileContens : fs.readFileSync(filePath);
-		var file_content = (typeof fileData == "string") ? fileData : fileData.toString();
-		file_content = file_content.substring(position);
-		var file = fs.openSync(file_path, 'r+');
-		var bufferedText = new Buffer.from(new_text + file_content);
-		fs.writeSync(file, bufferedText, 0, bufferedText.length, position);
-		fs.close(file);
-	} catch (err) {
-		throw err;
+	var fileEnd = fileData.substring(insertIndex);
+
+	var file = fs.openSync(filePath, 'r+');
+	var newFileEnd = code + "\n" + fileEnd;
+	fs.writeSync(file, newFileEnd, insertIndex); //Replaces the end of the file with the timecode, followed by the rest of the file.
+	fs.close(file);
+	return code;
+}
+
+function fillTemplate(template, params) {
+	var out = template;
+	for (var p in params) {
+		out = out.replace('$' + p + '$', params[p]);
 	}
+	return out;
+}
+
+function sendErrorMessage(err, res) {
+	console.log("Failed, " + err.code)
+	res.type("html");
+	res.send("<h1>Error</h1>" + NLtoBR(errorMessages[err.code]));
+}
+
+function NLtoBR(string) {
+	return string.replace(/(?:\r\n|\r|\n)/g, "<br>")
 }

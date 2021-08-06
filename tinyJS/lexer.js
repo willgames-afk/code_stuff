@@ -1,5 +1,8 @@
 import { log } from "./config.js";
 
+//Splitters are characters that split a token
+const splitters = /[ 	\n"'`{}()[\]:;.=+-/*]/ //note that this starts with space tab, not just 2 spaces
+
 //Possible character leximes- see getType
 const leximes = [
 	["quote", /'/], ["dbquote", /"/], ["backquote", /`/],
@@ -12,13 +15,12 @@ const leximes = [
 	["operator", /[*+\-/<=>]/],
 	["number", /[\d.]/],
 	["alphanumeric", /\w/], //It will also try to match the longest possible string on that type.
+	["splitter",splitters]
 ];
 
-//Splitters are characters that split a token
-const splitters = /[ 	\n"'`{}()[\]:;.=+-/*]/ //note that this starts with space tab, not just 2 spaces
 
 /** Figures out what k */
-function getType(char) {
+function getType(char,bufferType) {
 	var lexime = leximes.find(e => e[0] == bufferType)
 	if (lexime && lexime[1].test(char)) {
 		log(`Quickfound; ${lexime[0]}`, 3)
@@ -36,7 +38,7 @@ function getType(char) {
 	return "error";
 }
 
-export function lexer(string) {
+export function lex(string) {
 	log("Lex Started...");
 
 	let out = [];
@@ -51,11 +53,7 @@ export function lexer(string) {
 
 		//Get character
 		var char = string[i];
-        var type = getType(char);
-        
-        if (type == "error") {
-            throw "LexError: Invalid Token"
-        }
+        var type = getType(char,bufferType);
 
 		if (stringMode) {
 			if (type == stringDelimiter) {
@@ -67,7 +65,12 @@ export function lexer(string) {
 				buffer += char;
 			}
 		} else {
+			if (type == "error") {
+				throw `LexError: Invalid Token at ${i}: \`${char}\``
+			}
+
 			if (type == "quote" || type== "dbquote" || type == "backquote") {
+				console.log("StringMode!")
 				stringMode = true;
 				stringDelimiter = type;
 				if (buffer.length > 0) {
@@ -88,7 +91,7 @@ export function lexer(string) {
 					bufferType = '';
 
 				}
-				if (type != undefined) {
+				if (type != "whitespace") {
 					out.push( { type: type });
 				}
 			} else {

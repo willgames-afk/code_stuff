@@ -1,6 +1,7 @@
 import { TinyInterpereter } from "./interpereter.js"
 import { parse } from "./parser.js";
 import { log } from "./config.js"
+import { lex } from "./lexer.js";
 
 //-------------Setting up interface-------------------//
 
@@ -38,11 +39,7 @@ function resizeTACallback(textarea, minHeight) {
 //---------Setting up compiler -------------//
 var compiler = new TinyInterpereter(ui.input, 0, 0)
 
-console.log(parse(```[int] intarray = [1,2,3];
-
-log("hi!");
-
-))```)
+console.log(parse(lex(`[int] intarray = [1,2,3];log("hi!");`)));
 
 //----------------Main Function ------------//
 
