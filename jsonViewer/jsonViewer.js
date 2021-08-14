@@ -56,7 +56,7 @@ export class EditableObject {
 
 		var edit = document.createElement('div'); //Container
 		edit.setAttribute("class", "editObj");
-	
+
 		var addElement = document.createElement("button"); //Add Element button
 		addElement.innerHTML = "+";
 		addElement.style.padding = "3px";
@@ -404,3 +404,116 @@ export class JSONEditor extends EditableObject {
 	}
 }
 */
+function Input(input, label, oninput = () => { }) { //DOM wierdness prevents this from being a proper constructor
+	var element = document.createElement("li")
+	element.className = "input";
+	element.inputCallback = oninput;
+
+	element.addEventListener('input', (e) => {
+		
+		if (!e.target.checked === undefined) {
+			this.inputCallback(e.target.checked);
+		} else {
+			e.target.style.width == e.target.value.length + "ch";
+			this.inputCallback(this.value);
+		}
+	})
+
+	element.appendChild(document.createTextNode(label + ': '));
+	element.appendChild(input);
+	element.appendChild(document.createTextNode(","));
+
+	return element;
+}
+
+class NumberInput extends Input {
+	constructor(value, label, oninput) {
+		var ie = document.createElement("input");
+		ie.type = "number";
+		ie.value = value;
+		ie.className = "number"
+		super(ie, label, oninput);
+	}
+}
+class StringInput extends Input {
+	constructor(value, label, oninput) {
+		var ie = document.createElement("input");
+		ie.type = "text";
+		ie.value = value;
+		ie.className = "string"
+		super(ie, label, oninput);
+	}
+}
+class BooleanInput extends Input {
+	constructor(value, label, oninput) {
+		var ie = document.createElement("input");
+		ie.type = "checkbox";
+		ie.checked = value;
+		ie.className = "bool"
+		super(ie, label, oninput);
+	}
+}
+class EditableArray extends Array {
+	constructor(label, array, parent) {
+		super(...array);
+		this.html = document.createElement("ul");
+
+		this.html.appendChild(document.createTextNode(label + ":"))
+
+		var sh = document.createElement("a");
+		sh.href = "javascript:void(0);";
+		sh.className = "showhide";
+		sh.innerText = "H"
+
+		this.html.appendChild(sh)
+		this.html.appendChild(document.createTextNode("["))
+
+		var hidden = document.createElement("div");
+		hidden.innerText = "...";
+		hidden.hidden = true;
+		this.html.appendChild(hidden);
+
+		var content = document.createElement("ul");
+		this.html.appendChild(content);
+
+		function bindEditCallback(index) {
+			return function (value) {
+				this[index] = value;
+			}.bind(this);
+		}
+
+		for (var i = 0; i < this.length; i++) {
+			console.log(this[i])
+			if (typeof this[i] == "number") {
+				content.appendChild(new NumberInput(this[i], i, bindEditCallback(i)))
+			} else if (typeof this[i] == "string") {
+				content.appendChild(new StringInput(this[i], i, bindEditCallback(i)))
+			} else if (typeof this[i] == "boolean") {
+				content.appendChild(new BooleanInput(this[i], i, bindEditCallback(i)))
+			}
+		}
+
+		sh.addEventListener("click", ((hidden, content, sh) => { //Show/hide 
+			console.log(content)
+			return function () {
+				if (hidden.hidden) {
+					hidden.hidden = false;
+					content.hidden = true;
+					sh.innerText = "S"
+				} else {
+					hidden.hidden = true;
+					content.hidden = false;
+					sh.innerText = "H"
+				}
+			}
+		})(hidden, content, sh))
+
+		this.html.appendChild(document.createTextNode("],"))
+
+		if (parent) {
+			parent.appendChild(this.html)
+		}
+	}
+}
+
+var array = new EditableArray("hello", [1, "hi", false], document.body)

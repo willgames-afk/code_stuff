@@ -1,4 +1,4 @@
-import * as THREE from "https://unpkg.com/three@latest/build/three.module.js"
+import {ImageLoader,Texture,CubeTexture,Mesh,MeshLambertMaterial,MeshBasicMaterial,NearestFilter,BoxGeometry} from "../libs/three.module.js"
 import { loadCrossOrigin, assetPath } from "./config.js"
 
 export const Load = { //Maps filenames to specific face textures efficiently, see below
@@ -76,7 +76,7 @@ export class Assets {
         }
         this.state = 1;
 
-        const loader = new THREE.ImageLoader(); //Set up loader
+        const loader = new ImageLoader(); //Set up loader
         loader.setPath(assetPath);
 
         var total = 1; //Number of assets to load; has to be incremented by one because I call it an extra time 
@@ -117,9 +117,9 @@ export class Assets {
     }
     wrapOnFaceLoad(blockName, face = 'all') { //Wrapped onBlockTextureload
         return function (img) {
+			console.log(`Loaded ${blockName} (${face})!`)
             //console.log(img)
             this.addFaceTexture(blockName, face, img)
-            console.log(`Loaded ${blockName} (${face})!`)
             document.body.appendChild(img)
             this.onload();
         }.bind(this)
@@ -129,7 +129,12 @@ export class Assets {
             this.blockTextures[blockName] = {};
         }
 
-        const img = imgOrColor;
+		if (typeof imgOrColor == "string") {
+			console.warn("UNSUPPORTED COLOR TEXTURE!")
+			return
+		}
+
+        const img = new Texture(imgOrColor);
         //console.log(img);
         //console.log(blockName, faceName, texture, this.blockTextures[blockName])
         const block = this.blockTextures[blockName];
@@ -138,7 +143,7 @@ export class Assets {
                 this.blockTextures[blockName] = {};
             }
             //console.log(this.blockTextures[blockName])
-            if (!block.px) this.blockTextures[blockName].px = img; //Have to edit directly; editing `block` wouldn't change this.blockTexturs...
+            if (!block.px) this.blockTextures[blockName].px = img; this.blockTextures[blockName].px.magFilter = NearestFilter;//Have to edit directly; editing `block` wouldn't change this.blockTexturs...
             if (!block.nx) this.blockTextures[blockName].nx = img;
             if (!block.pz) this.blockTextures[blockName].pz = img;
             if (!block.nz) this.blockTextures[blockName].nz = img;
@@ -148,38 +153,12 @@ export class Assets {
             }*/
         } else if (faceName == "all" && !(typeof imgOrColor == "string")) {
             console.log(`Single texture loaded, building '${blockName}'.`)
-            this.blockTextures[blockName] = new THREE.Texture(img);
-            this.blockTextures[blockName].magFilter = THREE.NearestFilter;
+            this.blockTextures[blockName] = new Texture(img);
+            this.blockTextures[blockName].magFilter = NearestFilter;
             this.blockTextures[blockName].needsUpdate = true;
             return
         } else {
             this.blockTextures[blockName][faceName] = img;
         }
-        if (block.px && block.nx && block.py && block.ny && block.pz && block.nz) {
-            console.log(`All textures present, building '${blockName}'.`)
-            console.log(block);
-            this.blockTextures[blockName] = new THREE.CubeTexture();
-            this.blockTextures[blockName].images = [
-                block.px, block.nx,
-                block.py, block.ny,
-                block.pz, block.nz
-            ]
-            //this.blockTextures[blockName].magFilter = THREE.NearestFilter
-            this.blockTextures[blockName].needsUpdate = true;
-        }
-    }
-    createBlock(type) {
-        const texture = this.blockTextures[type].texture
-        const geo = new THREE.BoxGeometry(1, 1, 1);
-        var mats = [];
-
-        if (typeof texture == "string") {
-            //It's a color, make a colored material
-            return new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: texture }));
-        } //Else
-
-        //console.log(texture)
-        return new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: texture }));
-
     }
 }

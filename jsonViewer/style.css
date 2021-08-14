@@ -1,0 +1,15 @@
+.JVinput {
+	background-color: 'transparent';
+	font-family: "Menlo, Monaco, 'Source Sans Pro', 'Courier New',monospace";
+	border: '0px';
+	font-size: '11.5px';
+	color: "#95C4E2"
+}
+
+.JVinput .number {
+	color: 'palegreen'
+}
+
+.JVinput .string{
+	color: '#c89175'
+}

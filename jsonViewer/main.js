@@ -1,3 +1,5 @@
+import { JSONEditor,EditableObject } from "./jsonViewer.js";
+
 var makeGiveCommand = {
 	template: {
 		name: "Test",
@@ -51,4 +53,6 @@ window.addEventListener("load", (e) => {
 	var anotherTest = document.createElement("div");
 	mainBox.appendChild(anotherTest);
 	var editor = new JSONEditor(anotherTest, makeGiveCommand);
+
+
 })

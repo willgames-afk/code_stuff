@@ -1,8 +1,8 @@
-
+import {Vector3} from "../../libs/three.module.js"
 
 
 export class CameraControls {
-    constructor(camera,domElement, sensitivity = 0.05, friction = 0.9, maxSpeed = 1) {
+    constructor(camera,domElement, sensitivity = 0.009, friction = 0.9, maxSpeed = 1) {
 
         this.keys = {
             forwards: ["KeyW","ArrowUp"],
@@ -23,6 +23,8 @@ export class CameraControls {
         this.sensitivity = sensitivity;
         this.friction = friction;
         this.maxSpeed = 1;
+		this.lat = 0;
+		this.long = 0;
 
         this.domElement.addEventListener("mousedown", this.onMouseDown.bind(this));
         this.domElement.addEventListener("mousemove", this.onMouseMove.bind(this));
@@ -44,14 +46,18 @@ export class CameraControls {
         // axises
 
         if (this.mouseDown === true) {
-            this.camera.rotation.x += (e.movementY/Math.PI) * this.sensitivity;
-            this.camera.rotation.y += (e.movementX/Math.PI) * this.sensitivity;
-            if (this.camera.rotation.x > Math.PI/2) {
-                this.camera.rotation.x = Math.PI/2
-            } else if (this.camera.rotation.x < -Math.PI/2) {
-                this.camera.rotation.x = -Math.PI/2;
+			var targetRotation = new Vector3();
+
+            this.long += (e.movementY/Math.PI) * this.sensitivity;
+            this.lat += (e.movementX/Math.PI) * this.sensitivity;
+            if (this.long > Math.PI/2) {
+                this.long = Math.PI/2
+            } else if (this.long < -Math.PI/2) {
+                this.long = -Math.PI/2;
             }
-            this.camera.rotation.z=0;
+            targetRotation.setFromSphericalCoords(1,this.long,Math.PI/2 - this.lat).add(this.camera.position);
+			this.camera.lookAt(targetRotation);
+			this.camera.updateProjectionMatrix();
         }
     }
     onMouseUp() {
@@ -77,31 +83,17 @@ export class CameraControls {
 
         //TODO- use deltaTime
 
-        const p = this.camera.rotation.y;
-        const directionVector = { //Camera Angle
-            z: this.sensitivity * Math.cos(p),
-            x: this.sensitivity * Math.sin(p)
-        }
-        const leftVec = { //90 degree offest; for strafing
-            z: this.sensitivity * Math.cos(p - Math.PI/2),
-            x: this.sensitivity * Math.sin(p - Math.PI/2),
-        }
-
         //Movement
         if (this.state.forwards && !this.state.backwards) { //Forwards/Backwards 
-            this.vx -= directionVector.x;
-            this.vz -= directionVector.z;
+            this.vz -= this.sensitivity
         } else if (this.state.backwards && !this.state.forwards) {
-            this.vx += directionVector.x;
-            this.vz += directionVector.z;
+            this.vz += this.sensitivity
         }
 
         if(this.state.left && !this.state.right) {
-            this.vx += leftVec.x;
-            this.vz += leftVec.z;
+            this.vx -= this.sensitivity
         } else if (this.state.right && !this.state.left) {
-            this.vx -= leftVec.x;
-            this.vz -= leftVec.z
+            this.vx += this.sensitivity
         }
         
         if (this.state.up && !this.state.down) {
@@ -111,13 +103,16 @@ export class CameraControls {
         }
 
         //Speed Cap; Stop accelerating past this point
-        if (this.vx > this.maxSpeed) {this.vx = this.maxSpeed}
-        if (this.vy > this.maxSpeed) {this.vy = this.maxSpeed}
-        if (this.vz > this.maxSpeed) {this.vz = this.maxSpeed}
+        if (this.vx > this.maxSpeed) this.vx = this.maxSpeed
+        if (this.vy > this.maxSpeed) this.vy = this.maxSpeed
+        if (this.vz > this.maxSpeed) this.vz = this.maxSpeed
+		if (this.vx < -this.maxSpeed) this.vx = -this.maxSpeed
+        if (this.vy < -this.maxSpeed) this.vy = -this.maxSpeed
+        if (this.vz < -this.maxSpeed) this.vz = -this.maxSpeed
 
-        this.camera.position.x += this.vx;
-        this.camera.position.y += this.vy;
-        this.camera.position.z += this.vz;
+        this.camera.translateX(this.vx);
+        this.camera.translateY(this.vy);
+        this.camera.translateZ(this.vz);
         this.vx *= this.friction;
         this.vy *= this.friction;
         this.vz *= this.friction;
