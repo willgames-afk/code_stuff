@@ -1,4 +1,4 @@
-.JVinput {
+.JSONViewer {
 	background-color: 'transparent';
 	font-family: "Menlo, Monaco, 'Source Sans Pro', 'Courier New',monospace";
 	border: '0px';
@@ -6,10 +6,13 @@
 	color: "#95C4E2"
 }
 
-.JVinput .number {
+.JSONViewer .number {
 	color: 'palegreen'
 }
 
-.JVinput .string{
+.JSONViewer .string{
 	color: '#c89175'
+}
+.JSONViewer .list,.JSONViewer .object {
+	padding-left:0px;
 }

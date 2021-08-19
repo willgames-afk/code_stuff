@@ -90,10 +90,14 @@ function user_exists($u) {
 <h2>Login</h2>
 <form action='<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>' method='POST'>
 Username <input type='text' name='username' value=''><br>
-	<?php echo $username_err;?>
+	<?php if (!empty($username_err)) {
+		echo '<p class="err">' . $username_err . "</p>";
+	}?>
 Password <input type='password' name='password'><br>
-	<?php echo $password_err;?>
-	<input type='submit'> <br>
+	<?php if (!empty($password_err)) {
+		echo '<p class="err">' . $password_err . "</p>";
+	}?>
+	<input type='submit' value="Submit!"> <br><br>
 	<a href="/login/createLogin.php">Create Account</a>
 </form>
 

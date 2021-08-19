@@ -3,16 +3,16 @@ session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	if ($_SESSION["loggedin"] == true) {
-		echo "Already logged in!";
+		echo "You're already logged in, no need to create an account!";
 	} else {
 	//Validate Username
 		if (empty(trim($_POST["username"]))) {
-			$username_err = "Please enter a username.";
+			$username_err = "Please enter a username.<br>";
 		} else {
 			if (user_exists(trim($_POST["username"]))) {
-				$username_err = "Username Taken :(";
+				$username_err = "Username Taken :(<br>";
 			} elseif (strlen(trim($_POST["username"])) > 40){ //Spam protection
-				$username_err = "Max Username Length is 40 Characters for display purposes; really long usernames would just get cut off anyway.";
+				$username_err = "Max Username Length is 40 Characters for display purposes; really long usernames would just get cut off anyway.<br>";
 			} else {
 				$username = trim($_POST["username"]);
 			}	
@@ -20,22 +20,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 		//Validate Password
 		if (empty(trim($_POST["password"]))) {
-			$password_err = "Please enter a password!";
+			$password_err = "Please enter a password!<br>";
 		} elseif (strlen(trim($_POST["password"])) < 6) {
-			$password_err = "Your password has to have more than 6 characters. Otherwise, it's not very secure.";
+			$password_err = "Your password has to have more than 6 characters. Otherwise, it's not very secure.<br>";
 		} elseif (strlen(trim($_POST["password"])) > 512) {
-			$password_err = "Sorry, but we don't support passwords longer than 512 characters. This is to prevent trollers from breaking the login system with insanely long passwords.";
+			$password_err = "Sorry, but we don't support passwords longer than 512 characters. This is to prevent trollers from breaking the login system with insanely long passwords.<br>";
 		} else {
 			$password = trim($_POST["password"]);
 		}
 
 		//Validate Confirm Password
 		if (empty(trim($_POST["confirm_password"]))) {
-			$confirm_password_err = "Please confirm your password.";
+			$confirm_password_err = "Please confirm your password.<br>";
 		} else {
 			$confirm_password = trim($_POST["confirm_password"]);
 			if (empty($password_err) && ($password != $confirm_password)) {
-			$confirm_password_err = "The passwords you entered don't match!";
+			$confirm_password_err = "The passwords you entered don't match!<br>";
 			}
 		}
 
@@ -84,11 +84,17 @@ function append_user($u,$h) {
 <h2>Create Account</h2>
 <form action='<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>' method='POST'>
 Username <input type='text' name='username' value=''><br>
-	<?php echo $username_err;?>
+	<?php if (!empty($username_err)) {
+		echo '<p class="err">' . $username_err . "</p>";
+	}?>
 Password <input type='password' name='password'><br>
-	<?php echo $password_err;?>
+<?php if (!empty($password_err)) {
+		echo '<p class="err">' . $password_err . "</p>";
+	}?>
 Confirm Password <input type='password' name='confirm_password'><br>
-	<?php echo $confirm_password_err;?>
+	<?php if (!empty($confirm_password_err)) {
+		echo '<p class="err">' . $confirm_password_err . "</p>";
+	}?>
 	<input type='submit'><br>
 	<a href="/login/login.php">Log In</a>
 </form>
