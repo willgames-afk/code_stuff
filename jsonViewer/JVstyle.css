@@ -1,18 +1,32 @@
 .JSONViewer {
-	background-color: 'transparent';
-	font-family: "Menlo, Monaco, 'Source Sans Pro', 'Courier New',monospace";
-	border: '0px';
-	font-size: '11.5px';
-	color: "#95C4E2"
+	color: #95C4E2;
+}
+
+.JSONViewer input {
+	background-color: transparent;
+	font-family: Menlo, Monaco, 'Source Sans Pro', 'Courier New',monospace;
+	border: 0px;
+	/*font-size: 11.5px;*/
 }
 
 .JSONViewer .number {
-	color: 'palegreen'
+	color: palegreen
 }
 
 .JSONViewer .string{
-	color: '#c89175'
+	color: #c89175
 }
+
+.JSONViewer .stringContainer{
+	display:inline;
+	color: #c89175;
+}
+
 .JSONViewer .list,.JSONViewer .object {
 	padding-left:0px;
+	display:inline;
+}
+
+.JSONViewer .hidden {
+	display: inline;
 }

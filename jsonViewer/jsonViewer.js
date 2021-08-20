@@ -36,7 +36,6 @@
 }
 */
 function Input(input, oninput = () => { }) { //DOM wierdness prevents this from being a proper constructor
-	input.className = "jsonEditor-input";
 	input.addEventListener('input', (e) => {
 		if (e.target.checked === undefined) {
 			e.target.style.width == e.target.value.length + "ch";
@@ -53,7 +52,12 @@ class NumberInput extends Input {
 		var ie = document.createElement("input");
 		ie.type = "number";
 		ie.value = value;
+		ie.size =  ie.value.length + 3;
 		ie.className = "number"
+		ie.addEventListener("input", ()=>{
+			console.log(ie.size)
+			ie.size =  ie.value.length;
+		}); 
 		super(ie, label, oninput);
 	}
 }
@@ -62,7 +66,12 @@ class StringInput extends Input {
 		var ie = document.createElement("input");
 		ie.type = "text";
 		ie.value = value;
+		ie.size =  ie.value.length;
 		ie.className = "string"
+		ie.addEventListener("input", ()=>{
+			console.log(ie.size)
+			ie.size =  ie.value.length;
+		}); 
 		super(ie, label, oninput);
 	}
 }
@@ -77,6 +86,7 @@ class BooleanInput extends Input {
 }
 function EditableObjectArray(object, onEdit = () => { }) {
 	var html = document.createElement("ul");
+	html.className = "list";
 
 	var sh = document.createElement("a");
 	sh.href = "javascript:void(0);";
@@ -93,6 +103,7 @@ function EditableObjectArray(object, onEdit = () => { }) {
 	var hidden = document.createElement("div");
 	hidden.innerText = "...";
 	hidden.hidden = true;
+	hidden.className = "hidden"
 	html.appendChild(hidden);
 
 	var content = document.createElement("ul");
@@ -112,14 +123,19 @@ function EditableObjectArray(object, onEdit = () => { }) {
 
 		ne = document.createElement("li");
 
-			ne.appendChild(document.createTextNode(i + ":"))
-		
+		ne.appendChild(document.createTextNode(i + ":"))
+
 
 		if (typeof object[i] == "number") {
 			ne.appendChild(new NumberInput(object[i], bindEditCallback(i))) //Create ne (new element)
 
 		} else if (typeof object[i] == "string") {
-			ne.appendChild(new StringInput(object[i], bindEditCallback(i)))
+			var str = document.createElement("span");
+			str.className = "stringContainer"
+			str.appendChild(document.createTextNode(' "'));
+			str.appendChild(new StringInput(object[i], bindEditCallback(i)))
+			str.appendChild(document.createTextNode('"'));
+			ne.appendChild(str);
 
 		} else if (typeof object[i] == "boolean") {
 			ne.appendChild(new BooleanInput(object[i], bindEditCallback(i)))
@@ -156,9 +172,16 @@ function EditableObjectArray(object, onEdit = () => { }) {
 }
 
 class JSONViewer {
-	constructor(thing, onEdit) {
+	constructor(thing, options={onEdit:()=>{}}) {
+		this.value = thing;
 
+		this.html = document.createElement("div");
+		this.html.className = "JSONViewer"
+
+
+
+		this.html.appendChild(EditableObjectArray(thing, options.onEdit));
 	}
 }
 
-document.body.appendChild(EditableObjectArray([1, "hi", false, [3.14159, "Pi is the best number", true], {key: "value","Pairs and things": "good"}]))
+document.body.appendChild(new JSONViewer([1, "hi", false, [3.14159, "Pi is the best number", true], { key: "value", "Pairs and things": "good" }]).html)
