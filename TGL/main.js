@@ -1,5 +1,5 @@
 import {requestFile, addButton, addNewline, makeTextarea, addToDoc, resizeTxtarea} from "./modules/helpers.js";
-import {lexer,parse} from "./modules/parser.js"
+import {lex,parse} from "./modules/parser.js"
 var input,output
 requestFile("./testProgram.tgl", endLoad);
 
@@ -30,7 +30,7 @@ function endLoad(e) {
 }
 
 function run() {
-	output.value = JSON.stringify(parse(lexer(input.value))).replace(/},/g,'},\n');
+	output.value = JSON.stringify(parse(lex(input.value))).replace(/},/g,'},\n');
 	resizeTxtarea(output);
 	noms.resize();
 }
