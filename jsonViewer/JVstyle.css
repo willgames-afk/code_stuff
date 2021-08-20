@@ -30,3 +30,15 @@
 .JSONViewer .hidden {
 	display: inline;
 }
+
+.JSONViewer [hidden] {
+	display: none;
+}
+
+.JSONViewer .showhide {
+	padding: 0px;
+}
+
+.JSONViewer .addButton {
+	padding: 3px;
+}

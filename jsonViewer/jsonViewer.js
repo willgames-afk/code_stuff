@@ -147,6 +147,12 @@ function EditableObjectArray(object, onEdit = () => { }) {
 		content.appendChild(ne) //Add new element to DOM
 	}
 
+	var add = document.createElement("button");
+	add.innerText = "+";
+	add.className = "addButton"
+
+	content.appendChild(add)
+
 	sh.addEventListener("click", ((hidden, content, sh) => { //Show/hide 
 		console.log(content)
 		return function () {
