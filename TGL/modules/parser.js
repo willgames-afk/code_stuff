@@ -14,23 +14,23 @@ const leximes = [
 	["equals", /=/],
 	["operator", /[*+\-/<=>]/],
 	["number", /[\d.]/],
-	["alphanumeric", /\w/], //It will also try to match the longest possible string on that type.
-	["whitespace",/[ 	\n]/]
+	["alphanumeric", /[\w@]/], //It will also try to match the longest possible string on that type.
+	["whitespace", /[ 	\n]/]
 ];
 
 
 /** Figures out what k */
-function getType(char,bufferType) {
+function getType(char, bufferType) {
 	var lexime = leximes.find(e => e[0] == bufferType)
 	if (lexime && lexime[1].test(char)) {
-		console.log(`Quickfound; ${lexime[0]}`, 3)
+	//	console.log(`Quickfound; ${lexime[0]}`, 3)
 		return bufferType;
 	}
 	for (const kv of leximes) {
 		const key = kv[0];
 		const value = kv[1];
 		if (value.test(char)) {
-			console.log(`"${char}" is "${key}" (${value})`, 3)
+		//	console.log(`"${char}" is "${key}" (${value})`, 3)
 			return key;
 		}
 	}
@@ -57,11 +57,11 @@ export function lex(string) {
 
 		//Get character
 		var char = string[i];
-        var type = getType(char,bufferType);
+		var type = getType(char, bufferType);
 
 		if (stringMode) {
 			if (type == stringDelimiter) {
-				out.push( {type: "string", value: buffer});
+				out.push({ type: "string", value: buffer });
 				buffer = '';
 				stringDelimiter = '';
 				stringMode = false;
@@ -73,13 +73,13 @@ export function lex(string) {
 				throw `LexError: Invalid Token at ${i}: \`${char}\``
 			}
 
-			if (type == "quote" || type== "dbquote" || type == "backquote") {
+			if (type == "quote" || type == "dbquote" || type == "backquote") {
 				//console.log("StringMode!")
 				stringMode = true;
 				stringDelimiter = type;
 				if (buffer.length > 0) {
 
-					out.push( { type: bufferType, value: buffer });
+					out.push({ type: bufferType, value: buffer });
 					buffer = '';
 					bufferType = '';
 
@@ -87,16 +87,15 @@ export function lex(string) {
 				continue; //Skip everything below and enter string mode
 			}
 			if (splitters.test(char)) {
-
 				if (buffer.length > 0) {
 
-					out.push( { type: bufferType, value: buffer });
+					out.push({ type: bufferType, value: buffer });
 					buffer = '';
 					bufferType = '';
 
 				}
 				if (type != "whitespace") {
-					out.push( { type: type });
+					out.push({ type: type });
 				}
 			} else {
 				if (buffer.length == 0) {
@@ -107,7 +106,7 @@ export function lex(string) {
 		}
 	}
 	if (buffer.length > 0) {
-		out.push( { type: bufferType, value: buffer })
+		out.push({ type: bufferType, value: buffer })
 		buffer = ''; //Clear it just for good measure
 		bufferType = '';
 	}
@@ -118,56 +117,143 @@ export function lex(string) {
 	return out;
 }
 
-const DISTANCE = 0;
-const COLOR = 1;
-const NONE = 2,
-const INVISIBLE = 3;
-
-const BORDER_TYPE = 2;
-const border_types = [
-	"dotted",
-	"dashed",
-	"solid",
-	"double",
-	"groove",
-	"ridge",
-	"inset",
-	"outset",
-]
-
-const propertyTree = {
-	box: {
-		style: {
-			width: DISTANCE,
-			height: DISTANCE,
-			margin: DISTANCE,
-			color: COLOR,
-			border: [
-				[['left', 'right', 'top', 'bottom'], {
-					type: BORDER_TYPE,
-					weight: DISTANCE,
-					color: COLOR,
-					radius: DISTANCE
-				}],
-				NONE,
-				INVISIBLE
-			]
-		},
-		children: {
-			container: {
-				style: {
-					padding: DISTANCE,
-				}
-			}
-		}
-	}
+const constructors = {
+	"text": [
+		"p",
+		"h1",
+		"h2",
+		"h2",
+		"h4",
+		"h5",
+		"h6"
+	],
+	"button": {},
+	"container": {}
 }
 
-export function parse(lexer) {
+function hasProperty(object, property) {
+	if (Array.isArray(object)) {
+		if (object.includes(property)) {
+			return true;
+		}
+	} else {
+		if (object[property] !== undefined) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function validTreePath(path, tree) {
+	console.log(path)
+	var o = tree;
+	for (var i = 0; i < path.length; i++) {
+		if (!hasProperty(o, path[i])) {
+			return false;
+		}
+		o = o[path[i]];
+	}
+	return true;
+}
+
+function resolveTreePath(path, tree) {
+	var o = tree;
+	for(var i=0;i<path.length;i++) {
+		o = o[path[i]];
+	}
+	return o;
+}
+
+function assert(condition, failmessage) {
+	if (condition) {
+		return true;
+	}
+	throw failmessage;
+}
+
+function isSubTGL() {
+	//Implement this
+}
+
+export function parse(tokens) {
 	var AST = [];
-	for (var token of lexer) {
+	var i = -1;
+	var token = {};
+
+	const isValid = {
+		text: ()=>{return token.type == "string"},
+		button: ()=>{return token.type == "string" || isSubTGL()},
+		container: ()=>{return isSubTGL();}
+	}
+
+	function validateElementContent(path) {
+		var va = isValid;
+		var i = 0;
+		while (true) {
+			if (va[path[i]]) {
+				va = va[path[i]];
+				i++;
+			} else {
+				break;
+			}
+		}
+		assert(va());
+		console.log("valid element content")
+		return true;
+	}
+
+	function nextToken() {
+		i++;
+		token = tokens[i];
 		console.log(token)
-		AST.push(token);
+		return token;
+	}
+
+	function prevToken() {
+		i--;
+		token = tokens[i];
+		console.log("Reversed to " + JSON.stringify(token))
+		return token;
+	}
+
+	function tokenIsConstructor() {
+		assert(token.type == "alphanumeric", "SyntaxError: Expected element constructor.");
+		var expected = "alphanumeric";
+		var treepath = [];
+		while (token.type == expected) {
+			console.log(token.type, expected)
+			if (expected == "alphanumeric") {
+				treepath.push(token.value);
+				expected = "dot";
+				nextToken();
+			} else if (expected == "dot") {
+				expected = "alphanumeric";
+				nextToken();
+			}
+			console.log(token.type, expected)
+		}
+		assert(validTreePath(treepath, constructors),"Invalid element.")
+		console.log("valid element constructor name");
+		//nextToken();
+		assert(token.type == "oPar", "SyntaxError: Expected open parenthesis.");
+		nextToken();
+		assert(validateElementContent(treepath));
+		nextToken();
+		assert(token.type == "cPar", "SyntaxError: Expected closing parenthesis.")
+		nextToken();
+		if (token.type == "oc") {
+			//Validate style/property information
+			console.log("valid element style");
+		} 
+
+		console.log("valid element!")
+		return true;
+	}
+
+	nextToken();
+	for (i; i < tokens.length;) { //Loosely loop through tokens
+		assert(tokenIsConstructor());
+		nextToken();
 	}
 	return AST
 }

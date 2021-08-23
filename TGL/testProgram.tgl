@@ -1,5 +1,3 @@
-defaults: web;
-
 text.h1("Title!")
 text.p("Hi")
 
