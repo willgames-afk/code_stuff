@@ -244,7 +244,9 @@ export function parse(tokens) {
 		if (token.type == "oc") {
 			//Validate style/property information
 			console.log("valid element style");
-		} 
+		} else {
+			prevToken();
+		}
 
 		console.log("valid element!")
 		return true;
