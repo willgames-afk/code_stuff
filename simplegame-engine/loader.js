@@ -95,6 +95,109 @@ export class AudioLoader extends Loader {
 
 }
 
+export class SpriteLoader extends Loader {
+	constructor(spritesheet, sprites, context) {
+		super(sprites);
+		this.spritesheet = spritesheet;
+	}
+	_loadFile(id) {
+
+	}
+}
+
+export class Sprite {
+	constructor(spritesheet, ctx, options) {
+		this.spritesheet = spritesheet;
+		this.ctx = ctx;
+		this.data = options.data;
+		/*
+		{
+			fwidth: //Width of a single frame
+			fheight: //Height of a single frame
+
+			//options.animated must be enabled for the below:
+			speed:   //framerate of the animation in frames per second- Will be overwritten by animation specific framerates and defaults to 30fps.
+			animations: { //Animation frame sequences- 
+				animationName: [ //Animation data
+					{x: 0,y:0} //location of the top left corner of the frame on the spritesheet
+					{p: 1} //You can also use 'p'- basically, it will turn the spritesheet into a grid of fwidth x fheight cells, and number them 
+								the top left cell would be 0, the one to the right would be 1, so on for the rest of the line. Then it moves down and continues.
+					{p: 4, x: 1, y: 3} //You can also provide an offset which shifts the p grid left and down by the corrosponding x and y amounts.
+
+					//Repeat for every frame of the animation
+				]
+
+				//You can also store more specific instructions as an object
+				otherAnimation: {
+					speed: //You can set animation speeds individually
+					mode: // 0 is play forwards once, 1 is play forwards looping, 2 is play backwards once, and 3 is play backwards looping;
+					data: [
+						//Insert data here
+					]
+				}
+				//You can include as many as you want.
+			}
+
+			//If you only have a single animation, store it in the frames object
+			//If options.animated is false, you'll have to switch manually
+			frames: [
+				//You can include individual sprite frames and switch between them, same xyp format as above
+			]
+
+			animation: //name of the current animation, if any
+			frame: //The current frame
+			play:  //Whether or not the animation should be playing (if any)
+			playthroughmode: // Mode of animation playthrough- 0 is play once, 1 is play looping
+		}
+
+
+		*/
+		this.animated = options.animated;
+		if (this.animated) {
+			this.currentAnimation = this.data.animation;
+			if (this.data.animations && !Array.isArray(this.data.animations[currentAnimation])) {
+				this.frameRate = this.data.animations[currentAnimation].speed;
+				this.update = (dt) => { //Dt is the time that has passed since update was last called
+					this._frameDT += dt;
+					if (this._frameDT >= this._frameSpeed) {
+						this.currentFrame++;
+						if (this.currentFrame > this.data.animations[currentAnimation].length) {
+							this.currentFrame = 0;
+						}
+						this._frameDT = 0;
+					}
+				}
+				this.render = () => {
+					var cfdata = this.data.animations[currentAnimation][currentFrame];
+					
+				}
+			} else {
+				this.frameRate = this.data.speed || 30;
+				this.update = (dt) => { //Dt is the time that has passed since update was last called
+
+					this._frameDT += dt;
+					if (this._frameDT >= this._frameSpeed) {
+						this.currentFrame++;
+						if (this.currentFrame > this.frames) {
+							this.currentFrame = 0;
+						}
+						this._frameDT = 0;
+					}
+	
+				}
+			}
+		}
+		this.currentFrame = options.data.frame || 0;
+
+		this._frameDT = 0; //Time since last animation frame change
+		this._frameSpeed = 1000 / this.frameRate; //Time in milliseconds that should pass between each frame
+
+	}
+	update(dt) {
+		//Depends on whether or not the sprite is animated
+	}
+
+}
 
 export class Audio {
 	constructor(sounds, audioContext) {
