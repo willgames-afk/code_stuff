@@ -1,6 +1,7 @@
 Test Post
 A post made as a test
-1628207578711
+1630635411330
+
 
 Hi! This is a test post to test stuff.
 
@@ -27,3 +28,15 @@ Alt-H2
 
 And here is an image:
 ![Pixel Art Pikachu](imgs/pixelpika.png)
+
+In theory, I can also insert some latex math expressions:
+```latex
+x^2 + y^2 = z^2
+```
+and a more complecated one:
+
+```latex
+t=\sum_{n=1}^{s}\left(2n-1\right)^{2}
+```
+
+That last equation will calculate the number of blocks needed to build a square base pyramid in minecraft given the height of the pyramid (s).

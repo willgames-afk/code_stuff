@@ -1,9 +1,9 @@
 //Loading of modules
-const fs = require('fs');            //Files
-const express = require('express');  //Server
-const showdown = require("showdown");//Markdown to HTML
-const katex = require("katex");      //LATeX to HTML
-const path = require("path");
+const fs = require('fs');             // Files
+const express = require('express');   // Server
+const showdown = require("showdown"); // Markdown to HTML
+const katex = require("katex");       // LATeX to HTML
+const path = require("path");         // File Path stuff
 
 //Setup
 const app = express();
@@ -25,19 +25,22 @@ const errorMessages = {
 //Resource Loading
 const res_dir = "./resources/";
 const public_dir = "./public/";
+
 function loadRes(url) {
 	return fs.readFileSync(path.join(res_dir, url))
 }
+
 function preloadPage(url) {
 	return fs.readFileSync(path.join(res_dir, url + ".html")).toString();
 }
+
 function loadPub(url) {
 	return fs.readFileSync(path.join(public_dir, url))
 }
+
+
 const basepage = preloadPage("post") //Page Template
 const index = preloadPage("index")   //Site Index.html
-var publicFiles = searchDir('./public');
-console.dir(publicFiles, { depth: null });
 
 function loggerMWF(req, res, next) {
 	console.log(`${req.method} ${req.path}`)
@@ -53,16 +56,19 @@ app.get('/', (req, res) => {
 
 //Resources
 app.use('/resources/', (req, res) => {
+	console.log("handled by resources handler")
 	res.type(path.extname(req.url)) //Send correct filetype
 	res.send(loadRes(req.url));
 })
 
 //  blog/
 app.get("/blog/", (req, res) => {
+	console.log("handled by blog homepage handler")
 	res.send(fillTemplate(basepage, { content: "Blog Homepage" }))
 })
 // blog/imgs/**
 app.use("/blog/imgs", (req, res) => {
+	console.log("handled by blog image handler")
 	var file;
 	try {
 		file = loadPub(path.join("blog/imgs", req.path)); //Get the file
@@ -92,10 +98,14 @@ app.use('/blog/', (req, res) => {
 		var timecode = fileObj.timecode;
 	}
 
-	const date = new Date(parseInt(timecode,10)).toDateString();
-	const converter = new showdown.Converter(); //Get a converter
-	const postContent = converter.makeHtml(preconvertLatex(fileObj.file));
-	const page = fillTemplate(basepage, {
+	const latexConverted = preconvertLatex(fileObj.file)    //Convert latex to html
+
+	const converter = new showdown.Converter();             //initialize md converter
+	const postContent = converter.makeHtml(latexConverted); //convert markdown to html
+
+	const date = new Date(parseInt(timecode, 10)).toDateString(); //Turn post date into human-readable string
+
+	const page = fillTemplate(basepage, {                   //Fill template
 		content: postContent,
 		title: fileObj.title,
 		subtitle: fileObj.subtitle,
@@ -107,7 +117,7 @@ app.use('/blog/', (req, res) => {
 
 //Anything in the public folder will be served from the root directory
 app.use('/', (req, res) => {
-	//console.log("Used bulk web handler")
+	console.log("handled by bulk web handler")
 	var file;
 
 	//Attempt to load file
@@ -141,30 +151,28 @@ app.listen(port, () => {
 
 
 function preconvertLatex(mdstring) {
-	var convertables = mdstring.matchAll(/```latex\n[^`]+\n```/g);
-	for (var match of convertables) {
-		var toConvert = match[0].substring(9, match[0].length - 4)
-		console.log("Converting:" + toConvert);
-		var converted = katex.renderToString(toConvert);
-		console.log(match)
-		mdstring = replace(mdstring, match.index, match.index + match[0].length, converted)
+	var out = mdstring;
+	var match;
+	while ((match = /```latex\n[^`]+\n```/.exec(out)) !== null) {
+		const toConvert = match[0].substring(9, match[0].length - 4)
+		const converted = katex.renderToString(toConvert,{displayMode:true});
+		out = replace(out, match.index, match.index + match[0].length, '<br>'+converted+'<br>')
 	}
-	return mdstring;
+	return out;
 }
 
 
 function replace(replacestring, index1, index2, string) {
 	var part1 = replacestring.substring(0, index1);
 	var part2 = replacestring.substring(index2)
-	console.log(`Part One: ${part1} \nString: ${string} \nPart Two: ${part2}`)
-	return part1 + "<br>" + string + "<br>" + part2;
+	return part1 + string + part2;
 }
 
 function searchDir(path) {
 	const _dir = fs.readdirSync(path, { withFileTypes: true });
 	var dir = [];
 	for (var i = 0; i < _dir.length; i++) {
-		if (_dir[i].name !== ".DS_Store") {
+		if (_dir[i].name[0] != ".") {
 			if (_dir[i].isDirectory()) {
 				dir.push({ name: _dir[i].name, type: 'dir', files: searchDir(path + '/' + _dir[i].name) });
 			} else {
@@ -205,7 +213,7 @@ function splitFile(poststring) { //Splits a md post into metadata and file
 function addTimecode(filePath) { //Inserts a string into a specific place in a file
 	var code = Date.now();
 	var fileData = fs.readFileSync(filePath).toString();
-	var insertIndex = fileData.indexOf("\n",fileData.indexOf("\n") + 1) + 1; //Get the position after the second newline (So the 3rd line)
+	var insertIndex = fileData.indexOf("\n", fileData.indexOf("\n") + 1) + 1; //Get the position after the second newline (So the 3rd line)
 
 	var fileEnd = fileData.substring(insertIndex);
 
@@ -233,3 +241,5 @@ function sendErrorMessage(err, res) {
 function NLtoBR(string) {
 	return string.replace(/(?:\r\n|\r|\n)/g, "<br>")
 }
+
+function getPosts()
