@@ -2,48 +2,15 @@ import { TinyInterpereter } from "./interpereter.js"
 import { parse } from "./parser.js";
 import { log } from "./config.js"
 import { lex } from "./lexer.js";
-
-//-------------Setting up interface-------------------//
-
-//Grabbing DOM Interface Elements
-var ui = {
-	input: document.getElementById('in'),
-	output: document.getElementById('out'),
-	runButton: document.getElementById('run')
-}
-
-ui.runButton.addEventListener('click', onRun);
-ui.input.addEventListener('input', resizeTACallback(ui.input, 30));
-
-//Function to auto-resize textareas
-function resizeTA(textarea, minHeight) {
-	textarea.style.height = "0px";
-	if (textarea.scrollHeight > minHeight) {
-		textarea.style.height = textarea.scrollHeight + 'px';
-	} else {
-		textarea.style.height = minHeight + 'px';
-	}
-}
-//resizeTA in a callback wrapper
-function resizeTACallback(textarea, minHeight) {
-	return (e) => {
-		textarea.style.height = "0px";
-		if (textarea.scrollHeight > minHeight) {
-			textarea.style.height = textarea.scrollHeight + 'px';
-		} else {
-			textarea.style.height = minHeight + 'px';
-		}
-	}
-}
+import { TextIO } from "../text-input-engine/main.js"
 
 //---------Setting up compiler -------------//
 var compiler = new TinyInterpereter(ui.input, 0, 0)
 
-console.log(parse(lex(`[int] intarray = [1,2,3];log("hi!");`)));
-
 //----------------Main Function ------------//
-
-function onRun() {
-	ui.output.innerHTML += compiler.run() + "\n";
-	resizeTA(ui.output, 20);
-}
+new TextIO(
+	() => {
+		ui.output.innerHTML += compiler.run() + "\n";
+		resizeTA(ui.output, 20);
+	}
+)

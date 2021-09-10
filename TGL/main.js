@@ -1,36 +1,8 @@
-import {requestFile, addButton, addNewline, makeTextarea, addToDoc, resizeTxtarea} from "./modules/helpers.js";
-import {lex,parse} from "./modules/parser.js"
-var input,output
-requestFile("./testProgram.tgl", endLoad);
+import { TextIO } from "../text-input-engine/main.js";
+import { lex, parse } from "./modules/parser.js"
 
-function endLoad(e) {
+new TextIO(() => {
 	//Get rid of loading box
 	document.getElementById("loadingMessage").style.display = "none";
-	console.log(e.target.responseText);
-
-	input = makeTextarea({
-		value: e.target.responseText,
-		autoResize: true
-	});
-	addToDoc(input, 'mainbox');
-	resizeTxtarea(input);
-
-	addNewline('mainbox');
-
-	addButton("Compile",run,'mainbox');
-
-	addNewline('mainbox');
-
-	output = makeTextarea({
-		autoResize:true,
-		readonly:true
-	})
-	addToDoc(output, 'mainbox');
-	resizeTxtarea(output);
-}
-
-function run() {
-	output.value = JSON.stringify(parse(lex(input.value))).replace(/},/g,'},\n');
-	resizeTxtarea(output);
-	noms.resize();
-}
+	return JSON.stringify(parse(lex(input.value))).replace(/},/g, '},\n')
+}, { runAuto: true, defaultInputFile: "./testProgram.tgl"})
