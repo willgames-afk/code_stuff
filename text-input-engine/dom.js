@@ -10,7 +10,7 @@
  * @param {Boolean} [options.autoresize=true] - When true, enables automatic resizing of textarea
  * @returns HTMLTextAreaElement
  */
-export function Input(value = "", options = { spellcheck: false, resizeable: true, autoresize=true }) {
+export function Input(value = "", options = { spellcheck: false, resizeable: true, autoresize: true }) {
 	var self = document.createElement("textarea");
 	self.readOnly = false;
 	self.spellcheck = options.spellcheck;
@@ -22,6 +22,11 @@ export function Input(value = "", options = { spellcheck: false, resizeable: tru
 		self.addEventListener("input", resizeTACallback(self, JSON.parse(JSON.stringify(self.style.height))));
 		if (self.value) resizeTA(self);
 	}
+
+	self.resize = (minsize) => {
+		resizeTA(self, minsize)
+	}
+
 	return self;
 }
 /**
@@ -34,7 +39,7 @@ export function Input(value = "", options = { spellcheck: false, resizeable: tru
  * @param {Boolean} [options.autoresize=true] - When true, enables automatic resizing of textarea
  * @returns HTMLTextAreaElement
  */
-export function Output(value = "", options = { spellcheck: false, resizeable: true, autoresize=true }) {
+export function Output(value = "", options = { spellcheck: false, resizeable: true, autoresize: true }) {
 	var self = document.createElement("textarea");
 	self.readOnly = true;
 	self.spellcheck = options.spellcheck;
@@ -44,27 +49,12 @@ export function Output(value = "", options = { spellcheck: false, resizeable: tr
 		self.addEventListener("input", resizeTACallback(self, JSON.parse(JSON.stringify(self.style.height))));
 		if (self.value) resizeTA(self);
 	}
+	self.resize = (minsize) => {
+		resizeTA(self, minsize)
+	}
 	return self;
 }
-/**
- * Provides a default Controls class
- * @implements Controls
- */
-export class DefaultControls extends Controls {
-	constructor(options = { run: true }) {
-		super(options)
-		if (this.options.run) {
-			this.buttons.run = document.createElement("button");
-			this.buttons.run.value = "Run";
-			this.buttons.run.addEventListener("click", this.onRun);
-		}
-		if (this.options.clearResult) {
-			this.buttons.clearOut = document.createElement("button");
-			this.buttons.clearOut.value = "Clear Output";
-			this.buttons.clearOut.addEventListener("click", this.onClear());
-		}
-	}
-}
+
 /**
  * @interface
  */
@@ -84,6 +74,26 @@ export class Controls {
 	onRun() { };
 	/** Callback triggered when output is cleared */
 	onClear() { };
+}
+
+/**
+ * Provides a default Controls class
+ * @implements Controls
+ */
+export class DefaultControls extends Controls {
+	constructor(options = { run: true }) {
+		super(options)
+		if (this.options.run) {
+			this.buttons.run = document.createElement("button");
+			this.buttons.run.value = "Run";
+			this.buttons.run.addEventListener("click", this.onRun);
+		}
+		if (this.options.clearResult) {
+			this.buttons.clearOut = document.createElement("button");
+			this.buttons.clearOut.value = "Clear Output";
+			this.buttons.clearOut.addEventListener("click", this.onClear);
+		}
+	}
 }
 
 /** 

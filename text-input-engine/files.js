@@ -9,6 +9,7 @@ export function requestFile(url, onload) {
 	var req = new XMLHttpRequest();
 	req.addEventListener("load", onload);
 	req.addEventListener("error", (e) => { console.error(e) });
+	req.responseType = "text";
 	req.open("GET", url, true);
 	req.send();
 }

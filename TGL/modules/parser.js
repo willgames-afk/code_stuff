@@ -23,14 +23,14 @@ const leximes = [
 function getType(char, bufferType) {
 	var lexime = leximes.find(e => e[0] == bufferType)
 	if (lexime && lexime[1].test(char)) {
-	//	console.log(`Quickfound; ${lexime[0]}`, 3)
+		//	console.log(`Quickfound; ${lexime[0]}`, 3)
 		return bufferType;
 	}
 	for (const kv of leximes) {
 		const key = kv[0];
 		const value = kv[1];
 		if (value.test(char)) {
-		//	console.log(`"${char}" is "${key}" (${value})`, 3)
+			//	console.log(`"${char}" is "${key}" (${value})`, 3)
 			return key;
 		}
 	}
@@ -158,7 +158,7 @@ function validTreePath(path, tree) {
 
 function resolveTreePath(path, tree) {
 	var o = tree;
-	for(var i=0;i<path.length;i++) {
+	for (var i = 0; i < path.length; i++) {
 		o = o[path[i]];
 	}
 	return o;
@@ -171,19 +171,15 @@ function assert(condition, failmessage) {
 	throw failmessage;
 }
 
-function isSubTGL() {
-	//Implement this
-}
-
 export function parse(tokens) {
 	var AST = [];
 	var i = -1;
 	var token = {};
 
 	const isValid = {
-		text: ()=>{return token.type == "string"},
-		button: ()=>{return token.type == "string" || isSubTGL()},
-		container: ()=>{return isSubTGL();}
+		text: () => {return token.type == "string" },
+		button: () => {return token.type == "string" || isSubTGL() },
+		container: () => { return isSubTGL(); }
 	}
 
 	function validateElementContent(path) {
@@ -202,6 +198,28 @@ export function parse(tokens) {
 		return true;
 	}
 
+	function isSubTGL() {
+		//Implement this
+		var depth = 1;
+		var stokens = [];
+		console.log("Grabbing sub-TGL")
+		while (depth > 0) {
+			if (token.type == "oPar") {
+				depth++
+			} else if (token.type == "cPar") {
+				depth--
+			}
+			stokens.push(token);
+			nextToken()
+		}
+		prevToken();
+		prevToken();
+		stokens.pop(); //Remove final tokens
+		stokens.push({type: "EOF"})
+		console.log("Sub-TGL grabbed, making recursive call")
+		return parse(stokens);
+	}
+
 	function nextToken() {
 		i++;
 		token = tokens[i];
@@ -218,12 +236,15 @@ export function parse(tokens) {
 
 	function tokenIsConstructor() {
 		assert(token.type == "alphanumeric", "SyntaxError: Expected element constructor.");
+
+		//Get element name
 		var expected = "alphanumeric";
-		var treepath = [];
-		while (token.type == expected) {
+		var elementName = [];
+
+		while (token.type == expected) { //Names are just alphanum tokens alternating with . tokens
 			console.log(token.type, expected)
 			if (expected == "alphanumeric") {
-				treepath.push(token.value);
+				elementName.push(token.value);
 				expected = "dot";
 				nextToken();
 			} else if (expected == "dot") {
@@ -232,17 +253,30 @@ export function parse(tokens) {
 			}
 			console.log(token.type, expected)
 		}
-		assert(validTreePath(treepath, constructors),"Invalid element.")
+		assert(validTreePath(elementName, constructors), "Invalid element.")
 		console.log("valid element constructor name");
+
 		//nextToken();
-		assert(token.type == "oPar", "SyntaxError: Expected open parenthesis.");
+		assert(token.type == "oPar", `SyntaxError: Expected open parenthesis, got ${token.value ? `'${token.value}' (${token.type})` : token.type}`);
+
 		nextToken();
-		assert(validateElementContent(treepath));
+
+		assert(validateElementContent(elementName));
 		nextToken();
+
 		assert(token.type == "cPar", "SyntaxError: Expected closing parenthesis.")
 		nextToken();
 		if (token.type == "oc") {
 			//Validate style/property information
+			console.log("Checking element style");
+
+			var depth = 1
+			while (depth > 0) {
+				nextToken();
+				if (token.type == "oc") depth ++
+				else if (token.type == "cc") depth --
+			}
+
 			console.log("valid element style");
 		} else {
 			prevToken();
@@ -253,9 +287,11 @@ export function parse(tokens) {
 	}
 
 	nextToken();
-	for (i; i < tokens.length;) { //Loosely loop through tokens
+	for (i; i < tokens.length && token.type != "EOF";) { //Loosely loop through tokens
+		console.log(token.type)
 		assert(tokenIsConstructor());
 		nextToken();
 	}
+	console.log("Done!")
 	return AST
 }

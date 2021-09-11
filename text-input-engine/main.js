@@ -1,5 +1,5 @@
 //Includes the main class
-import { Input, Output, Controls } from "./dom.js"
+import { Input, Output, DefaultControls } from "./dom.js"
 import { requestFile } from "./files.js";
 
 
@@ -27,35 +27,46 @@ export class TextIO {
 
 		this.function = f;
 
-		this.htmlContainer = options.containerElement
-		if (!this.htmlContainer) {
-			this.htmlContainer = document.createElement("div");
-			if (!options.addToDom) {
-				document.appendChild(this.htmlContainer);
-			}
+		this.htmlContainer = options.containerElement || document.createElement("div")
+
+		if (options.addToDom) {
+			document.body.appendChild(this.htmlContainer);
 		}
+
 		this.input = options.input || new Input();
-		if (options.defaultInput) this.input.value = options.defaultInput;
-		else if (options.defaultInputFile) {
+
+		if (options.defaultInput) {
+
+			this.input.value = options.defaultInput;
+
+		} else if (options.defaultInputFile) {
+
 			requestFile(options.defaultInputFile, function (e) {
-				this.input = e.target.responseText
+				this.input.value = e.target.responseText
+				this.input.resize();
 				if (options.runAuto) this.run();
+
 			}.bind(this))
+
 		}
 		this.htmlContainer.appendChild(this.input);
 
 
 
 		if (options.controls) {
-			this.controls = options.controls || new Controls();
-			this.controls.onRun = this.run();
+			this.controls = options.controls || new DefaultControls();
+			this.controls.onRun = this.run;
 			this.htmlContainer.appendChild(this.controls);
 		} else {
-			this.input.addEventListener("oninput", this.run());
+			this.input.addEventListener("oninput", this.run);
 		}
 
 		this.output = options.output || new Output();
 		this.htmlContainer.appendChild(this.output);
+
+		if (options.runAuto && !options.defaultInputFile) {
+			this.run();
+		}
 	}
 	run() {
 		this.output.value = this.function(this.input.value);
