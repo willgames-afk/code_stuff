@@ -57,23 +57,20 @@ export function Output(value = "", options = { spellcheck: false, resizeable: tr
 
 /**
  * @interface
+ * @class
+ * @param {Object} [options] - Options
+	* @param {Boolean} [options.run=true] - When true, include a "Run" button in the controls
+	* @param {Boolean} [options.clearOut=false] - When true, include a "Clear Output" button.
+	* @param {Function} [options.onRun] - Callback that triggers when the run button is pressed
+	* @param {Function} [options.onClear] - Callback triggered when clear output button is pressed
  */
-export class Controls {
-	/**
-	  * @param {Object} [options] - Options
-	  * @param {Boolean} [options.run=true] - When true, include a "Run" button in the controls
-	  * @param {Boolean} [options.clearOut=false] - When true, include a "Clear Output" button.
-	  * @param {Function} [options.onRun] - Callback that triggers when the run button is pressed
-	  * @param {Function} [options.onClear] - Callback triggered when clear output button is pressed
-	*/
-	constructor(options = { run: true }) {
-		this.options = options
-		this.buttons = { run: {}, clearOut: {} };
-	}
-	/** Callback triggered when run button is pressed */
-	onRun() { };
-	/** Callback triggered when output is cleared */
-	onClear() { };
+export function Controls(options = { run: true }) {
+	var self = document.createElement("div");
+	self.options = Object.assign({run:true},options);
+	self.buttons = { run: {}, clearOut: {} };
+	self.onRun = options.onRun || (()=>{});
+	self.onClear = options.onClear || (()=>{});
+	return self;
 }
 
 /**
@@ -81,17 +78,21 @@ export class Controls {
  * @implements Controls
  */
 export class DefaultControls extends Controls {
-	constructor(options = { run: true }) {
+	constructor(options) {
 		super(options)
 		if (this.options.run) {
-			this.buttons.run = document.createElement("button");
-			this.buttons.run.value = "Run";
-			this.buttons.run.addEventListener("click", this.onRun);
+			var b = document.createElement("button");
+			b.innerText = "Run";
+			b.addEventListener("click", this.onRun);
+			this.buttons.run = b;
+			this.appendChild(this.buttons.run);
 		}
 		if (this.options.clearResult) {
-			this.buttons.clearOut = document.createElement("button");
-			this.buttons.clearOut.value = "Clear Output";
-			this.buttons.clearOut.addEventListener("click", this.onClear);
+			var b = document.createElement("button");
+			b.innerText = "Clear Output";
+			b.addEventListener("click", this.onClear);
+			this.buttons.clearOut = b;
+			this.appendChild(this.buttons.clearOut);
 		}
 	}
 }

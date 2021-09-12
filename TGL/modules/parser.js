@@ -173,12 +173,13 @@ function assert(condition, failmessage) {
 
 export function parse(tokens) {
 	var AST = [];
+	Object.defineProperty(AST, "_currentElement", { get: () => { return AST[AST.length - 1] }, set: (v) => { AST[AST.length - 1] = v } })
 	var i = -1;
 	var token = {};
 
 	const isValid = {
-		text: () => {return token.type == "string" },
-		button: () => {return token.type == "string" || isSubTGL() },
+		text: () => { assert(token.type == "string", "SyntaxError: Expected String"); return token.value },
+		button: () => { assert(token.type == "string","SyntaxError: Expected String"); return token.value },
 		container: () => { return isSubTGL(); }
 	}
 
@@ -190,12 +191,15 @@ export function parse(tokens) {
 				va = va[path[i]];
 				i++;
 			} else {
-				break;
+				break
 			}
 		}
-		assert(va());
-		console.log("valid element content")
-		return true;
+		return va();
+	}
+
+	function validateCSS(v) {
+		//Implement this
+		return true
 	}
 
 	function isSubTGL() {
@@ -215,7 +219,7 @@ export function parse(tokens) {
 		prevToken();
 		prevToken();
 		stokens.pop(); //Remove final tokens
-		stokens.push({type: "EOF"})
+		stokens.push({ type: "EOF" })
 		console.log("Sub-TGL grabbed, making recursive call")
 		return parse(stokens);
 	}
@@ -255,13 +259,14 @@ export function parse(tokens) {
 		}
 		assert(validTreePath(elementName, constructors), "Invalid element.")
 		console.log("valid element constructor name");
+		AST.push({ eName: elementName });
 
 		//nextToken();
 		assert(token.type == "oPar", `SyntaxError: Expected open parenthesis, got ${token.value ? `'${token.value}' (${token.type})` : token.type}`);
 
 		nextToken();
 
-		assert(validateElementContent(elementName));
+		assert(AST._currentElement.content = validateElementContent(elementName));
 		nextToken();
 
 		assert(token.type == "cPar", "SyntaxError: Expected closing parenthesis.")
@@ -270,14 +275,19 @@ export function parse(tokens) {
 			//Validate style/property information
 			console.log("Checking element style");
 
+			var style = [];
 			var depth = 1
 			while (depth > 0) {
 				nextToken();
-				if (token.type == "oc") depth ++
-				else if (token.type == "cc") depth --
+				if (token.type == "oc") depth++
+				else if (token.type == "cc") depth--
+				style.push(token);
 			}
 
+			validateCSS(style);
+
 			console.log("valid element style");
+			AST._currentElement.style = style;
 		} else {
 			prevToken();
 		}

@@ -7,4 +7,4 @@ new TextIO(
 	document.getElementById("loadingMessage").style.display = "none";
 	return JSON.stringify(parse(lex(input))).replace(/},/g, '},\n')
 	
-}, { runAuto: true, defaultInputFile: "./testProgram.tgl"})
+}, { runImmediate: true, runAuto:true, defaultInputFile: "./testProgram.tgl", controls: true})
