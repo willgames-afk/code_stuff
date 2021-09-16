@@ -155,8 +155,8 @@ function preconvertLatex(mdstring) {
 	var match;
 	while ((match = /```latex\n[^`]+\n```/.exec(out)) !== null) {
 		const toConvert = match[0].substring(9, match[0].length - 4)
-		const converted = katex.renderToString(toConvert,{displayMode:true});
-		out = replace(out, match.index, match.index + match[0].length, '<br>'+converted+'<br>')
+		const converted = katex.renderToString(toConvert, { displayMode: true });
+		out = replace(out, match.index, match.index + match[0].length, '<br>' + converted + '<br>')
 	}
 	return out;
 }
@@ -166,21 +166,6 @@ function replace(replacestring, index1, index2, string) {
 	var part1 = replacestring.substring(0, index1);
 	var part2 = replacestring.substring(index2)
 	return part1 + string + part2;
-}
-
-function searchDir(path) {
-	const _dir = fs.readdirSync(path, { withFileTypes: true });
-	var dir = [];
-	for (var i = 0; i < _dir.length; i++) {
-		if (_dir[i].name[0] != ".") {
-			if (_dir[i].isDirectory()) {
-				dir.push({ name: _dir[i].name, type: 'dir', files: searchDir(path + '/' + _dir[i].name) });
-			} else {
-				dir.push({ name: _dir[i].name, type: 'file', loaded: false });
-			}
-		}
-	}
-	return dir;
 }
 
 function splitFile(poststring) { //Splits a md post into metadata and file
@@ -242,4 +227,17 @@ function NLtoBR(string) {
 	return string.replace(/(?:\r\n|\r|\n)/g, "<br>")
 }
 
-function getPosts()
+function getPosts() {
+
+	const _dir = fs.readdirSync("./public/blog", { withFileTypes: true });
+	var dir = [];
+	for (var i = 0; i < _dir.length; i++) {
+		if (_dir[i].name[0] != ".") {
+			if (!_dir[i].isDirectory()) {
+				dir.push({ name: _dir[i].name, });
+			}
+		}
+	}
+	return dir;
+
+}
