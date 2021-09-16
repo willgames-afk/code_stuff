@@ -13,18 +13,20 @@ function frame_count($filename) {
     // * a static 2-byte sequence (\x00\x2C) (some variants may use \x00\x21 ?)
    
     // We read through the file til we reach the end of the file, checking for headers as we go
-    while(!feof($fh) {
-//read 100kb at a time
-        $chunk = fread($fh , 102400 );
+    while(!feof($fh)) {
+		//read 100kb at a time
+		$chunk = fread($fh, 102400);
         $count += preg_match_all('#\x00\x21\xF9\x04.{4}\x00(\x2C|\x21)#s', $chunk, $matches);
-   }
+   	}
    
     fclose($fh);
     return $count;
 }
+
 function is_ani($filename) {
-    framecount_less_than($filename, 1)
+    framecount_less_than($filename, 1);
 }
+
 function framecount_less_than($filename, $max) {
   function is_ani($filename) {
     if(!($fh = @fopen($filename, 'rb')))
