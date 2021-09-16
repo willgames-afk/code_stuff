@@ -1,4 +1,4 @@
-import {Vector3} from "../../libs/three.module.js"
+import {Matrix4, Vector3} from "../../libs/three.module.js"
 
 
 export class CameraControls {
@@ -24,13 +24,16 @@ export class CameraControls {
         this.friction = friction;
         this.maxSpeed = 1;
 		this.lat = 0;
-		this.long = 0;
+		this.long = Math.PI;
 
         this.domElement.addEventListener("mousedown", this.onMouseDown.bind(this));
         this.domElement.addEventListener("mousemove", this.onMouseMove.bind(this));
         this.domElement.addEventListener("mouseup", this.onMouseUp.bind(this));
-        document.addEventListener("keydown", this.onKeyDown.bind(this));
-        document.addEventListener("keyup", this.onKeyUp.bind(this));
+		this.domElement.addEventListener("contextmenu",(e)=>{
+			e.preventDefault();
+		})
+        document.body.addEventListener("keydown", this.onKeyDown.bind(this));
+        document.body.addEventListener("keyup", this.onKeyUp.bind(this));
 
         //Camera Velocity
         this.vx = 0; this.vy = 0; this.vz=0;
@@ -48,14 +51,14 @@ export class CameraControls {
         if (this.mouseDown === true) {
 			var targetRotation = new Vector3();
 
-            this.long += (e.movementY/Math.PI) * this.sensitivity;
-            this.lat += (e.movementX/Math.PI) * this.sensitivity;
-            if (this.long > Math.PI/2) {
-                this.long = Math.PI/2
-            } else if (this.long < -Math.PI/2) {
-                this.long = -Math.PI/2;
+            this.lat += (e.movementY/Math.PI) * this.sensitivity;
+            this.long += (e.movementX/Math.PI) * this.sensitivity;
+            if (this.lat > Math.PI/2 - 0.001 ) {
+                this.lat = Math.PI/2 - 0.001
+            } else if (this.lat < -Math.PI/2 + 0.001) {
+                this.lat = -Math.PI/2 + 0.001;
             }
-            targetRotation.setFromSphericalCoords(1,this.long,Math.PI/2 - this.lat).add(this.camera.position);
+            targetRotation.setFromSphericalCoords(1,Math.PI/2 - this.lat,this.long).add(this.camera.position);
 			this.camera.lookAt(targetRotation);
 			this.camera.updateProjectionMatrix();
         }
@@ -64,12 +67,16 @@ export class CameraControls {
         this.mouseDown = false;
     }
     onKeyDown(e) {
+		//console.log("EEEEEEEEEE",e.key)
         for (var dir in this.keys) {
             if (this.keys[dir].includes(e.code)) {
                 this.state[dir] = true;
                 return
             }
         }
+		/*if(e.code == "KeyO") {
+			console.log(this.lat,":",this.long)
+		}*/
     }
     onKeyUp(e) {
         for (var dir in this.keys) {
@@ -110,9 +117,18 @@ export class CameraControls {
         if (this.vy < -this.maxSpeed) this.vy = -this.maxSpeed
         if (this.vz < -this.maxSpeed) this.vz = -this.maxSpeed
 
-        this.camera.translateX(this.vx);
-        this.camera.translateY(this.vy);
-        this.camera.translateZ(this.vz);
+		const matrix = new Matrix4();
+		const direction = new Vector3();
+		this.camera.getWorldDirection(direction);
+		direction.y = 0;
+		direction.normalize();
+
+		
+        matrix.setPosition(this.vz * -direction.x,this.vy,this.vz * -direction.z);
+		this.camera.applyMatrix4(matrix)
+		this.camera.translateX(this.vx)
+
+
         this.vx *= this.friction;
         this.vy *= this.friction;
         this.vz *= this.friction;
