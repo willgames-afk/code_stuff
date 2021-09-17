@@ -1,4 +1,5 @@
 import { SimplexNoise } from "../../libs/simplex-noise.js";
+import { Body, Plane } from "../../libs/cannon-es.js";
 import { Matrix4, PlaneBufferGeometry, Mesh, MeshLambertMaterial, FrontSide, DoubleSide } from "../../libs/three.module.js";
 import * as BufferGeoUtils from "../../libs/bufferGeoUtils.js"
 
@@ -48,67 +49,77 @@ export class World {
 		//console.log(chunk)
 
 		//Create all the required cube faces
-		const pxgeo = new PlaneBufferGeometry(1, 1);
-		pxgeo.rotateY(Math.PI / 2);
-		pxgeo.translate(0.5, 0, 0);
+		const HALF_PI = Math.PI/2;
+		const planes = {}
+		planes.pxgeo = new PlaneBufferGeometry(1, 1);
+		planes.pxgeo.rotateY(HALF_PI);
+		planes.pxgeo.translate(0.5, 0, 0);
 
-		const nxgeo = new PlaneBufferGeometry(1, 1);
-		nxgeo.rotateY(-Math.PI / 2);
-		nxgeo.translate(-0.5, 0, 0);
+		planes.nxgeo = new PlaneBufferGeometry(1, 1);
+		planes.nxgeo.rotateY(-HALF_PI);
+		planes.nxgeo.translate(-0.5, 0, 0);
 
-		const pygeo = new PlaneBufferGeometry(1, 1);
-		pygeo.rotateX(-Math.PI / 2);
-		pygeo.translate(0, 0.5, 0);
+		planes.pygeo = new PlaneBufferGeometry(1, 1);
+		planes.pygeo.rotateX(-HALF_PI);
+		planes.pygeo.translate(0, 0.5, 0);
 
-		const nygeo = new PlaneBufferGeometry(1, 1);
-		nygeo.rotateY(Math.PI / 2);
-		nygeo.translate(0, -0.5, 0);
+		planes.nygeo = new PlaneBufferGeometry(1, 1);
+		planes.nygeo.rotateX(HALF_PI);
+		planes.nygeo.translate(0, -0.5, 0);
 
-		const pzgeo = new PlaneBufferGeometry(1, 1);
-		pzgeo.translate(0, 0, 0.5);
+		planes.pzgeo = new PlaneBufferGeometry(1, 1);
+		planes.pzgeo.translate(0, 0, 0.5);
 
-		const nzgeo = new PlaneBufferGeometry(1, 1);
-		nzgeo.rotateX(Math.PI)
-		nzgeo.translate(0, 0, -0.5);
+		planes.nzgeo = new PlaneBufferGeometry(1, 1);
+		planes.nzgeo.rotateX(HALF_PI)
+		planes.nzgeo.translate(0, 0, -0.5);
+
+		var faces = [];
+		var position = new Matrix4();
+
+		const planeShape = new Plane();
+
+		function addFace(axis, posOrNeg) {
+			//To faces: add a copy of the correctly-facing plane positioned properly
+			faces.push(planes[posOrNeg + axis + "geo"].clone().applyMatrix4(position));
+		}
 
 
 		//Generate planes here
-		var faces = [];
-		var matrix = new Matrix4();
 		for (var bx = 0; bx < CHUNK_SIZE; bx++) {
 			for (var bz = 0; bz < CHUNK_SIZE; bz++) {
 				for (var by = 0; by < CHUNK_HEIGHT; by++) {
-					matrix.makeTranslation(bx, by, bz);
+					position.makeTranslation(bx, by, bz); //Make the position matrix into the correct translation matrix
 
 					if (chunk.data[bx] && chunk.data[bx][bz] && chunk.data[bx][bz][by]) {
 						if (bx == 0) {
-							if (!this.isBlock(chunk.pos[0] * 16 - 1, by, chunk.pos[1] * 16 + bz)) faces.push(nxgeo.clone().applyMatrix4(matrix));
+							if (!this.isBlock(chunk.pos[0] * 16 - 1, by, chunk.pos[1] * 16 + bz)) addFace("x","n")
 						} else if (!chunk.data[bx - 1][bz][by]) {
-							faces.push(nxgeo.clone().applyMatrix4(matrix)); //Create a copy of our nz-facing plane and shift it to where it needs to be, then add it to the geo
+							addFace("x","n")
 						}
 						if (bz == 0) {
-							if (!this.isBlock(chunk.pos[0] * 16 + bx, by, chunk.pos[1] * 16 - 1)) faces.push(nzgeo.clone().applyMatrix4(matrix));
+							if (!this.isBlock(chunk.pos[0] * 16 + bx, by, chunk.pos[1] * 16 - 1)) addFace("z","n")
 						} else if (!chunk.data[bx][bz - 1]?.[by]) {
-							faces.push(nzgeo.clone().applyMatrix4(matrix));
+							addFace("z","n")
 						}
 
 						if (!chunk.data[bx][bz][by - 1]) {
-							faces.push(nygeo.clone().applyMatrix4(matrix));
+							addFace("y","n")
 						}
 
 						if (bx == CHUNK_SIZE - 1) {
-							if (!this.isBlock((chunk.pos[0] + 1) * 16, by, chunk.pos[1] * 16 + bz)) faces.push(pxgeo.clone().applyMatrix4(matrix));
+							if (!this.isBlock((chunk.pos[0] + 1) * 16, by, chunk.pos[1] * 16 + bz)) addFace("x","p")
 						} else if (!chunk.data[bx + 1][bz][by]) {
-							faces.push(pxgeo.clone().applyMatrix4(matrix)); //Create a copy of our nz-facing plane and shift it to where it needs to be, then add it to the geo
+							addFace("x","p")
 						}
 						if (bz == CHUNK_SIZE - 1) {
-							if (!this.isBlock(chunk.pos[0] * 16 + bx, by, (chunk.pos[1] + 1) * 16)) faces.push(pzgeo.clone().applyMatrix4(matrix));
+							if (!this.isBlock(chunk.pos[0] * 16 + bx, by, (chunk.pos[1] + 1) * 16)) addFace("z","p")
 						} else if (!chunk.data[bx][bz + 1]?.[by]) {
-							faces.push(pzgeo.clone().applyMatrix4(matrix));
+							addFace("z","p")
 						}
 
 						if (!chunk.data[bx][bz][by + 1]) {
-							faces.push(pygeo.clone().applyMatrix4(matrix));
+							addFace("y","p")
 						}
 					}
 				}
