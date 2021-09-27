@@ -1,5 +1,5 @@
 import { SimplexNoise } from "../../libs/simplex-noise.js";
-import { Body, Plane } from "../../libs/cannon-es.js";
+import { Plane, Body, Vec3} from "../../libs/cannon-es.js";
 import { Matrix4, PlaneBufferGeometry, Mesh, MeshLambertMaterial, FrontSide, DoubleSide } from "../../libs/three.module.js";
 import * as BufferGeoUtils from "../../libs/bufferGeoUtils.js"
 
@@ -10,11 +10,30 @@ export class World {
 	constructor(game) {
 		this.game = game;
 		this.noise = new SimplexNoise(this.game.seed);
+        const HPI = Math.PI/2;
+        this.planeInfo = {
+            px: [0, HPI,0,  0.5,0,0],
+            nx: [0,-HPI,0,  -0.5,0,0],
+            py: [-HPI,0,0,  0,0.5,0],
+            ny: [ HPI,0,0,  0,-0.5,0],
+            pz: [0,0,0,     0,0,0.5],
+            nz: [0,0,0,     0,0,-0.5]
+        }
+        var planeInfo = this.planeInfo;
+        this.planes = {}
+        for (var plane in planeInfo) {
+            const p = planeInfo[plane]
+            this.gPlanes[plane] = new PlaneBufferGeometry(1,1);
+            this.gPlanes[plane].rotateX(p[0]);
+            this.gPlanes[plane].rotateY(p[1]);
+            this.gPlanes[plane].rotateZ(p[2]);
+            this.gPlanes[plane].translate(p[3],p[4],p[5]);
+        }
 	}
 	loadChunk(x, z) {
 		//Loads a specific chunk
 
-		//If chunk has aleady generated, add it to the list of loaded chunks
+		//If chunk has aleady generated, add it to the list of loaded chunks2
 		if (this.game.chunks[x + ":" + z]) {
 			this.game.addLoadedChunk(this.game.chunks[x + ":" + z]);
 		} else {
@@ -48,41 +67,19 @@ export class World {
 	generateChunkMesh(chunk) {
 		//console.log(chunk)
 
-		//Create all the required cube faces
-		const HALF_PI = Math.PI/2;
-		const planes = {}
-		planes.pxgeo = new PlaneBufferGeometry(1, 1);
-		planes.pxgeo.rotateY(HALF_PI);
-		planes.pxgeo.translate(0.5, 0, 0);
-
-		planes.nxgeo = new PlaneBufferGeometry(1, 1);
-		planes.nxgeo.rotateY(-HALF_PI);
-		planes.nxgeo.translate(-0.5, 0, 0);
-
-		planes.pygeo = new PlaneBufferGeometry(1, 1);
-		planes.pygeo.rotateX(-HALF_PI);
-		planes.pygeo.translate(0, 0.5, 0);
-
-		planes.nygeo = new PlaneBufferGeometry(1, 1);
-		planes.nygeo.rotateX(HALF_PI);
-		planes.nygeo.translate(0, -0.5, 0);
-
-		planes.pzgeo = new PlaneBufferGeometry(1, 1);
-		planes.pzgeo.translate(0, 0, 0.5);
-
-		planes.nzgeo = new PlaneBufferGeometry(1, 1);
-		planes.nzgeo.rotateX(HALF_PI)
-		planes.nzgeo.translate(0, 0, -0.5);
-
 		var faces = [];
 		var position = new Matrix4();
 
-		const planeShape = new Plane();
-
 		function addFace(axis, posOrNeg) {
 			//To faces: add a copy of the correctly-facing plane positioned properly
-			faces.push(planes[posOrNeg + axis + "geo"].clone().applyMatrix4(position));
+			faces.push(this.planes[posOrNeg + axis].clone().applyMatrix4(position));
+            var physicsPlane = new Body({mass: 0, shape: new Plane()});
+            const p = this.
+            physicsPlane.quaternion.setFromEuler(p[0],p[1],p[2]);
+            physicsPlane.position.set(p[3],p[4],p[5])
 		}
+
+        addFace = addFace.bind(this)
 
 
 		//Generate planes here
@@ -131,6 +128,7 @@ export class World {
 		var mesh = new Mesh(geo, new MeshLambertMaterial({ map: this.game.assets.dirtTexture, side: FrontSide }));
 		mesh.translateX(chunk.pos[0] * 16);
 		mesh.translateZ(chunk.pos[1] * 16);
+		//this.game.physics.add(mesh);
 		return mesh
 	}
 }

@@ -1,8 +1,10 @@
 import * as THREE from "../libs/three.module.js"
 import { CameraControls } from "./Player/cameraController.js";
+import * as CANNON from "../libs/cannon-es.js"
 import { AssetLoader } from "./Loader.js";
 import { World } from "./World/generation.js"
 import * as Config from "./config.js"
+
 
 //Central game object
 class Game {
@@ -31,6 +33,10 @@ class Game {
 			antiPitchBlack: new THREE.AmbientLight("#333333") //Amient light to prevent pitch blackness
 		}
 		this.scene.add(this.lighting.sun, this.lighting.antiPitchBlack);
+
+		this.physics = new CANNON.World({
+            gravity: new CANNON.Vec3(0,-9.82,0)// m/s 2
+        });
 
 		//Initialize Game World
 		this.world = new World(this);
