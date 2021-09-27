@@ -82,10 +82,6 @@ def main():
 
 
 
-				
-
-
-
 def cleanLine(line):
 	newline = ""
 	for char in line:
@@ -125,15 +121,6 @@ def getCommand(line):
 		obj["y"] = float(y)
 	
 	return obj
-	
-
-
-		
-
-			
-			
-
-
 
 
 if __name__ == '__main__':
