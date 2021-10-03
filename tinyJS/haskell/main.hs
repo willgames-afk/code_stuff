@@ -2,8 +2,9 @@ import Data.Char
 
 expected x = error $ x ++ " expected"
 
-data Expression
-  = Num String
+data Expression =
+  Num Integer
+  | Var String
   | Add Expression Expression
   | Sub Expression Expression
   | Mul Expression Expression
@@ -79,8 +80,9 @@ infixl 3 <|>
     Nothing -> parserB input
     result -> result
 
-iter :: Parser a -> Parser [a]
-iter m = m <+> iter m >>> (\(x,y) -> x:y)
+iter :: Parser Char -> Parser String
+iter m = (iterS m) <=> (/="")
+iterS m = m <+> iter m >>> (\(x,y) -> x:y)
     <|> result []
 
 char :: Parser Char
@@ -92,6 +94,10 @@ digit = char <=> isDigit
 
 digits :: Parser String
 digits = iter digit
+
+number :: Parser Integer
+number = literal '-' <-+> digits >>> (\n -> -1 * (read n :: Integer) )
+     <|> digits >>> (\n -> read n :: Integer)
 
 space :: Parser Char
 space = char <=> isSpace
@@ -109,11 +115,12 @@ data Assign = Assign String Expression
   deriving (Show)
 
 assign :: Parser (String, Expression)
-assign = token(letters) <+-> token (literal '=' ) <+> expression
+assign = token(letters) <+-> token(literal '=' ) <+> expression
 
 factor :: Parser Expression
-factor = token(digits) >>> Num
-    <|> token(literal '(' )<-+> token(expression) <+-> token(literal ')')
+factor = token(literal '(' ) <-+> token(expression) <+-> token(literal ')')
+    <|> number >>> Num
+    <|> letters >>> Var
 
 term :: Parser Expression
 term = factor +> term'
@@ -138,13 +145,12 @@ mulOp = token(literal '*') >>> (\_ -> Mul)
 
 parse :: String -> Assign
 parse s = Assign id expr
-  where
-    (id, expr) = case (assign s) of
-      Nothing -> error "Invalid Assignment"
-      Just ((a, b), _) -> (a, b)
+    where (id, expr) = case (assign s) of
+            Nothing -> error "Invalid Assignment"
+            Just ((a, b), _) -> (a, b)
 
 result :: a -> Parser a
 result a cs = Just(a,cs)
 
 token :: Parser a -> Parser a
-token = (<+-> iter space)
+token = (<+-> iterS space)

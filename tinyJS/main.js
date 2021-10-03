@@ -3,14 +3,16 @@ import { parse } from "./parser.js";
 import { log } from "./config.js"
 import { lex } from "./lexer.js";
 import { TextIO } from "../text-input-engine/main.js"
+import { parseExpression} from "./newParser.js"
 
 //---------Setting up compiler -------------//
-var compiler = new TinyInterpereter(ui.input, 0, 0)
+//var compiler = new TinyInterpereter(ui.input, 0, 0)
 
 //----------------Main Function ------------//
 new TextIO(
-	() => {
-		ui.output.innerHTML += compiler.run() + "\n";
-		resizeTA(ui.output, 20);
-	}
+	(input) => {
+		console.log(input)
+		return JSON.stringify(parseExpression(input.split("")),null,"	") + "\n"
+	
+	},{controls:true}
 )

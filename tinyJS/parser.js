@@ -107,3 +107,13 @@ export function parse(tokens) {
 
 	}
 }
+
+
+
+class Parser extends String{
+    constructor(input) {
+        super(input);
+        this.output = [];
+        console.log(this)
+    }
+}

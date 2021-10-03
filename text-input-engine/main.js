@@ -26,7 +26,7 @@ export class TextIO {
 			return;
 		}
 
-		this.function = f;
+		this.function = f.bind(this);
 
 		this.htmlContainer = options.containerElement || document.createElement("div")
 
