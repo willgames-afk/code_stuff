@@ -1,9 +1,8 @@
 import { TinyInterpereter } from "./interpereter.js"
-import { parse } from "./parser.js";
 import { log } from "./config.js"
 import { lex } from "./lexer.js";
 import { TextIO } from "../text-input-engine/main.js"
-import { parseExpression} from "./newParser.js"
+import { parse, interperet} from "./newParser.js"
 
 //---------Setting up compiler -------------//
 //var compiler = new TinyInterpereter(ui.input, 0, 0)
@@ -11,8 +10,11 @@ import { parseExpression} from "./newParser.js"
 //----------------Main Function ------------//
 new TextIO(
 	(input) => {
-		console.log(input)
-		return JSON.stringify(parseExpression(input.split("")),null,"	") + "\n"
+		var ast = parse(input)
+		if (typeof ast == "string") {
+			return ast; //It's an error message
+		}
+		return JSON.stringify(ast[0],null,"	") + "\n"  + interperet(ast[0]) + "\n"
 	
-	},{controls:true}
+	},{runAuto:true}
 )
