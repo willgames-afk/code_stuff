@@ -1,2 +1,2 @@
-language = "html"
-run = "node other/repl-launch.js"
+language = "nodejs"
+run = "cd other/repl-launch && npm start"

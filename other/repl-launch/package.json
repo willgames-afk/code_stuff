@@ -1,0 +1,15 @@
+{
+  "name": "repl-launch",
+  "version": "1.0.0",
+  "description": "Launches this project on replit.com",
+  "main": "repl-launch.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Will Kam",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mime-types": "^2.1.33"
+  }
+}
