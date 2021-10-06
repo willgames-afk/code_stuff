@@ -1,2 +1,2 @@
 language = "bash"
-run = "./start.sh"
+run = "./repl-start.sh"
