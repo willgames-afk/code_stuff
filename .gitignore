@@ -21,3 +21,7 @@ node_modules/
 out/
 
 *.venv
+
+#web server used to serve html content
+MDWebServer
+MDWebServer/*
