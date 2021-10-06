@@ -1,2 +1,2 @@
-language = "nodejs"
-run = "cd other/repl-launch && npm start"
+language = "bash"
+run = "./start.sh"
