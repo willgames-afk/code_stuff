@@ -7,7 +7,7 @@ export let CREATED = false;
 class BlockDiagram {
     constructor(element, config = {}) {
         console.assert(!CREATED, "Create app twice!");
-		CREATED = true;
+        CREATED = true;
 
         //General Init
         this.containerElement = element;
@@ -86,12 +86,11 @@ class BlockDiagram {
         //draw connections (not implemented)
 
         //if (this.state.makingBlock) {
-            requestAnimationFrame(this.render.bind(this))
+        requestAnimationFrame(this.render.bind(this))
         //}
     }
     mouseMove(e) {
         //mouse move handler
-        //console.log(this)
         this.state.mouse.x = e.clientX;
         this.state.mouse.y = e.clientY;
     }
@@ -104,7 +103,7 @@ class BlockDiagram {
         if (e.button == 0) {
             //Left Click
             if (this.state.makingBlock) { //Left click while making block cancels it
-                this.state.blocks.splice(this.state.editingBlockIndex,1); //Remove prototype block
+                this.state.blocks.splice(this.state.editingBlockIndex, 1); //Remove prototype block
                 this.state.makingBlock = false;
             } else {
                 if (collisions.length == 1) {
@@ -150,11 +149,13 @@ class BlockDiagram {
         }
         return outArray
     }
+
     startNewBlock(x, y) {
         this.state.makingBlock = true;
         this.state.editingBlockIndex = this.state.blocks.push(new Block(x, y, 0, 0)) - 1 //Push returns length of the array and the element pushed is going to be at the index one less than that
         this.render.bind(this)();
     }
+
     makeNewBlock(x, y) {
         if (this.detectBlockCollision(x, y).length == 0) {
             this.state.currentBlock.x2 = x;
@@ -165,6 +166,7 @@ class BlockDiagram {
             console.warn("Cannot create blocks inside blocks.")
         }
     }
+
     setterCallback(property, value) {
         console.log('setting this.' + property + ' to ' + value + '.')
         this[property] = value

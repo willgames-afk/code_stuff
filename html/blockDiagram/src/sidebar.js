@@ -1,4 +1,4 @@
-import {EditableObject} from "../../../jsonViewer/jsonViewer.js";
+import {EditableObject} from "../../jsonViewer/jsonViewer.js";
 
 export class Sidebar {
 	static expandedWidth = '300px';
