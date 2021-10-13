@@ -5,8 +5,8 @@
 # Local organization
 *.code-workspace
 
-# Server-size stuff
-PHPtest/users.txt
+# 
+php/login/users.txt
 
 **/comments.txt
 
