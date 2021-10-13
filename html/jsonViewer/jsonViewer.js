@@ -35,6 +35,29 @@
 	}
 }
 */
+/*
+Editor Params:
+{
+    //Contains properties that should be editable,
+    exampleProperty: {
+        type: specifies valid input type, optional
+        displayName: Optional display name
+        options: {
+            //Options, related to type.
+
+            if type == dropdown, then
+            option: value It will be an object of option-value Pairs
+
+            if type == list or object then
+            addRemoveRename: bool, whether properties can be added/removed/renamed.
+            childType: an editorParams object representing the type of the child element
+
+        }
+    }
+}
+
+*/
+
 function Input(input, oninput = () => { }) { //DOM wierdness prevents this from being a proper constructor
 	input.addEventListener('input', (e) => {
 		if (e.target.checked === undefined) {
@@ -183,7 +206,6 @@ class JSONViewer {
 
 		this.html = document.createElement("div");
 		this.html.className = "JSONViewer"
-
 
 
 		this.html.appendChild(EditableObjectArray(thing, options.onEdit));

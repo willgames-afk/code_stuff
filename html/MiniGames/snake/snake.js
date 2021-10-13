@@ -14,71 +14,22 @@ var fruit = {
     x: 0,
     y: 0
 }
-var gameOverScreen = [
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,0,0,1,1,0,0,1,0,0,0,1,0,1,1,1,0],
-    [0,1,0,0,0,0,1,0,0,1,0,1,1,0,1,1,0,1,0,0,0],
-    [0,1,0,1,1,0,1,1,1,1,0,1,0,1,0,1,0,1,1,1,0],
-    [0,1,0,0,1,0,1,0,0,1,0,1,0,0,0,1,0,1,0,0,0],
-    [0,1,1,1,1,0,1,0,0,1,0,1,0,0,0,1,0,1,1,1,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,0,1,0,0,0,1,0,1,1,1,0,1,1,1,1,0],
-    [0,1,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0,0,1,0],
-    [0,1,0,0,1,0,1,0,0,0,1,0,1,1,1,0,1,1,1,0,0],
-    [0,1,0,0,1,0,0,1,0,1,0,0,1,0,0,0,1,0,0,1,0],
-    [0,1,1,1,1,0,0,0,1,0,0,0,1,1,1,0,1,0,0,1,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-]
-var startScreen = [
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,1,1,0,1,1,1,0,0,1,0,0,1,0,1,0,1,1,1,0,0],
-    [0,1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0],
-    [0,1,1,0,1,0,1,0,1,1,1,0,1,1,0,0,1,1,1,0,0],
-    [0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0],
-    [0,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,1,1,0,0,0,1,0,0,1,0,0,0,1,0,1,1,1,0,0],
-    [0,1,0,0,0,0,1,0,1,0,1,1,0,1,1,0,1,0,0,0,0],
-    [0,1,0,1,1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,0],
-    [0,1,0,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,0,0],
-    [0,0,1,1,0,0,1,0,1,0,1,0,0,0,1,0,1,1,1,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-]
-var tilemap_config = {
-    width: 21,
-    height: 21,
-    size: 10,
-    canvasid: 'snakeCanvas'
-}
-var tilemap = new Tilemap(tilemap_config)
+const scale = 10;
+const canvas = document.getElementById("snakeCanvas")
+cavnas.width = 21 * scale;
+canvas.height = 21 * scale;
+const ctx = canvas.getContext("2d")
+
 var scoreboard = document.getElementById('score')
 document.body.onkeydown = handleKeyboard
-displayTileImage(startScreen)
 
 function loop() {
     moveSnake()
     detectCollisions()
     displaySnake()
     displayScore()
-    tilemap.render()
+    render();
     if (snake.gameover == true) {
-        displayTileImage(gameOverScreen)
         snake = JSON.parse(defaults)
         clearInterval(interval)
         interval = undefined
@@ -86,36 +37,28 @@ function loop() {
 }
 var hiScoreString = '0000'
 function displayScore() {
-    var score = snake.score.toString(10)
-    if (score < 1000) {
-        score = '0'+score
-        if (score < 100) {
-            score = '0'+score
-            if (score < 10) {
-                score = '0'+score
-            }
-        }
-    }
+    var score = snake.score.toString(10).padStart("0",5)
     if (snake.score > hiScore) {
         hiScore = snake.score
         hiScoreString = score
     }
     scoreboard.innerHTML = score + '       Hi:' + hiScoreString
 }
-function displayTileImage(array) {
-    for(y=0;y<array.length;y++) {
-        for (x=0;x<array[y].length;x++) {
-            tilemap.setTile(x,y,array[y][x])
-        }
+function render() {
+    ctx.beginPath();
+    ctx.lineWidth = scale * 0.75;
+    ctx.lineCap = "round";
+    ctx.moveTo(snake.x,snake.y);
+    for (var i=0;i<snake.bodySegments.length;i++) {
+        ctx.lineTo(snake.bodySegments[i][0] * scale - scale/2,snake.bodySegments[i][1] * scale - scale/2)
     }
-    tilemap.render()
+    ctx.stroke();
+
+    ctx.fillRect(fruit.x * scale - scale/2,fruit.y * scale - scale/2,scale,scale)
 }
 function displaySnake() {
-    tilemap.setTile(snake.x, snake.y, 1)
+    snake.bodySegments.pop()
     snake.bodySegments.unshift([snake.x, snake.y])
-    var lastSegment = snake.bodySegments.pop()
-    //console.log(snake.bodySegments)
-    tilemap.setTile(lastSegment[0], lastSegment[1], 0)
 }
 function moveSnake() {
     //moves the snake
@@ -194,7 +137,6 @@ function moveFruit() {
             }
         }
     }
-    tilemap.setTile(fruit.x, fruit.y, 2)
 }
 var interval
 function handleKeyboard(e) {
@@ -215,8 +157,8 @@ function handleKeyboard(e) {
         }
     }
     if (!interval) {
-        tilemap.clear()
         moveFruit()
+        render();
         interval = window.setInterval(loop, 125)
     }
 }
