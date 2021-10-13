@@ -1,4 +1,4 @@
-const bodyParser = require("body-parser");
+const bp = require("body-parser");
 const session = require("express-session");
 const fs = require("fs");
 
@@ -27,12 +27,12 @@ module.exports = loginPageUrl => {
         }
     })(req, res, () => {
         //Run bodyParser urlencoded middleware
-        bodyParser.urlencoded({
+        bp.urlencoded({
             extended: true
         })(req, res, () => {
 
             //Run bodyParser json middleware
-            bodyParser.json()(req, res, () => {
+            bp.json()(req, res, () => {
 
                 //FINALLY run my code
                 var username = request.body.username;

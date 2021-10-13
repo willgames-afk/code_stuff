@@ -1,0 +1,10 @@
+{
+	"name": "tiny-syntax",
+	"displayName": "tiny-syntax",
+	"description": "Syntax Highlighting for Tiny",
+	"version": "0.0.1",
+	"publisher": "Will Kam",
+	"contributes": {
+		""
+	}
+}
