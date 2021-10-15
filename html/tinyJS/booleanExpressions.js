@@ -228,6 +228,15 @@ const bitwiseOps = {
 function parseBitwiseOp(input) {
     try {
         var res = parseLiteral(getToken(input), "&");
+        return [{ type: "op", val: "bitand" }]
+    } catch {
+        try {
+            var res = parseLiteral(getToken(input), "|");
+            return [{ type: "op", val: "bitor" }]
+        } catch {
+            var res = parseLiteral(getToken(input), "^");
+            return [{ type: "op", val: "bitxor" }]
+        }
     }
 }
 

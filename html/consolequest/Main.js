@@ -50,7 +50,7 @@ function wrapper() {
       grab: 'Grabs all accessable loot in an area and gives it to the player (You!).',
       stop: "Ends the program. Why you'd want to do that, I don't know.",
       inventory: "Opens your inventory, showing what you have. You can click on the little triangles next to each element to see more details.",
-      soth: "If you see this, talk to will; it's a bug.",
+      soth: "If you see this message, talk to will; it's a bug. (Soth is a secret command)",
       load: "Loads a map file saved in your browser.",
       reset: "Resets your game. Useful in case of emergency.",
       exit: "Displays the exits of the room you're in. These are displayed by default, but this is handy in case you forget.",
@@ -75,6 +75,7 @@ function wrapper() {
     saveSuccess: "Saved your game. Note that some things can erase this save, you can get a more permanant save file by typing downloadit.",
     help: "Type 1 word commands to tell me what to do. Which one word commands? I can tell you if you type help. To use an item just type use, I'll know which one you mean.\n\n",
     noMapAlert: "I don't have a map, you need to load one!",
+    notstartnomap: "Not started, no map.",
     noMapDirections: "You can load a map by selecting a file using the file button over there and then typing loadmap.",
     mapOverwriteAlert: "I'm about to re-write your current map, so you'll lose all progress. This includes your save file. If you don't want that, push cancel and type downloadit to download your save.",
     mapLoadSuccess: "New map loaded. Saves have been cleared.",
@@ -84,6 +85,8 @@ function wrapper() {
     cantTerminateAlert: "Your browser says I can't shut down. You'll just have to close this tab the old fashioned way.",
     resetAlert: "Do you REALLY want to reset all of you progress and save data!?",
     noMoveHistoryAlert: "Which way should I move again??",
+    startMessage: "Started.",
+    alreadyRunning: "Already running, haha lol"
   }
   var aI = {
     "debugStick": {
@@ -113,7 +116,7 @@ function wrapper() {
         //If no map data, sound the alarm
         alert(message.noMapAlert);
         displayText(message.noMapDirections);
-        return 'Not started, no map.'
+        return message.cantstartnomap
 
       } else {
 
@@ -122,12 +125,12 @@ function wrapper() {
         createCompletionElements();
         displayText(map.startText + '\n' + message.help + '\n' + currentCell.desc);
 
-        return 'Started!'
+        return message.startMessage
       }
 
     } else {
       //displayText("Already Running.", '', false)
-      return 'Already Running, Haha lol.'
+      return message.alreadyRunning
     }
   }
 

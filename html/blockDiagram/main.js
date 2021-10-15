@@ -174,7 +174,6 @@ class BlockDiagram {
 }
 
 
-window.addEventListener('load', startApp);
-function startApp() {
+window.addEventListener('load', ()=>{
     new BlockDiagram(document.getElementById('blockDiagram'))
-}
+});
