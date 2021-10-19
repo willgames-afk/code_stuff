@@ -14,25 +14,29 @@ function updateLocalhostDetector() {
 	}
 }
 function updateColorButtons() {
-	const buttons = document.querySelectorAll('#content .projects .links a');
-	const color = document.getElementById('colorInput').value;
-	const rgb = hextorgb(color);
-	if (rgb.r + rgb.g + rgb.b >= (255 * 3 / 2)) {
-		for (i = 0; i < buttons.length; i++) {
-			buttons[i].style['background-color'] = color;
-			buttons[i].style.color = '#000000';
+	try {
+		const buttons = document.querySelectorAll('#content .projects .links a');
+		const color = document.getElementById('colorInput').value;
+		const rgb = hextorgb(color);
+		if (rgb.r + rgb.g + rgb.b >= (255 * 3 / 2)) {
+			for (i = 0; i < buttons.length; i++) {
+				buttons[i].style['background-color'] = color;
+				buttons[i].style.color = '#000000';
+			}
+		} else {
+			for (i = 0; i < buttons.length; i++) {
+				buttons[i].style['background-color'] = color;
+				buttons[i].style.color = '#FFFFFF';
+			}
 		}
-	} else {
-		for (i = 0; i < buttons.length; i++) {
-			buttons[i].style['background-color'] = color;
-			buttons[i].style.color = '#FFFFFF';
-		}
+	} catch {
+		return
 	}
 }
 
 //LOADERS- These load external content after the rest of the page has loaded.
 function loadBlogPosts() {
-	
+
 }
 
 //HELPERS- helper functions to make everything else run smoothly
@@ -54,5 +58,5 @@ function onFullLoad() {
 	loadBlogPosts();
 }
 
-window.addEventListener("DOMContentLoaded",onDOMLoad);
+window.addEventListener("DOMContentLoaded", onDOMLoad);
 window.addEventListener("load", onFullLoad)

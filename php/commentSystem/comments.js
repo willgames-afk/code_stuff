@@ -1,5 +1,5 @@
 initComments();
-refreshComments();
+refreshComments(false);
 var elementStyle = {
 	name: {
 		margin: "0px",
@@ -40,31 +40,30 @@ function timeDifference(timestamp) {
 		return unknown
 
 	} else if (elapsed < msPerMinute) {
-		return addS(Math.round(elapsed / 1000),'second','ago');
+		return formatNice(Math.round(elapsed / 1000), 'second');
 
 	} else if (elapsed < msPerHour) {
-		return addS(Math.round(elapsed / msPerMinute), 'minute', 'ago');
+		return formatNice(Math.round(elapsed / msPerMinute), 'minute');
 
 	} else if (elapsed < msPerDay) {
-		return addS(Math.round(elapsed / msPerHour),'hour', 'ago');
+		return formatNice(Math.round(elapsed / msPerHour), 'hour');
 
 	} else if (elapsed < msPerMonth) {
-		return ap + addS(Math.round(elapsed / msPerDay), 'day', 'ago');
+		return ap + formatNice(Math.round(elapsed / msPerDay), 'day');
 
 	} else if (elapsed < msPerYear) {
-		return ap + addS(Math.round(elapsed / msPerMonth), 'month', 'ago');
+		return ap + formatNice(Math.round(elapsed / msPerMonth), 'month');
 
 	} else {
-		return ap + addS(Math.round(elapsed / msPerYear),'year','ago');
-
+		return ap + formatNice(Math.round(elapsed / msPerYear), 'year');
 	}
 
 }
-function addS(value, units, suffix) {
+function formatNice(value, units) {
 	if (value != 1) {
-		return value + ' '+units + 's ' + suffix
+		return `${value} ${units}s ago`
 	}
-	return value+' '+units+' '+suffix
+	return `${value} ${units} ago`
 }
 function initComments() {
 
@@ -78,9 +77,8 @@ function initComments() {
 
 	addCommentInterface(container);
 }
-function refreshComments() {
+function refreshComments(scroll) {
 
-	var scroll = window.scrollY
 
 	var container = document.getElementById('comments');
 
@@ -106,6 +104,9 @@ function refreshComments() {
 				applyStyle(li, elementStyle.comment)
 				commentList.appendChild(li);
 
+			}
+			if(scroll) {
+				window.scrollTo(0,document.body.scrollHeight);
 			}
 
 			if (typeof noms != 'undefined') {
@@ -172,9 +173,8 @@ function addCommentInterface(container) {
 					errorMessage.innerHTML = "";
 				}
 
-				refreshComments();
-				document.getElementById('submit-comment').scrollIntoView(true);
-				
+				refreshComments(true);
+
 				console.groupEnd();
 
 			}
