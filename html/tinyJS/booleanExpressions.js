@@ -14,7 +14,7 @@ function parseLiteral(input, char) {
                 throw "Expected " + char
             }
         }
-        return [true, input.substr(char.length)];
+        return [char, input.substr(char.length)];
     } else {
         throw "Expected " + char
     }
@@ -264,7 +264,7 @@ function _parseExpression(term1) {
     var term2 = parseTerm(addOp[1]);
 
     try {
-        return _parseExpression([{ type: "expression", val: [addOp[0], term1[0]}, term2[0]], term2[1]]);
+        return _parseExpression([{ type: "expression", val: [addOp[0], term1[0]]}, term2[0]], term2[1]);
     } catch (e) {
         if (e == "Expected Number") {
             throw e;
@@ -378,10 +378,43 @@ function _parseBoolExpression(bterm1) {
     }
 }
 
+var types = [
+	"int",
+	"float",
+	"bool"
+]
+function parseTypeSig(input) {
+	console.log("Attempting to parse Type Signature")
+	for (var type of types) {
+		console.log(type)
+        try {
+            return parseLiteral(input, type);
+        } catch {
+            continue;
+        }
+    }
+    throw "Expected Type";
+}	
+
 function parseAssignment(input) {
-    var target = parseVar(getToken(input));
+	var resultingInput = input;
+	var type = "any";
+	try {
+		var type = parseTypeSig(input);
+		resultingInput = type[1];
+		type = type[0]
+
+	} catch (e) {
+		console.log(e)
+	}
+    var target = parseVar(getToken(resultingInput));
     var eq = parseLiteral(getToken(target[1]), "=");
     var value = parseExpression(getToken(eq[1]));
+	if (type != "any") {
+		if (value[0].type != type) {
+			throw `TypeError: Expected ${type}, got ${value[0].type}`
+		}
+	}
     return [{ type: "assign", val: [target[0], value[0]] }, value[1]]
 }
 

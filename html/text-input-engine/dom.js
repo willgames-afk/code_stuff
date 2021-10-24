@@ -115,5 +115,6 @@ export function resizeTA(textarea, minHeight = 0) {
 export function resizeTACallback(textarea, minHeight) {
 	return () => {
 		resizeTA(textarea, minHeight);
+		window.dispatchEvent(new Event('resize'));
 	}
 }

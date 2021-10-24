@@ -38,12 +38,6 @@ class Things {
         this.ctx = this.canvas.getContext('2d');
         window.addEventListener('resize',this.resize.bind(this));
         this.resize(); //Takes care of making enough noms to fill the screen
-        /*if (!numberofnoms) {
-            numberofnoms = Math.floor((this.canvas.width/200) * (this.canvas.height/200))
-        }
-        for (var i=0;(i<numberofnoms && i<this.configs.max);i++) {
-            this.make();
-        }*/
     }
     make(
         x = this.randomXInCanvas(10),
@@ -309,6 +303,8 @@ class Things {
             }
             this.canvas.width = width;
         }
+
+		console.log("Resize; ", this.canvas.height, window.innerHeight)
         this.canvas.height = window.innerHeight;
         if (document.body.scrollHeight > window.innerHeight) {
             this.canvas.height = document.body.scrollHeight;
