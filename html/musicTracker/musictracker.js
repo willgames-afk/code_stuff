@@ -1,5 +1,37 @@
-import { TrackDOM, Note } from "./DOM.js";
+import { TrackElement, NoteElement, formatLikeNote } from "./DOM.js";
 const baseElement = document.getElementById("musictracker");
+
+class Track extends TrackElement {
+    constructor(noteList, instrumentConfig) {
+        var noteElements = [];
+        for (var i = 0; i < noteList.length; i++) {
+            noteElements.push(new NoteElement(formatLikeNote(noteList[i].note)));
+        }
+
+        super(noteElements);
+
+        this.noteElements = noteElements;
+        this.notes = noteList;
+
+        this.instrument = new Tone.Synth(instrumentConfig).toDestination();
+        var part = new Tone.Part(
+            function (synth) {
+                return function (time, note) {
+					console.log(time)
+                    synth.triggerAttackRelease(note.note, note.duration, time);
+                }
+            }(this.instrument),
+            this.notes
+        ) //Start it with Tone.Trasport.start();
+		this.tonePart = part;
+		console.log(this.tonePart)
+        this.length = this.notes.length;
+        console.log(this.tonePart._events)
+
+		this.start = this.tonePart.start.bind(this.tonePart);
+		console.log(this.tonePart.start)
+    }
+}
 
 /*
 TO DO:
@@ -18,10 +50,23 @@ menu.container.setAttribute('class', 'menu');
 menu.playbutton = document.createElement('button');
 menu.playbutton.innerText = 'Play';
 
+var k = new Track([
+    { note: 'C4', time: 0, duration: "4n" },
+    { note: 'D4', time: 0.5, duration: "4n" }
+], {})
+
+function playAll(time) {
+	console.log(k);
+	console.log(k.start)
+	k.start(time)
+}
+playAll = playAll.bind(this)
+
 menu.playbutton.addEventListener("click", async function () {
     await Tone.start()
     if (Tone.Transport.state == 'started') {
         Tone.Transport.stop();
+		playAll(0);
         menu.pauseButton.hidden = true;
         menu.playbutton.innerText = 'Play';
     } else {
@@ -48,41 +93,16 @@ menu.addTrackButton.innerText = 'Add Track';
 menu.addTrackButton.addEventListener("click", function () {
 
 })
+Tone.Transport.on("stop",(args)=>{
+	console.log("STOPPED");
+})
+
 menu.container.appendChild(menu.addTrackButton);
 
 baseElement.appendChild(menu.container);
 
 
-class Track extends TrackDOM {
-    constructor(noteList, instrumentConfig, DOMParent) {
-        var noteElements = [];
-        for (var i = 0; i < noteList.length; i++) {
-            noteElements.push(new Note(Note.format(noteList[i].note)));
-        }
-
-        super(noteElements, DOMParent);
-
-        this.noteElements = noteElements;
-        this.notes = noteList;
-
-        this.instrument = new Tone.Synth(instrumentConfig).toDestination();
-        this.part = new Tone.Part(
-            function (synth) {
-                return function (time, note) {
-                    synth.triggerAttackRelease(note.note, note.duration, time);
-                }
-            }(this.instrument),
-            this.notes
-        ).start(0); //Start it with Tone.Trasport.start();
-        this.length = this.notes.length;
-        console.log(this.part._events)
-    }
-}
-
-const k = new Track([
-    { note: 'C4', time: 0, duration: "4n" },
-    { note: 'D4', time: 0, duration: "4n" }
-], {}, baseElement)
+baseElement.appendChild(k)
 
 Tone.Transport.start();
 

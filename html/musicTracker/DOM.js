@@ -1,140 +1,132 @@
 
-export class TrackDOM {
-    constructor(notes = [], DOMParent) {
-        this._notes = notes, this.DOMParent = DOMParent;
+export function TrackElement(notes) {
+	var self = document.createElement("table"); //Create Table
 
-        this.htmlTable = document.createElement("table"); //Create Table
+	self._notes = notes;
+	self.addNote = (note) => {
 
-        console.dir(this.htmlTable)
+		console.log(note.html)
+	
+		var row = document.createElement("tr"); //Create row element
+	
+		var noteNumber = document.createElement("td"); //Create Note number label
+		noteNumber.innerText = self.rows.length;         //Set its value
 
-        for (var i = 0; i < this._notes.length; i++) { //Iterate through rows
-            this.addNote(this._notes[i])
-        }
+		row.appendChild(noteNumber);    //Add it to row
+		row.appendChild(note);            //Add to row
+	
+		self.appendChild(row);
+	}
+	self._regenerateHTML = () => {
+		self.innerHTML = "";
+		for (var i = 0; i < self._notes.length; i++) { //Iterate through rows
+			self.addNote(self._notes[i])
+		}
+	}
 
-        this.DOMParent.appendChild(this.htmlTable); //Finally, add cell to parent element
-    }
-    get list() {
-        return this._list;
-    }
-    set list(v) {
+	console.dir(self)
 
-        this._list = v;
-
-        //Regenerate HTML table here
-    }
-
-    addNote(note) {
-
-        console.log(note.html)
-
-        var row = document.createElement("tr"); //Create row element
-
-        var noteNumber = document.createElement("td"); //Create Note number label
-        noteNumber.innerText = this.htmlTable.rows.length;         //Set its value
-        row.appendChild(noteNumber);    //Add it to row
-
-        row.appendChild(note.html);            //Add to row
-
-        this.htmlTable.appendChild(row);
-        //return row;
-    }
+	self._regenerateHTML();
+	return self;
 }
 
-export class Note {
-    constructor(value = "---", onComplete) {
-        this.html = document.createElement("td");
-        this.noteElement = document.createElement("span");
-        this.noteElement.innerText = value;
-        this.keycount = 0;
-        this.html.appendChild(this.noteElement);
-        this.html.addEventListener("click", this.select.bind(this));
-        this.onComplete = onComplete;
-    }
+export function NoteElement (value, onComplete) {
+	
 
-    keydown(e) {
-        console.log(`KEYPRESS ${this.keycount}, "${e.key}"`)
+	var self = document.createElement("span");
+	self.innerText = value;
+	self.keycount = 0;
+	self.container = document.createElement("td");
+	self.container.appendChild(self); //Confusing, I know. 
 
-        if (this.keycount == 0) { //Key 1 is the key, ABCDEF or G
+	self.select = () => {
+		if (self.selected) return false;
 
-            if (/[a-gA-G]/.test(e.key) && e.key.length == 1) {
-                this.noteElement.innerText = e.key.toUpperCase() + '--';
-                this.keycount++;
-                /*var durEl = document.querySelector('[index ="' + element.getAttribute('index') + '"][class="duration"]');
-                if (durEl.innerHTML == '--') {
-                    durEl.innerHTML = '01';
-                }*/
-            } else if (e.key == 'Backspace' || e.key == ' ' || e.key == '-') {
-                this.noteElement.innerText = '---'
-                this._onComplete()
-            }
+		self.selected = true;
+		self.keycount = 0;
+		self.container.setAttribute("selected", '');
+		document.body.addEventListener("keydown", self.keydown.bind(self));
+	}
 
-        } else if (this.keycount == 1) {
+	self.container.addEventListener("click", self.select.bind(self));
+	self.onComplete = onComplete;
+	
 
-            if (/[# -]/.test(e.key)) { //Key 2 is wether it's sharp or not (No flats supported yet)
-                if (e.key == '#') {
-                    this.noteElement.innerText = this.noteElement.innerText[0] + '#-';
-                } else {
-                    this.noteElement.innerText = this.noteElement.innerText[0] + '--';
-                }
-                this.keycount++;
-            } else if (/[0-9]/.test(e.key)) { //If user types a number, skip ahead to Key 3
-                this.noteElement.innerText = this.noteElement.innerText[0] + '-' + e.key;
-                this.keycount++;
-                this._onComplete()
-            }
+	self.keydown = (e) => {
+		console.log(`KEYPRESS ${self.keycount}, "${e.key}"`)
 
-        } else if (this.keycount == 2) {
+		if (self.keycount == 0) { //Key 1 is the key, ABCDEF or G
 
-            if (/[0-9]/.test(e.key)) { //Key 3 is the Octave, 12345678 or 9
-                this.noteElement.innerText = this.noteElement.innerText.slice(0, 2) + e.key;
-                this._onComplete()
-            }
-        }
-    }
-    _onComplete() {
-        this.deselect();
-        console.log("completed");
-        this.onComplete();
-    }
+			if (/[a-gA-G]/.test(e.key) && e.key.length == 1) {
+				self.innerText = e.key.toUpperCase() + '--';
+				self.keycount++;
+				/*var durEl = document.querySelector('[index ="' + element.getAttribute('index') + '"][class="duration"]');
+				if (durEl.innerHTML == '--') {
+					durEl.innerHTML = '01';
+				}*/
+			} else if (e.key == 'Backspace' || e.key == ' ' || e.key == '-') {
+				self.innerText = '---'
+				self._onComplete()
+			}
 
-    select() {
-        if (this.selected) return false;
+		} else if (self.keycount == 1) {
 
-        this.selected = true;
-        this.keycount = 0;
-        this.html.setAttribute("selected", '');
-        document.body.addEventListener("keydown", this.keydown.bind(this));
-    }
+			if (/[# -]/.test(e.key)) { //Key 2 is wether it's sharp or not (No flats supported yet)
+				if (e.key == '#') {
+					self.innerText = self.innerText[0] + '#-';
+				} else {
+					self.innerText = self.innerText[0] + '--';
+				}
+				self.keycount++;
+			} else if (/[0-9]/.test(e.key)) { //If user types a number, skip ahead to Key 3
+				self.innerText = self.innerText[0] + '-' + e.key;
+				self.keycount++;
+				self._onComplete();
+			}
 
-    deselect() {
-        if (!this.selected) return false;
-        this.selected = false;
+		} else if (self.keycount == 2) {
 
-        console.log(this.noteElement)
-        console.log(this.keycount)
-        if (this.keycount != 2) {
-            console.log('Incomplete!');
-            this.noteElement.innerHTML = '---';
-        }
-        this.html.removeAttribute("selected");
-        document.body.removeEventListener("keydown", this.keydown.bind(this))
-    }
-    getNoteFormatted() {
-        var s = this.noteElement.innerText;
-        return s[0] + (s[1] == "#" ? s[1] + s[2] : s[2]); //Ignore dashes
-    }
-    setNoteFromFormatted(string) {
-        if (string.length == 2) {
-            this.noteElement.innerText = string[0] + '-' + string[1];
-        } else {
-            this.noteElement.innerText = string;
-        }
-    }
-    static format(string) {
-        if (string.length == 2) {
-            return string[0] + '-' + string[1];
-        }
-        return string;
-    }
+			if (/[0-9]/.test(e.key)) { //Key 3 is the Octave, 12345678 or 9
+				self.innerText = self.innerText.slice(0, 2) + e.key;
+				self._onComplete()
+			}
+		}
+	}
+	self._onComplete = ()=> {
+		self.deselect();
+		console.log("completed");
+		self.onComplete();
+	}
+
+	self.deselect = () => {
+		if (!self.selected) return false;
+		self.selected = false;
+
+		console.log(self)
+		console.log(self.keycount)
+		if (self.keycount != 2) {
+			console.log('Incomplete!');
+			self.innerHTML = '---';
+		}
+		self.container.removeAttribute("selected");
+		document.body.removeEventListener("keydown", self.keydown.bind(self))
+	}
+	self.getNoteFormatted = ()=> {
+		var s = self.innerText;
+		return s[0] + (s[1] == "#" ? s[1] + s[2] : s[2]); //Ignore dashes
+	}
+	self.setNoteFromFormatted = (string) => {
+		if (string.length == 2) {
+			self.innerText = string[0] + '-' + string[1];
+		} else {
+			self.innerText = string;
+		}
+	}
+	return self.container; //More convinient to work with internal span than external td
 }
-
+export function formatLikeNote(string) {
+	if (string.length == 2) {
+		return string[0] + '-' + string[1];
+	}
+	return string;
+}

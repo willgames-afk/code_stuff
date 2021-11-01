@@ -6,11 +6,16 @@ const settings = {
 
 //UPDATERS- These update page content dynamically
 function updateLocalhostDetector() {
-	if (location.port && location.hostname == 'localhost') {
-		console.log('Locally Hosted!')
-		document.getElementById('localhost-detector').innerHTML = 'Locally Hosted on Port ' + location.port + '!'
-	} else if (location.hostname !== 'localhost') {
-		document.getElementById('localhost-detector').innerHTML = `Online and hosted at ${location.hostname}`
+	try {
+		if (location.port && location.hostname == 'localhost') {
+			console.log('Locally Hosted!')
+			document.getElementById('localhost-detector').innerHTML = 'Locally Hosted on Port ' + location.port + '!'
+		} else if (location.hostname !== 'localhost') {
+			document.getElementById('localhost-detector').innerHTML = `Online and hosted at ${location.hostname}`
+		}
+	}
+	catch {
+
 	}
 }
 function updateColorButtons() {
