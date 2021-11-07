@@ -198,7 +198,7 @@ debounce:
     bne debounce
 
 exit_irq:
-    bit PORTA ;clear inerupt by writing to IO Port A
+    bit PORTA ;clear interupt by writing to IO Port A
     pla
     tax
     pla
