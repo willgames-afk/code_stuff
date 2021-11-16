@@ -89,7 +89,7 @@ class StringInput extends Input {
 		var ie = document.createElement("input");
 		ie.type = "text";
 		ie.value = value;
-		ie.size =  ie.value.length;
+		if (ie.value.length > 0) ie.size = ie.value.length;
 		ie.className = "string"
 		ie.addEventListener("input", ()=>{
 			console.log(ie.size)
@@ -107,7 +107,7 @@ class BooleanInput extends Input {
 		super(ie, label, oninput);
 	}
 }
-function EditableObjectArray(object, onEdit = () => { }) {
+export function EditableObjectArray(object, onEdit = () => { }) {
 	var html = document.createElement("ul");
 	html.className = "list";
 
@@ -143,6 +143,7 @@ function EditableObjectArray(object, onEdit = () => { }) {
 		if (ne) {
 			ne.appendChild(document.createTextNode(",")); //Adding comma to previous element, if any
 		}
+		console.log(object[i])
 
 		ne = document.createElement("li");
 
@@ -177,7 +178,7 @@ function EditableObjectArray(object, onEdit = () => { }) {
 	content.appendChild(add)
 
 	sh.addEventListener("click", ((hidden, content, sh) => { //Show/hide 
-		console.log(content)
+		//console.log(content)
 		return function () {
 			if (hidden.hidden) {
 				hidden.hidden = false;
@@ -200,7 +201,7 @@ function EditableObjectArray(object, onEdit = () => { }) {
 	return html
 }
 
-class JSONViewer {
+export class JSONViewer {
 	constructor(thing, options={onEdit:()=>{}}) {
 		this.value = thing;
 

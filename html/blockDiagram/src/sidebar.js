@@ -1,4 +1,4 @@
-import {EditableObject} from "../../jsonViewer/jsonViewer.js";
+import {EditableObjectArray} from "../../jsonViewer/jsonViewer.js";
 
 export class Sidebar {
 	static expandedWidth = '300px';
@@ -24,7 +24,7 @@ export class Sidebar {
 			this.viewer.remove();
 			this.viewer = null;
 		}
-		this.viewer = new EditableObject(this.container, this.state.currentBlock/*, this.onEdit*/);
+		this.viewer = new EditableObjectArray(this.container, this.state.currentBlock/*, this.onEdit*/);
 		this.container.style.width = Sidebar.expandedWidth;
 	}
 	close() {

@@ -44,7 +44,7 @@
 				<option value='new-old' selected>From Newest to Oldest</option>
 				<option value='old-new'>From Oldest to Newest</option>
 				<option value='popularity'>By Popularity</option>
-				<option value='random'>Randomly</option>
+				<option value='random'>Randomly ;)</option>
 			</select>!</p>
 		<div class="posts">
 			<div id="loadingMessage" class="loadBox">

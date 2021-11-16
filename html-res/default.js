@@ -41,7 +41,8 @@ function updateColorButtons() {
 
 //LOADERS- These load external content after the rest of the page has loaded.
 function loadBlogPosts() {
-
+	var req = new XMLHttpRequest();
+	req.open("")
 }
 
 //HELPERS- helper functions to make everything else run smoothly
