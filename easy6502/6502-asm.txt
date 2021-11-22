@@ -1,0 +1,45 @@
+jsr colors
+
+
+colors:
+
+ lda #2
+ sta 1
+ lda #1
+ sta 2
+
+ loop:
+  lda $2
+  sta ($00),y
+
+  jsr add1
+  
+  ;bcs colorchange
+ 
+
+  jmp loop
+
+ colorchange:
+  ldx $02
+  inx
+  stx $02
+  lda #2
+  sta $01
+  lda #0
+  sta $00
+  jmp loop
+
+add1:
+lda #1
+adc 0
+bcc skipHB ; skip high byte, no carry
+sta $00
+ldx $01
+cpx #$05 ;reset and change color at 05ff
+beq colorchange
+inx 
+stx $01
+rts
+skipHB:
+sta $00
+rts

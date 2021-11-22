@@ -1,0 +1,46 @@
+define posH  $01 ;position of dot, 2 byte
+define posL  $00
+define up    $77 ; ascii codes for wasd
+define down  $73
+define left  $61
+define right $64
+define lastKeyPress $ff ;location where last key press lives
+
+jsr init
+jmp loop
+
+init:
+ lda #$02
+ sta posH
+ rts
+
+loop:
+ jsr input
+ jsr drawDot
+ jmp loop
+
+input: 
+ lda lastKeyPress ;load ascii
+ cmp #up
+ beq goUp
+ cmp #down
+ beq goDown
+ cmp #left
+ beq goLeft
+ cmp #right
+ beq goRight
+ rts
+goUp:
+
+goDown
+
+goLeft
+
+goRight
+  
+
+drawDot:
+ ldx #0
+ lda #1
+ sta (posL,x)
+ rts
