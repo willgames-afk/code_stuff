@@ -24,3 +24,5 @@ MDWebServer
 MDWebServer/*
 cpp_code_stuff
 cpp_code_stuff/*
+nodejs/electronTests/electron-quick-start
+nodejs/electronTests/electron-quick-start/*
