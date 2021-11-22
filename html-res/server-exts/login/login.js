@@ -58,6 +58,7 @@ module.exports = () => {
 	return login;
 
 	function login(req, res, next) {
+		console.log("Handled by Login Handler")
 		if (req.url == o.loginPage) {
 
 			session(sessionConfig)(req, res, () => {
