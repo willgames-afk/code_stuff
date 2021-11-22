@@ -5,23 +5,22 @@
 # Local organization
 *.code-workspace
 
-# 
+# Internal
 php/login/users.txt
-
 **/comments.txt
 
 # Output files
 rom.bin
 a.out
-
-#nodeJs
-node_modules/
-
-#electron output files
 out/
+
+# Dependancies- Just install them yourself
+node_modules/
 
 *.venv
 
-#web server used to serve html content
+# Things that have their own repos
 MDWebServer
 MDWebServer/*
+cpp_code_stuff
+cpp_code_stuff/*
