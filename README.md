@@ -8,14 +8,16 @@
 
  It's categorized mostly by language- here's a brief summary of the top level Folders
 
-- `6502-asm`- programs written in 6502 assembly for various hobby projects
+- `cpp_code_stuff`- Various C and C++ projects
+- `easy6502`- Programs written in 6502 assembly for Skilldrick's easy6502 Emulator
+- `eater6502`- 6502 Assembly for Ben Eater's 6502 Breadboard computer
 - `haskell`- Some haskell stuff
+- `html`- This folder contains a website, meant to be hosted with my `MDWebServer` project. This is where I'm most active.
+- `html-res`- Various server resources to allow `MDWebServer` to host the above folder
 - `mc-datapacks`- Datapacks for Minecraft
 - `nodejs`- Various nodejs apps and things
 - `php`- Some bits of PHP code- now mostly broken and in the process of being replaced.
 - `python`- Various python things.
-- `html`- This folder contains a website, meant to be hosted with my `MDWebServer` project. This is where I'm most active.
-- `html-res`- Various server resources to allow `MDWebServer` to host the above folder
 
 
  There are also some loose files:
@@ -23,7 +25,7 @@
 - `.gitattributes` and `.gitignore` allow git to do its thing
 - `.replit` and `repl-start.sh` allow this repo to be edited and run on [replit.com](https://replit.com)
 - `start.sh`- Shortcut to run this repo on my home computer
-- `command.txt`- Some localhost server commands I used to use to start the HTML and PHP stuff.
+- `old start commands.txt`- Self Explanitory; Some localhost server start commands.
 - `LICENSE.txt`- License file, covers everything in this repo
 - `README.md`- This file!
 
@@ -35,9 +37,10 @@
 #### HTML/JS
  The web JS in here is structured in the form of a webpage- I use my `MDWebServer` project to host it. Here's what that looks like:
 ```sh
-npm start --prefix ../MDWebServer ../code_stuff/html ../code_stuff/html-res
+cd ~/code_stuff
+npm start --prefix ./MDWebServer ../html ../html-res ../html-res/server-exts
 ```
- But that's long and awkward, so I chucked it in a shell script and now all you have to do is `./start.sh`. I should note that this expects a copy of `MDWebServer` *outside* the `code_stuff` folder.
+ But that's long and awkward, so I chucked it in a shell script and now all you have to do is `./start.sh`. I should note that this expects a copy of `MDWebServer` the `code_stuff` folder; clone it from Github.
 
 #### 6502 Stuff
  There's a handful of 6502 assembly programs, which target a handful of platforms. Most of them are for [Ben Eater's Breadboard Computer](https://eater.net/6502). I'm using the [vasm assembler](http://www.compilers.de/vasm.html) to assemble:
@@ -61,7 +64,7 @@ minipro -p AT28C256 -w a.out
  In order to use datapacks in a minecraft world, you need to add them to that world's datapacks folder, then reload the the game with `/reload`.
 
 #### nodejs
- These are all standard nodejs apps; use `cd [project]` followed by `npm start` to launch them. You may also need to do `npm install`.
+ These are all standard nodejs apps; use `cd [project]` followed by `npm start` to launch them. You may also need to do `npm install` to get dependancies.
 
 #### php
  This used to be part of the HTML/JS webpage, as I used php's built-in server, but since then I switched to `MDWebServer` and none of these things really work anymore. You can still run them (if you want) with
@@ -73,6 +76,8 @@ php -S 127.0.0.1:8080 -t php
 #### python
  This is *all* Python 3, so run accordingly. (```python3 [file] [options]```) 
  
+
+#### EV3_codestuff
  Everything in the `ev3-stuff` folder is meant to be run on a Lego Mindstorms EV3 Brick running [EV3Dev](https://www.ev3dev.org/), a 3rd party alternate OS for the EV3. I usually download and run it using the [VSCode EV3Dev Extention](https://marketplace.visualstudio.com/items?itemName=ev3dev.ev3dev-browser), see [here](https://github.com/ev3dev/vscode-hello-python) or on EV3Dev's website for more info.
 
 ## Website files
@@ -80,8 +85,12 @@ php -S 127.0.0.1:8080 -t php
 
 - `6502`- Contains various attemps at emulating a 6502 computer.
 - `blockDiagram`- A diagram editor- one of my longest running projects
+- `blog`- Test blog pages, part of the `MDWebServer` project.
+- `codeEditor`- A code editor in the browser. Because why not?
 - `consoleQuest`- My first real game, a text adventure played in the JS Console inspired by the google easter egg
+- `flappySquare`- A Clone of a flappy bird clone.
 - `fractals`- Renders the mandlebrot set over and over again, in changing color schemes
+- `greenDetector`- Script that detects green pixels using a webcam, and averages their positions.
 - `jsonViewer`- A JSON viewer and editor, used in blockDiagram
 - `MiniGames`- My versions of some old classics
 - `musicTracker`- It's a music tracker.
@@ -95,4 +104,6 @@ php -S 127.0.0.1:8080 -t php
 - `templates`- Various page templates- I'm going to be getting rid of these soon, as I'm trying to integrate templates into `MDWebServer`.
 - `text-input-engine`- A very simple system to provide text input and output to a program.
 - `TGL`- Assorted stuff related to a new data language I'm creating- It'll be like HTML and CSS but not XML and more dynamic
+- `tileFarm3D`- A minecraft-like game; not anywhere near complete.
 - `tinyJS`- A parser and interpereter for a new programming language I'm creating. 
+- `other`- Other assorted stuff.
