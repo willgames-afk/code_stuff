@@ -6,12 +6,12 @@
 </head>
 <body>
 <h2>Login</h2>
-<form action='/login/login/' method='POST'>
-Username <input type='text' name='username' value=''><br>
+<form action='/login/login/' method='POST' target="_self">
+Username <input type='text' name='username' value='$username$'><br>
 	$usernameErr$
 Password <input type='password' name='password'><br>
 	$passwordErr$
-	<input type='submit' value="Submit!"> <br><br>
+	<input type='submit' value="Log In"> <br><br>
 	<a href="/login/createLogin/">Create Account</a>
 </form>
 
