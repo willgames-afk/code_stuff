@@ -1,0 +1,1 @@
+execute as @e[name="special"] at @s store result block ~ ~2 ~ run 

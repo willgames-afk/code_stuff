@@ -1,7 +1,15 @@
+class Vec2  {
+	constructor(x,y) {
+		this.x = x;
+		this.y = y;
+	}
+}
+
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
 var mince = {
 	rafts: [],
 	fragments: [],
@@ -44,12 +52,16 @@ var mince = {
 		ctx.stroke();
 	},
 	main() {
-		mince.process(mouseX, mouseY);
+		mince.process();
 		mince.render(mince.rafts, mince.fragments, mince.mouseLineTable);
 		requestAnimationFrame(mince.main);
 	},
-	process(mousex, mousey) {
-		var len = JSON.parse(JSON.stringify(mince.rafts.length));
+	process() {
+		var len = this.rafts.length;
+		mince.mouseLineTable.push(mouse);
+		if (mince.mouseLineTable.length > 10) {
+			mince.mouseLineTable.shift()
+		}
 		for (i = 0; i < len; i++) {
 			var data = mince.rafts[i]
 			if (!data) {
@@ -67,10 +79,16 @@ var mince = {
 				mince.rafts.splice(i, 1)
 			}
 		}
-		mince.mouseLineTable.push({ x: mousex, y: mousey });
+	
+		mince.mouseLineTable.push(mouse);
 		if (mince.mouseLineTable.length > 10) {
 			mince.mouseLineTable.shift()
 		}
+
+		var currentLine = {a: mouse,b: this.mouseLineTable[this.mouseLineTable.length-2]};
+
+
+		if (this.intersect(currentLine.a, currentLine.b))
 
 	},
 	rIC(x, y, padding) {
@@ -91,30 +109,48 @@ var mince = {
 			return true
 		}
 	},
-	intersects(a, b, c, d, p, q, r, s) {//checks to see if a line from a,b to c,d intersects with the line from p,q to r,s.
-		//Make sure neither of the lines are length 0
-		if ((a == c && b == d) || (p == r && q == s)) {
-			return false
-		}
+	intersect(pa1,pa2,pb1,pb2) {
+		//First, we convert both lines to y=mx+b
+		var m1 = (pa1.x - pa2.x) / (pa1.y - pa2.y);
+		var b1 = -m1 * pa1.x + pa1.y;
 
-		var det, gamma, lambda;
-		det = (c - a) * (s - q) - (r - p) * (d - b);
+		var m2 = (pb1.x - pb2.x) / (pb1.y - pb2.y);
+		var b2 = -m2 * pb1.x + pb1.y;
 
-		//Lines are parallel
-		if (det === 0) {
+		//If the lines are parallel (slopes are the same), they don't cross.
+		if (m1 == m2) {
 			return false;
 		}
 
-		lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
-		gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+		//Assuming they're crossing, there's a point where the y value of each line is the same.
+		//Thus, we can create this equation
+		// m₁x+b₁=m₂x+b₂
+		// Then, we can solve for x which gives us this equation
+		var x = (b2-b1)/(m1-m2)
 
-		if ((0 < lambda && lambda < 1) && (0 < gamma && gamma < 1)) {
-			return {
-				x: a + lambda * (c - a),
-				y: b + lambda * (d - b)
-			}
-		};
-		return false;
+		//But this assumes that the lines extend infinitely- we need to make sure the point is actually on the lines
+
+		if (x < Math.min(pa1.x,pa2.x) ||
+			x > Math.max(pa1.x,pa2.x) ||
+			x < Math.min(pb1.x,pb2.x) ||
+			x > Math.max(pb1.x,pb2.x)) {
+			return false;
+		}
+
+		//Now that we know the x coord of the equation, we can find the y by using the equation for one of the lines.
+		var y = m1 * x + b1
+
+		//And validate it
+		if (y < Math.min(pa1.y,pa2.y) ||
+			y > Math.max(pa1.y,pa2.y) ||
+			y < Math.min(pb1.y,pb2.y) ||
+			y > Math.max(pb1.y,pb2.y)) {
+			return false;
+		}
+
+		//If all of these checks have passed, we can confirm a collision.
+
+		return new Vec2(x,y);
 	}
 };
 
@@ -133,6 +169,5 @@ window.onload = function () {
 var mouseX = 0, mouseY = 0;
 
 window.addEventListener("mousemove", (e) => {
-	window.mouseX = e.x;
-	window.mouseY = e.y
+	window.mouse = new Vec2(e.x, e.y);
 })
