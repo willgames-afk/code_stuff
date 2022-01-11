@@ -418,13 +418,26 @@ function parseAssignment(input) {
     return [{ type: "assign", val: [target[0], value[0]] }, value[1]]
 }
 
+function parseEquation(input) {
+    var left = parseExpression(getToken(input));
+    var eq = parseLiteral(getToken(left[1]), "=");
+    var right = parseExpression(getToken(eq[1]));
+
+    return [{type: "equation",val: [left, right]}, right[1]]
+}
+
 export function parse(string) {
     var out = [];
     var currentinput = string;
     try {
         while (true) {
-            var res = parseAssignment(currentinput);
-            out.push(res[0]);
+            try {
+                var res = parseAssignment(currentinput);
+                out.push(res[0]);
+            } catch {
+                var res = parseEquation(currentinput);
+                out.push(res[0]);
+            }
 
             try {
                 currentinput = parseLiteral(res[1], "\n")[1];
