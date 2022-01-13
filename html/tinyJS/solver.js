@@ -34,9 +34,6 @@ export function interperet(ast) {
 					case "Div":
 						return _interperet(ast.val[1]) / _interperet(ast.val[2])
 				}
-                break;
-            case "equation":
-                break;
 		}
 	}
 
@@ -50,4 +47,3 @@ export function interperet(ast) {
 		return e;
 	}
 }
-
