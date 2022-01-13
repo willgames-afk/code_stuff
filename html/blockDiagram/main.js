@@ -30,7 +30,6 @@ class BlockDiagram {
         this.sidebar = new Sidebar(this.containerElement, this.state);
 
         //EVENT LISTENER SETUP
-
         window.addEventListener("resize", this.resize.bind(this))
         this.containerElement.addEventListener('mousemove', this.mouseMove.bind(this))
         this.containerElement.addEventListener('mousedown', this.mouseClick.bind(this))
@@ -43,9 +42,10 @@ class BlockDiagram {
     }
     render() {
         //Renders the screen
+		this.ctx.clearRect(0, 0, this.c.width, this.c.height);
+
 
         //draw current working block
-        this.ctx.clearRect(0, 0, this.c.width, this.c.height);
         this.ctx.beginPath();
         if (this.state.makingBlock) {
             //draw block

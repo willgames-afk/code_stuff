@@ -3,21 +3,28 @@ class Vec2  {
 		this.x = x;
 		this.y = y;
 	}
+	add(x=0,y=0) {
+		return new Vec2(this.x + x, this.y + y);
+	}
+	aadd(x=0,y=0) {
+		this.x += x;
+		this.y += y;
+		return this;
+	}
 }
 
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-
+var mouse = {};
 var mince = {
 	rafts: [],
 	fragments: [],
 	mouseLineTable: [],
 	create(x, y, s, c) {
 		mince.rafts.push({
-			x: x,
-			y: y,
+			pos: new Vec2(x,y),
 			xVel: (Math.random() * 20) - 10,
 			yVel: -10,
 			si: s,
@@ -37,7 +44,7 @@ var mince = {
 			ctx.rotate(data.rot)
 			ctx.fillRect(0, 0, data.si, data.si * 1.88)
 			ctx.restore()
-			ctx.arc(data.x, data.y, 10, 0, 2 * Math.PI)
+			ctx.arc(data.pos.x, data.pos.y, 10, 0, 2 * Math.PI)
 			ctx.fill();
 		}
 		for (fragm in fragments) {
@@ -52,16 +59,19 @@ var mince = {
 		ctx.stroke();
 	},
 	main() {
-		mince.process();
+		mince.process(mouse);
 		mince.render(mince.rafts, mince.fragments, mince.mouseLineTable);
 		requestAnimationFrame(mince.main);
 	},
-	process() {
+	process(mouse) {
 		var len = this.rafts.length;
 		mince.mouseLineTable.push(mouse);
 		if (mince.mouseLineTable.length > 10) {
 			mince.mouseLineTable.shift()
 		}
+
+		var currentLine = [mouse,this.mouseLineTable[this.mouseLineTable.length-2]];
+
 		for (i = 0; i < len; i++) {
 			var data = mince.rafts[i]
 			if (!data) {
@@ -72,23 +82,12 @@ var mince = {
 				data.yVel += 0.1
 			}
 			//apply velocities
-			data.x += data.xVel
-			data.y += data.yVel
+			data.pos.aadd(data.xVel, data,yVel);
 			//get rid of stuff too far off the screen
-			if (!mince.inCanvas(data.x, data.y, 0)) {
+			if (!mince.inCanvas(data.pos.x, data.pos.y, 0)) {
 				mince.rafts.splice(i, 1)
 			}
 		}
-	
-		mince.mouseLineTable.push(mouse);
-		if (mince.mouseLineTable.length > 10) {
-			mince.mouseLineTable.shift()
-		}
-
-		var currentLine = {a: mouse,b: this.mouseLineTable[this.mouseLineTable.length-2]};
-
-
-		if (this.intersect(currentLine.a, currentLine.b))
 
 	},
 	rIC(x, y, padding) {
@@ -109,7 +108,7 @@ var mince = {
 			return true
 		}
 	},
-	intersect(pa1,pa2,pb1,pb2) {
+	intersect(pa1, pa2, pb1, pb2) {
 		//First, we convert both lines to y=mx+b
 		var m1 = (pa1.x - pa2.x) / (pa1.y - pa2.y);
 		var b1 = -m1 * pa1.x + pa1.y;

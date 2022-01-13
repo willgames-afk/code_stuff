@@ -159,7 +159,7 @@ function wrapper() {
   Object.defineProperty(window, 'init', { get: function () { return startAll() } });
   Object.defineProperty(this, 'currentCell', { get: function () { if (map.data) { return map.data[player.y][player.x] } } });
 
-  function printInventory() { //Prints your inventory. Nothin' else to say 'bout that.
+  function printInventory() { //Prints your inventory. 
     console.group('Inventory:')
     for (var item in player.inventory) {
       console.groupCollapsed(player.inventory[item].name)
@@ -481,25 +481,3 @@ function wrapper() {
   console.log('Type START to continue.');
 
 }; wrapper(); //Hides all the "global" vars, preventing hacking (somewhat)
-
-console.log("TEST:")
-function ask(question) {
-  var obj = {
-    _: {
-      get yes() {
-        alert("I WAS CLICKED");
-        console.log(obj)
-        delete obj._;
-        console.log(obj)
-      },
-      get no() {
-        alert("I WASN'T CLICKED");
-        delete obj._;
-      }
-    }
-  }
-  console.log(question, "(Choose Yes or No)");
-  console.log(obj._);
-}
-
-ask("YES OR NO")

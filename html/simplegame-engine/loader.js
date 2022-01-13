@@ -1,3 +1,113 @@
+class Game {
+	constructor(o) {
+		this.init = o.init;
+		this.start = o.start;
+		this.loop = o.loop;
+
+		this.toLoad = 0;
+
+		this.audioContext = new AudioContext();
+
+		this.init({ load: this.load });
+	}
+	load(type, id, file) {
+		switch (type) {
+			case "spritesheet":
+				this._loadSS(id, file);
+				break;
+			case "image":
+				this._loadImg(id, file, this.onFileLoad);
+				break;
+			case "audio":
+				this._loadAudio(id, file, this.onFileLoad);
+				break;
+			case "JSON":
+				this._loadJSON(id, file, this.onFileLoad);
+		}
+		this.toLoad++;
+	}
+	onFileLoad(id, res) {
+		if (res) {
+			this.things[id] = res;
+		}
+
+		this.toLoad--;
+		if (this.toLoad == 0) {
+			this.start();
+			this.requestAnimationFrame(this.outerLoop);
+		}
+	}
+	_loadSS(id, file) {
+		this._loadJSON(id, file, (obj) => {
+			this.things[id] = {};
+			this.things[id].rawdata = obj;
+
+			this._loadImg("", obj.image, (img) => {
+				this.things[id].img = img;
+
+				for (var sprite of this.things[id].rawdata) {
+					this.things[sprite] = this.things[id].rawdata[sprite];
+					this.things[sprite].img = img;
+				}
+
+				this.onFileLoad(id);
+			})
+		});
+	}
+	_loadImg(id, file, cb) {
+		var img = new Image();
+		img.onload = () => { //Wrapped onFileLoad
+			if (cb) {
+				cb(img);
+			} else {
+				this.onFileLoad(id, img);
+			}
+		}
+		img.src = file;
+	}
+	_loadAudio(id, file, cb) {
+		this._requestFile(file, (res)=>{
+			this.audioContext.decodeAudioData(res, (audio)=>{
+				if (cb) {
+					cb();
+				} else {
+					this.onFileLoad(id, audio);
+				}
+			})
+		}, () =>{
+			console.log("Error loading audio!");
+		}, "arraybuffer")
+	}
+	_loadJSON(id, file, cb) {
+		this._requestFile(file, (res)=>{
+
+		})
+	}
+	_requestFile(url, callback, error = () => { }, resType) {
+		var req = new XMLHttpRequest();
+		req.open("GET", url);
+		req.responseType = resType;
+		req.addEventListener("loadend", () => {
+			callback(req.response);
+		})
+		req.addEventListener("error", error);
+		req.send();
+	}
+}
+
+export function load(type, id, file) {
+	switch (type) {
+		case "image":
+			var img = new Image();
+			img.onload = () => { //Wrapped onFileLoad
+				this.onFileLoad(id, img);
+			}
+			img.src = this.filesToLoad[id];
+			break;
+	}
+}
+
+
 class Loader {
 	constructor(files) {
 		this.loadedFiles = {};     // Stores fully loaded files
@@ -27,9 +137,9 @@ class Loader {
 		//Implementation Specific
 	}
 
-	_onFileLoad(name, file) {
-		this.loadedFiles[name] = file;
-		delete this.filesToLoad[name];
+	_onFileLoad(id, file) {
+		this.loadedFiles[id] = file;
+		delete this.filesToLoad[id];
 
 		// Check if all files are loaded, and that there were no errors doing so.
 		if (this.remaining == 0 && this.failed == false) {
@@ -37,8 +147,8 @@ class Loader {
 		}
 	}
 
-	_onFileError(name, errorMessage) {
-		console.error(`Failed to load '${name}'`, errorMessage);
+	_onFileError(id, errorMessage) {
+		console.error(`Failed to load '${this.filesToLoad[id]}'`, errorMessage);
 
 		this.failed = true;
 
@@ -47,9 +157,15 @@ class Loader {
 
 
 
-	_bindOnFileLoad(name) { // Binds a filename to onLoadFile
+	_bindOnFileLoad(id) { // Binds a filename to onLoadFile
 		return (file) => {
-			this.onFileLoad(name, file)
+			this.onFileLoad(id, file)
+		}
+	}
+
+	_bindOnFileError(id, error) {
+		return () => {
+			this._onFileError(id, error);
 		}
 	}
 
@@ -82,121 +198,64 @@ export class AudioLoader extends Loader {
 		req.responseType = "arraybuffer";       // We want an arraybuffer, not XML
 
 		req.addEventListener("loadend", () => {
-			this.context.decodeAudioData(req.response, this.bindOnFileLoad(id), (e) => { // Once the arrayBuffer loads, we have to turn it into a proper audioBuffer
-				console.log("Error decoding audio: " + e.message)
-			})
+			this.context.decodeAudioData(req.response, this.bindOnFileLoad(id), this._bindOnFileError(id, "Error decoding audio"))
 		}); // Register event listeners
-		req.addEventListener("error", () => {
-			console.error("Error getting audio: ", req.status, req.statusText);
-		})
+		req.addEventListener("error", this._bindOnFileError(id, "Error getting audio"));
 
 		req.send();
 	}
 
 }
 
-export class SpriteLoader extends Loader {
-	constructor(spritesheet, sprites, context) {
-		super(sprites);
-		this.spritesheet = spritesheet;
+export class JSONLoader extends Loader {
+	constructor(...names) {
+		super(...names);
 	}
 	_loadFile(id) {
+		var req = new XMLHttpRequest();
+
+		req.open("GET", this.filesToLoad[id]);
+		req.responseType = "json";
+
+		req.addEventListener("loadend", () => {
+			this._onFileLoad(id, JSON.parse(req.response));
+		})
+		req.addEventListener("error", this._bindOnFileError(id, "Error loading JSON"))
+	}
+}
+
+export class SpriteSheetLoader extends Loader {
+	constructor(sheets, imageloader, jsonloader) {
+		super(sheets);
+		this.sprites = sprites;
+		this.imageloader = imageloader;
+		this.jsonloader = jsonloader;
+	}
+	_loadFile(id) {
+		if (!this.jsonloader) this.jsonloader = new JSONLoader();
+		if (!this.imageloader) this.imageloader = new ImageLoader();
+
+		var o = {}
+		o[id] = this.filesToLoad[id];
+
+		this.jsonloader.onload = () => {
+
+		}
+
+		this.jsonloader.load(o);
+
 
 	}
 }
 
 export class Sprite {
-	constructor(spritesheet, ctx, options) {
-		this.spritesheet = spritesheet;
-		this.ctx = ctx;
-		this.data = options.data;
-		/*
-		{
-			fwidth: //Width of a single frame
-			fheight: //Height of a single frame
-
-			//options.animated must be enabled for the below:
-			speed:   //framerate of the animation in frames per second- Will be overwritten by animation specific framerates and defaults to 30fps.
-			animations: { //Animation frame sequences- 
-				animationName: [ //Animation data
-					{x: 0,y:0} //location of the top left corner of the frame on the spritesheet
-					{p: 1} //You can also use 'p'- basically, it will turn the spritesheet into a grid of fwidth x fheight cells, and number them 
-								the top left cell would be 0, the one to the right would be 1, so on for the rest of the line. Then it moves down and continues.
-					{p: 4, x: 1, y: 3} //You can also provide an offset which shifts the p grid left and down by the corrosponding x and y amounts.
-
-					//Repeat for every frame of the animation
-				]
-
-				//You can also store more specific instructions as an object
-				otherAnimation: {
-					speed: //You can set animation speeds individually
-					mode: // 0 is play forwards once, 1 is play forwards looping, 2 is play backwards once, and 3 is play backwards looping;
-					data: [
-						//Insert data here
-					]
-				}
-				//You can include as many as you want.
-			}
-
-			//If you only have a single animation, store it in the frames object
-			//If options.animated is false, you'll have to switch manually
-			frames: [
-				//You can include individual sprite frames and switch between them, same xyp format as above
-			]
-
-			animation: //name of the current animation, if any
-			frame: //The current frame
-			play:  //Whether or not the animation should be playing (if any)
-			playthroughmode: // Mode of animation playthrough- 0 is play once, 1 is play looping
-		}
-
-
-		*/
-		this.animated = options.animated;
-		if (this.animated) {
-			this.currentAnimation = this.data.animation;
-			if (this.data.animations && !Array.isArray(this.data.animations[currentAnimation])) {
-				this.frameRate = this.data.animations[currentAnimation].speed;
-				this.update = (dt) => { //Dt is the time that has passed since update was last called
-					this._frameDT += dt;
-					if (this._frameDT >= this._frameSpeed) {
-						this.currentFrame++;
-						if (this.currentFrame > this.data.animations[currentAnimation].length) {
-							this.currentFrame = 0;
-						}
-						this._frameDT = 0;
-					}
-				}
-				this.render = () => {
-					var cfdata = this.data.animations[currentAnimation][currentFrame];
-					
-				}
-			} else {
-				this.frameRate = this.data.speed || 30;
-				this.update = (dt) => { //Dt is the time that has passed since update was last called
-
-					this._frameDT += dt;
-					if (this._frameDT >= this._frameSpeed) {
-						this.currentFrame++;
-						if (this.currentFrame > this.frames) {
-							this.currentFrame = 0;
-						}
-						this._frameDT = 0;
-					}
-	
-				}
-			}
-		}
-		this.currentFrame = options.data.frame || 0;
-
-		this._frameDT = 0; //Time since last animation frame change
-		this._frameSpeed = 1000 / this.frameRate; //Time in milliseconds that should pass between each frame
-
+	constructor(tex, x, y, xv = 0, yv = 0) {
+		this.x = x;
+		this.y = y;
+		this.xv = xv;
+		this.yv = yv;
+		this.texture = tex;
 	}
-	update(dt) {
-		//Depends on whether or not the sprite is animated
-	}
-
 }
 
 export class Audio {
@@ -205,7 +264,9 @@ export class Audio {
 		this.context = audioContext || new AudioContext();
 	}
 	destroy() {
-		this.context.close();
+		if (this.context) {
+			this.context.close();
+		}
 	}
 	play(songName, options = { speed: 1, gain: 1 }) {
 		if (this.context) {
@@ -224,9 +285,13 @@ export class Audio {
 		}
 	}
 	pauseAll() {
-		this.context.suspend();
+		if (this.context) {
+			this.context.suspend();
+		}
 	}
 	resume() {
-		this.context.resume();
+		if (this.context) {
+			this.context.resume();
+		}
 	}
 }
