@@ -1,8 +1,3 @@
-function applyStyle(element, style) {
-	for (var s in style) {
-		element.style[s] = style[s]
-	}
-}
 class CQEditor {
 	constructor(htmlElement) {
 		this.map = {
@@ -10,11 +5,11 @@ class CQEditor {
 
 			],
 			startText: "",
-			directions: { 
-				"north": { "x": 0, "y": -1, "opp": "south" }, 
-				"south": { "x": 0, "y": 1, "opp": "north" }, 
-				"east": { "x": 1, "y": 0, "opp": "west" }, 
-				"west": { "x": -1, "y": 0, "opp": "east" } 
+			directions: {
+				"north": { "x": 0, "y": -1, "opp": "south" },
+				"south": { "x": 0, "y": 1, "opp": "north" },
+				"east": { "x": 1, "y": 0, "opp": "west" },
+				"west": { "x": -1, "y": 0, "opp": "east" }
 			}
 		}
 		this.player = {
@@ -25,80 +20,103 @@ class CQEditor {
 		};
 		this.items = {};
 		this.container = htmlElement;
-		this.style = {
-			dataTable: {
-				fontFamily: 'monospace',
-				margin: '0px',
-				padding: '0px',
-				whiteSpace: 'pre',
-				background: 'rgb(150,150,150)',
-				borderCollapse: 'collapse',
-				borderSpacing: '0px',
-			},
-			dataTableSelected: {
-				background: 'rgb(130,130,227)'
+
+		this.width = 10;
+
+		this.textarea = document.createElement("textarea");
+		this.textarea.addEventListener("keypress", this.onkey);
+		this.textarea.addEventListener("click", this.onclick);
+		for (var y = 0; y < this.width; y++) {
+			for (var x = 0; x < this.width; x++) {
+				this.textarea.value += " ";
 			}
+			this.textarea.value += "\n"
 		}
 
-		this.dataElement = {};
-		this.dataElement.element = document.createElement('table');
-
-		this.dataElement.rows = [];
-		for (var i=0;i<10;i++) {
-			this.dataElement.rows[i] = {};
-			this.dataElement.rows[i].element = document.createElement('tr')
-			this.dataElement.element.appendChild(this.dataElement.rows[i].element);
-			this.dataElement.rows[i].data = [];
-			for (var j=0;j<10;j++) {
-
-				this.dataElement.rows[i].data[j] = document.createElement('td');
-				this.dataElement.rows[i].data[j].innerHTML = " ";
-
-				this.dataElement.rows[i].data[j].addEventListener('mouseover', this.onhover);
-				this.dataElement.rows[i].data[j].addEventListener('mouseout', this.nothover.bind(this));
-				this.dataElement.rows[i].data[j].addEventListener('click', this.onclick.bind(this));
-
-				applyStyle(this.dataElement.rows[i].data[j], this.style.dataTable)
-
-				this.dataElement.rows[i].element.appendChild(this.dataElement.rows[i].data[j]);
-			}
-		}
-
-		this.container.appendChild(this.dataElement.element);
+		this.container.appendChild(this.textarea);
 		this.container.appendChild(document.createTextNode("adfasdfasdf"))
-		document.body.addEventListener("keypress", this.onkey.bind(this))
+		document.body.addEventListener("keydown", this.onkey.bind(this))
+		//document.body.addEventListener("keypress", this.onkey.bind(this))
 
-		this.selected = {x:-1,y:-1};
+		this.selected = { x: -1, y: -1 };
 	}
-	onhover(e) {
-		applyStyle(e.target,this.style.dataTableSelected);
-	}
-	nothover(e) {
-		if (e.srcElement.cellIndex != this.selected.x || e.srcElement.parentElement.rowIndex != this.selected.y) {
-			applyStyle(e.target,this.style.dataTable);
-		}
-	}
-	onclick(e) {
-		if (this.selected.x > 1) {
-			applyStyle(this.dataElement.rows[this.selected.y].data[this.selected.x], this.style.dataTable);
-		}
-		this.selected = {
-		 x: e.srcElement.cellIndex,
-		 y: e.srcElement.parentElement.rowIndex,
-		}
-		console.log(this.selected)
-		applyStyle(e.srcElement,this.style.dataTableSelected)
+	onclick() {
+		var caret = getCaret(this);
+		setCharSelect(this, caret);
 	}
 	onkey(e) {
-		this.dataElement.rows[this.selected.y].data[this.selected.x].innerHTML = e.key;
-		console.log(e.key)
+		var caret = getCaret(e.target);
+		switch (e.key) {
+			case "ArrowUp":
+				e.preventDefault();
+				setCharSelect(e.target, caret - this.width - 1);
+				return;
+			case "ArrowDown":
+				e.preventDefault();
+				setCharSelect(e.target, caret + this.width + 1);
+				return;
+			case "ArrowLeft":
+				e.preventDefault();
+				setCharSelect(e.target, caret - 1);
+				return;
+			case "ArrowRight":
+				e.preventDefault();
+				setCharSelect(e.target, caret + 1);
+				return;
+		}
+
+		var key = e.key;
+		var text = e.target.value;
+
+		if (e.key.length == 1) {
+			e.preventDefault();
+			e.target.value = text.substring(0, caret) + key + text.substring(caret + 1);
+			setCharSelect(e.target, caret);
+		}
+	}
+	onkeyup(e) {
+		//Fix textarea spacing-
 	}
 	static addEditor(htmlElement) {
 		return new CQEditor(htmlElement)
 	}
 }
 window.addEventListener('load', (e) => {
-	var d = document.createElement('div');
-	document.body.appendChild(d);
+	var d = document.getElementsByClassName("mainbox")[0]
 	CQEditor.addEditor(d);
 })
+
+function getCaret(el) {
+	if (el.selectionStart) {
+		return el.selectionStart;
+	} else if (document.selection) {
+		el.focus();
+		var r = document.selection.createRange();
+		if (r == null) {
+			return false;
+		}
+
+		var re = el.createTextRange(),
+			rc = re.duplicate();
+		re.moveToBookmark(r.getBookmark());
+		rc.setEndPoint('EndToStart', re);
+
+		return rc.text.length;
+	}
+	return false;
+}
+function setCharSelect(elem, caretPos) {
+	if (elem != null) {
+		if (elem.createTextRange) {
+			var range = elem.createTextRange();
+			range.moveEnd('character', caretPos + 1);
+			range.moveStart('character', caretPos);
+			range.select();
+		} else if (elem.selectionStart) {
+			elem.focus();
+			console.log(elem)
+			elem.setSelectionRange(caretPos, caretPos + 1);
+
+		}
+	}
+}
