@@ -1,13 +1,16 @@
-import {Tilemap} from "./tilemap.js"
+import { Tilemap } from "./tilemap.js"
 
 export class Assets {
 	constructor(assets) {
-		for (var a of assets) {
-			this[a] = assets[a];
+		if (assets) {
+			for (var a of assets) {
+				this[a] = assets[a];
+			}
 		}
 		this._unloaded = {};
 	}
 	add(id, content) {
+		console.log(`Added ${id}`)
 		this[id] = content;
 	};
 }
@@ -19,15 +22,24 @@ export class Loader {
 		this.audioContext = audioContext || new AudioContext();
 		this.data = [];
 		this.toLoad = 0;
+		this.count = 0;
 	}
 	load(type, id, file) {
-		this.data.push({type:type,id:id,file:file});
+		if (type == "spritesheet") {
+			console.log(`Adding spritesheet to load`)
+			this.data.push({type:type,id:"_" + this.count++,file:id});
+		} else {
+			console.log(`Adding ${type} ${id} to load`)
+			this.data.push({ type: type, id: id, file: file });
+		}
+		this.toLoad++;
 	}
 	loadAll() {
+		console.log("Load Started!")
 		for (var a of this.data) {
 			switch (a.type) {
 				case "spritesheet":
-					this._loadSS(a.id, a.file);
+					this._loadSS.bind(this)(a.id, a.file);
 					break;
 				case "tilemap":
 					break;
@@ -40,12 +52,11 @@ export class Loader {
 				case "JSON":
 					this._loadJSON(a.id, a.file, this._onFileLoad);
 			}
-			this.toLoad++;
 		}
 	}
 	_onFileLoad(id, res) {
 		if (res) {
-			this.assets.add(id,res);
+			this.assets.add(id, res);
 		}
 
 		this.toLoad--;
@@ -53,35 +64,39 @@ export class Loader {
 			this.onload(this.assets);
 		}
 	}
-	_loadTilemap(id,file) {
-		this._loadJSON(id,file,(obj)=>{
-			this.assets.unloaded[id] = {};
-			this.assets.unloaded[id].rawdata = obj;
+	_loadTilemap(id, file) {
+		this._loadJSON(id, file, (obj) => {
+			this.assets._unloaded[id] = obj;
 
-			this._loadImg("",obj.tileset.image,(img)=>{
-				this.assets.add(id, new Tilemap(img,this.assets.unloaded[id].rawdata));
-				this.onFileLoad(id);
+			this._loadImg("", obj.tileset.image, (img) => {
+				this.assets.add(id, new Tilemap(img, this.assets._unloaded[id]));
+				delete this.assets._unloaded[id];
+				this._onFileLoad(id);
 			})
 		})
 	}
 	_loadSS(id, file) {
-		this._loadJSON(id, file, (obj) => {
-			this.assets.unloaded[id] = {};
-			this.assets.unloaded[id].rawdata = obj;
+		console.log(this)
+		this._loadJSON(id, file, function (obj) {
+			this.assets._unloaded[id] = {};
+			this.assets._unloaded[id].rawdata = obj;
 
-			this._loadImg("", obj.image, (img) => {
-				this.assets.unloaded[id].img = img;
 
-				for (var sprite of this.assets.unloaded[id].rawdata) {
-					var newSprite = this.assets.unloaded[id].rawdata[sprite];
+			this._loadImg("", obj.image, function (img) {
+				console.log(`Sprite image loaded!`)
+				this.assets._unloaded[id].img = img;
+
+				for (var sprite in this.assets._unloaded[id].rawdata.sprites) {
+					console.log(sprite)
+					var newSprite = this.assets._unloaded[id].rawdata.sprites[sprite];
 					newSprite.img = img;
-					this.assets.add(id, newSprite);
+					this.assets.add(sprite, newSprite);
 				}
-				delete this.assets.unloaded[id];
+				delete this.assets._unloaded[id];
 
-				this.onFileLoad(id);
-			})
-		});
+				this._onFileLoad(id);
+			}.bind(this))
+		}.bind(this));
 	}
 	_loadImg(id, file, cb) {
 		var img = new Image();
@@ -89,30 +104,31 @@ export class Loader {
 			if (cb) {
 				cb(img);
 			} else {
-				this.onFileLoad(id, img);
+				this._onFileLoad(id, img);
 			}
 		}
 		img.src = file;
 	}
 	_loadAudio(id, file, cb) {
-		this._requestFile(file, (res)=>{
-			this.audioContext.decodeAudioData(res, (audio)=>{
+		this._requestFile(file, (res) => {
+			this.audioContext.decodeAudioData(res, (audio) => {
 				if (cb) {
 					cb(audio);
 				} else {
-					this.onFileLoad(id, audio);
+					this._onFileLoad(id, audio);
 				}
 			})
-		}, () =>{
+		}, () => {
 			console.log(`Error loading audio (ID: ${id})`);
 		}, "arraybuffer")
 	}
 	_loadJSON(id, file, cb) {
-		this._requestFile(file, (res)=>{
+		this._requestFile(file, (res) => {
+			console.log(res)
 			if (cb) {
 				cb(JSON.parse(res))
 			} else {
-				this.onFileLoad(id, JSON.parse(res))
+				this._onFileLoad(id, JSON.parse(res))
 			}
 		})
 	}

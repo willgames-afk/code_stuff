@@ -1,6 +1,6 @@
-import {GameObj} from "./gameObjs.js"
-export class Sprite extends GameObj{
-	constructor(img,data, x, y, xv, yv, frame) {
+import { GameObj } from "./gameObjs.js"
+export class Sprite extends GameObj {
+	constructor(img, data, x, y, xv, yv, frame) {
 		super("sprite")
 		this.img = img;
 
@@ -8,10 +8,10 @@ export class Sprite extends GameObj{
 		this.h = data.shift();
 
 		this.frames = [];
-		for (var i=0;i<data.length;i+=2) {
-			this.frames.push({x: data[i], y:data[i+1]});
+		for (var i = 0; i < data.length; i += 2) {
+			this.frames.push({ x: data[i], y: data[i + 1] });
 		}
-		
+
 		this.x = x;
 		this.y = y;
 		this.xv = xv;
@@ -27,8 +27,8 @@ export class Sprite extends GameObj{
 			handler = c;
 			group = b;
 		}
-					
-		
+
+
 		switch (event) {
 			case "mouseclick":
 				//Register mouse click listener!

@@ -1,22 +1,19 @@
-class Sprite {};
-class Game{};
-class Background{};
+import {Game} from "./engine/main.js"
 
 var game = new Game({
 	init(O) {
-		O.load("spritesheet", "sprites.json");
-		O.screen.width = 180;
-		O.screen.height = 120;
+		O.load("spritesheet", "sheet.json");
+		O.width = 180;
+		O.height = 120;
 	},
-	start() {
-		var background = new Background("background");
-		var sprite = new Sprite("orange",0,0);
+	start(O) {
+		O.make("orange","banana",0,0);
 	},
 	loop(O) {
-		if (O.input.x) {
+		/*if (O.input.x) {
 			stop();
-		}
+		}*/
 	}
 });
 
-document.appendChild(game.canvas);
+document.body.appendChild(game.canvas);
