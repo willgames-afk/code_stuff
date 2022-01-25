@@ -19,4 +19,4 @@ var game = new Game({
 	}
 });
 
-document.appendChild(game);
+document.appendChild(game.canvas);

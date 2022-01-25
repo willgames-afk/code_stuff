@@ -1,3 +1,5 @@
+import {Tilemap} from "./tilemap.js"
+
 export class Assets {
 	constructor(assets) {
 		for (var a of assets) {
@@ -27,6 +29,8 @@ export class Loader {
 				case "spritesheet":
 					this._loadSS(a.id, a.file);
 					break;
+				case "tilemap":
+					break;
 				case "image":
 					this._loadImg(a.id, a.file, this._onFileLoad);
 					break;
@@ -49,6 +53,17 @@ export class Loader {
 			this.onload(this.assets);
 		}
 	}
+	_loadTilemap(id,file) {
+		this._loadJSON(id,file,(obj)=>{
+			this.assets.unloaded[id] = {};
+			this.assets.unloaded[id].rawdata = obj;
+
+			this._loadImg("",obj.tileset.image,(img)=>{
+				this.assets.add(id, new Tilemap(img,this.assets.unloaded[id].rawdata));
+				this.onFileLoad(id);
+			})
+		})
+	}
 	_loadSS(id, file) {
 		this._loadJSON(id, file, (obj) => {
 			this.assets.unloaded[id] = {};
@@ -60,8 +75,9 @@ export class Loader {
 				for (var sprite of this.assets.unloaded[id].rawdata) {
 					var newSprite = this.assets.unloaded[id].rawdata[sprite];
 					newSprite.img = img;
-					this.assets.add(newSprite);
+					this.assets.add(id, newSprite);
 				}
+				delete this.assets.unloaded[id];
 
 				this.onFileLoad(id);
 			})
