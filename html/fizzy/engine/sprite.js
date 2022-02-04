@@ -1,6 +1,6 @@
 import { GameObj } from "./gameObjs.js"
 export class Sprite extends GameObj {
-	constructor(img, data, x, y, xv, yv, frame) {
+	constructor(img, data, x, y, xv, yv, frame=0) {
 		super("sprite")
 		this.img = img;
 
@@ -11,6 +11,8 @@ export class Sprite extends GameObj {
 		for (var i = 0; i < data.length; i += 2) {
 			this.frames.push({ x: data[i], y: data[i + 1] });
 		}
+
+		console.log(`Sprite W:${this.w},H:${this.h},Frame1 at:(${this.frames[0].x},${this.frames[0].x})`)
 
 		this.x = x;
 		this.y = y;

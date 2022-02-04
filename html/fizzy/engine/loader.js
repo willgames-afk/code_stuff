@@ -83,13 +83,15 @@ export class Loader {
 
 
 			this._loadImg("", obj.image, function (img) {
-				console.log(`Sprite image loaded!`)
+				console.log(`Sprite image loaded`,img)
 				this.assets._unloaded[id].img = img;
 
 				for (var sprite in this.assets._unloaded[id].rawdata.sprites) {
 					console.log(sprite)
-					var newSprite = this.assets._unloaded[id].rawdata.sprites[sprite];
-					newSprite.img = img;
+					var newSprite = {
+						data: this.assets._unloaded[id].rawdata.sprites[sprite],
+						img: img
+					};
 					this.assets.add(sprite, newSprite);
 				}
 				delete this.assets._unloaded[id];

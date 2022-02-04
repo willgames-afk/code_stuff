@@ -5,14 +5,17 @@ var game = new Game({
 		O.load("spritesheet", "sheet.json");
 		O.width = 180;
 		O.height = 120;
+		O.pixelartmode = true;
+		O.scale = 2;
 	},
 	start(O) {
 		O.make("orange","banana",0,0);
 	},
 	loop(O) {
-		/*if (O.input.x) {
-			stop();
-		}*/
+		O.drawColor = "#000";
+		O.draw("fillRect",0,0,O.width,O.height);
+
+		O.draw("orange");
 	}
 });
 

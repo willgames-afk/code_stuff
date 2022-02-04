@@ -3,14 +3,18 @@ import { Sprite } from "./sprite.js";
 import { load, save, remove } from "./save.js"
 
 export class Game {
+
+	get width() {return this.canvas.width}
+	set width(v) {this.canvas.width = v}
+	get height() {return this.canvas.height}
+	set height(v) {this.canvas.height = v}
+
 	constructor(o,) {
 		this.init = o.init;
 		this.loop = o.loop;
 		this.start = o.start;
 
 		this.canvas = document.createElement("canvas");
-		this.width = this.canvas.width;
-		this.height = this.canvas.height;
 		this.ctx = this.canvas.getContext("2d");
 
 		this.audioContext = new AudioContext();
@@ -32,7 +36,9 @@ export class Game {
 		this.O = {
 			load: this.loader.load,
 			width: this.width,
-			height: this.height
+			height: this.height,
+			pixelartmode: false,
+			scale: 1,
 		}
 		console.log(this.O)
 
@@ -45,11 +51,12 @@ export class Game {
 	}
 	startloop() {
 		console.log(this.O)
-		console.log(this)
-		this.canvas.width = this.O.width;
-		this.canvas.height = this.O.height;
-		this.width = this.O.width;
-		this.height = this.O.height;
+		console.log("Everything so far: ", this)
+		this.width = this.O.width * this.O.scale;
+		this.height = this.O.height * this.O.scale;
+		this.scale = this.O.scale;
+		this.ctx.imageSmoothingEnabled = !this.O.pixelartmode;
+		this.ctx.scale(this.scale,this.scale)
 
 		this.O = {
 			draw: this.draw,
@@ -80,7 +87,11 @@ export class Game {
 			state: this.gameState,
 			save: save,
 			load: load,
-			removeSave: remove
+			removeSave: remove,
+			width: this.width,
+			height: this.height,
+			get color() {return this.ctx.fillStyle},
+			set color(v) {this.ctx.fillStyle = v}
 		}
 		this.loop(this.O);
 		this.gameState = this.O.state;
@@ -89,21 +100,27 @@ export class Game {
 		}
 	}
 
-	draw(id, scale) {
-		switch (this.gameObjs[id].type) {
-			case "sprite":
-				this._drawSprite(id, scale);
-				break;
-			case "tilemap":
-				this._drawTilemap(id, scale);
-				break;
+	draw(id, ...params) {
+
+		if (this.gameObjs[id]) {
+			switch (this.gameObjs[id].type) {
+				case "sprite":
+					this.drawSprite(id, ...params);
+					break;
+				case "tilemap":
+					this.drawTilemap(id, ...params);
+					break;
+			}
+		} else {
+			this.ctx[id](...params);
 		}
 	}
-	drawSprite(id, scalex = 1, scaley = 1) {
+	drawSprite(id, scale = 1) {
 		var s = this.gameObjs[id];
+		//console.log(s);
 		var sx = s.frames[s.frame].x;
 		var sy = s.frames[s.frame].y
-		this.ctx.drawImage(s.img, sx, sy, s.w, s.h, s.x, s.y, s.w * scalex, s.h * scaley);
+		this.ctx.drawImage(s.img, sx, sy, s.w, s.h, s.x, s.y, s.w * scale * this.scale, s.h * scale * this.scale);
 	}
 	drawTilemap(id, scale) {
 		var t = this.gameObjs[id];
@@ -122,7 +139,7 @@ export class Game {
 	}
 
 	make(id, tex, ...params) {
-		console.log(this);
+		//console.log(this.assets[tex]);
 		var texture = this.assets[tex]
 		if (!texture) {
 			console.error("Invalid Texture!")
