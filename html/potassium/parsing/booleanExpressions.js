@@ -1,140 +1,22 @@
-
-/** Gobble up whitespace to get to the next token */
-function getToken(input) {
-    var res = parseWhile(input, /\s/);
-    return res[1];
-}
-
-/** Parse some chars */
-function parseLiteral(input, char) {
-    console.log(`Attempting to parse '${char}' from '${input}'`)
-    if (input.length > 0) {
-        for (var i = 0; i < char.length; i++) {
-            if (char[i] != input[i]) {
-                throw "Expected " + char
-            }
-        }
-        return [char, input.substr(char.length)];
-    } else {
-        throw "Expected " + char
-    }
-}
-
-/** Parse characters until you hit one that doesn't match the regex */
-function parseWhile(input, regex) {
-    //var string = input;
-    var out = ""
-    while (true) {
-        var char = input[0]//string[0];
-        if (regex.test(char)) {
-            out += char;
-            input = input.slice(1);
-            if (input.length == 0) {
-                break
-            }
-        } else {
-            break;
-        }
-    }
-    return [out, input] //string];
-}
-
-function parseMyFloat(input) {
-    console.log("Attempting to parse float")
-    var intPart = parseWhile(input, /\d/);
-    if (intPart[0].length == 0) {
-        throw "Expected Float"
-    }
-    var dot = parseLiteral(intPart[1], ".");
-    //At this point, the only thing it could be is a float
-
-    var fracPart = parseWhile(dot[1], /\d/);
-    if (fracPart[0].length == 0) {
-        throw "rExpected Float" //r for really
-    }
-    console.log(`Parsed Float ${intPart[0] + "." + fracPart[0]}`)
-    var val = parseFloat(intPart[0] + "." + fracPart[0]);
-    if (isNaN(val)) {
-        throw "rExpected Float"
-    }
-    return [{ type: "float", val: val }, fracPart[1]]
-}
-
-function parseHex(input) {
-    try {
-        var res = parseLiteral(getToken(input), "0x");
-    } catch {
-        throw "Expected 0x Header"
-    }
-    console.log("parsed hex header")
-    var num = parseWhile(res[1], /[\da-fA-F]/);
-    if (num[0].length == 0) {
-        throw "Expected Hexadecimal Number"
-    }
-    var val = parseInt("0x" + num[0])
-    if (isNaN(val)) {
-        throw "Expected Hexadecimal Number"
-    }
-    return [{ type: "int", val: val }, num[1]]
-}
-
-function parseMyInt(input) {
-    console.log("Trying to parse Hexadecimal Number")
-    try {
-        return parseHex(input);
-    } catch (e) {
-        if (e != "Expected 0x Header") {
-            throw e;
-        }
-        console.log("Failed to parse hex int, trying to parse normal int")
-        var num = parseWhile(getToken(input), /\d/);
-        var val = parseInt(num[0]);
-        if (isNaN(val)) {
-            throw "Expected Integer"
-        }
-        return [{ type: "int", val: val }, num[1]]
-    }
-}
-
-/** Parse any number */
-function parseNum(input) {
-    var token = getToken(input);
-    console.log("attempting to parse int")
-    try {
-        return parseMyFloat(token)
-    } catch (e) {
-        if (e == "rExpected Float") {
-            throw "Expected Float"; //I could tell it was a float, it was just missing stuff
-        }
-        console.log("Failed to parse int, trying to parse float")
-        try {
-            return parseMyInt(token);
-        } catch {
-            throw "Expected Number"
-        }
-    }
-}
+import {parseLiteral, parseLiteralToken, parseWhile, parseWhileToken, tryparse} from "./basic.js"
+import {pnum,typeError} from "./types.js"
 
 function parseVar(input) {
-    var token = getToken(input);
-    var variable = parseWhile(token, /[a-zA-Z0-9_]/);
-    if (variable[0].length == 0) {
-        throw "Expected Variable"
-    }
-    return [{ type: "var", val: variable[0] }, variable[1]];
+    var [variable,rem,err] = parseWhileToken(input, /[a-zA-Z0-9_]/);
+    if (err) return typeError("variable", rem);
+    return [{ type: "var", val: variable },rem];
 }
 
 /** Parse a Factor (Number, Subexpression or Variable) */
 function parseFactor(input) {
     //It might be negative- try that first
 
-
-    try {
-        console.log("Trying to parse subexpresion")
-        var p = parseLiteral(getToken(input), "(")
-        var exp = parseExpression(getToken(p[1]));
-        var p2 = parseLiteral(getToken(exp[1]), ")");
-        return [{ type: "expression", val: exp[0] }, p2[1]]
+    var [_,rem,err] = parseLiteralToken(input, "(");
+    var [expr,rem2,err] = parseMath(rem);
+	var [_,rem3,err] = parseLiteralToken(rem2, ")");
+        
+	return [{ type: "expression", val: exp[0] }, p2[1]]
+	
     } catch {
         console.log("no subexpression, parsing num")
         try {
@@ -144,6 +26,57 @@ function parseFactor(input) {
             return parseVar(input)
         }
     }
+}
+
+var math = [
+//  {Variables, number literals, and function calls}
+	{pow: "**"},
+	{mul:"*",div:"/",mod:"%"},
+	{add:"+",sub:"-"},
+	{shl:"<<",shr:">>"},
+	{llt:"<",lte: "<=",lgt:">",lge:">="},
+	{equ:"==",neq:"!="},
+	{band:"&"},
+	{bxor:"^"},
+	{bor:"|"},
+	{land:"and"},
+	{lor:"or"}
+].reverse();
+
+
+function parseMath(input) {
+	return _recursiveParse(input,0);
+}
+
+function _recursiveParse(input,level) {
+
+	if (input.length == 0) return [0, "", "Error: End of input"];
+	if (level >= math.length) return parseFactor(input);
+
+	//Recursively parse a single term
+	var [term1,remaining,error] = _recursiveParse(input,level+1);
+
+	//Parse some Op-Term pairs
+	var struct = term1;
+	while (true) {
+		//Try to parse an Op from the current level
+		for (var op in math[level]) {
+			var [oper, rem2, err] = parseLiteralToken(remaining,math[level][op]);
+			if (typeof err === "undefined") {
+				break;
+			}
+		}
+		// If it's not a valid Op, we're done
+		if (typeof err !== "undefined") {
+			return [struct,remaining]; 
+		}
+		//Otherwise, parse another term
+		var [term2,rem3,err] = _recursiveParse(rem2,level+1);
+
+		//Get set up to parse another Op-Term pair
+		struct = [struct, term2,op];
+		remaining = rem3;
+	}
 }
 
 /** Parse a multiplication-level operator (* or /) */
