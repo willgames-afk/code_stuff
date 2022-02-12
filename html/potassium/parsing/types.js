@@ -1,29 +1,36 @@
-import {parseWhile, parseLiteral, parseLiteralToken} from "basic.js"
+import {parseWhile, parseWhileToken, parseLiteral, parseLiteralToken, parseone} from "./basic.js"
 
 
 export function typeError(type,input) {
 	return [null, input, "TypeError: Expected " + type];
 }
 
-function pdigits(input) {
-	return parseWhile(input, /\d/);
-}
 
 export const types = {
-	"float",
-	"int",
-	"number"
+	"any": true,
+	"num": "any",
+		"float":"num",
+		"int":"num",
+	"bool": "any",
 }
 
+export function compatibleTypes(type1,type2) {
+	if (type1 == type2) {
+		return true;
+	}
+	if (types[type1] == type2 || types[type2] == type1) {
+		return true;
+	}
+}
 
 export function pfloat(input) {
-    var [intpart,rem,err] = pdigits(getToToken(input));
+    var [intpart,rem,err] = parseWhileToken(input,/\d/);
     if (err) return typeError("Float",rem);
 		
     var [_,rem2,err] = parseLiteral(rem, ".");
     if (err) return typeError("Float",rem);
 
-    var [frac,rem3,err] = pdigits(rem2);
+    var [frac,rem3,err] = parseWhileToken(rem2,/\d/);
     if (err) return typeError("Float",rem);
 	
     var val = parseFloat(intpart + "." + frac);
@@ -35,7 +42,7 @@ export function pfloat(input) {
 
 export function phex(input) {
     
-	[_,rem,err] = parseLiteralToken(input, "0x");
+	var [_,rem,err] = parseLiteralToken(input, "0x");
     if (err) return typeError("Hexadecimal Number",rem);
 
     var [hex, rem2,err] = parseWhile(rem, /[\da-fA-F]/);
@@ -49,14 +56,14 @@ export function phex(input) {
 }
 
 export function pint(input) {
-    var [num, rem, err] = parseHex(input);
-	if (err) {
-		[num,rem,err] = pdigits(getToToken(input));
+    //var [num, rem, err] = phex(input);
+	//if (err) {
+		var [num,rem,err] = parseWhileToken(input,/\d/);
 		if (err) return typeError("Integer",rem);
-	}
+	//}
 	var val = parseInt(num);
     if (isNaN(val)) {
-        return typeError("Integer",rem);
+        return typeError("Integer;",rem);
     }
 	
     return [{ type: "int", val: val }, rem]
@@ -64,7 +71,9 @@ export function pint(input) {
 
 /** Parse any number */
 export function pnum(input) {
-	var [num, rem, err] = tryparse(input,pint,pfloat);
+
+	var [num, rem, err] = pint(input);
+
 	if (err) return typeError("Number",rem);
-    return [num,rem,err];
+    return [num,rem];
 }

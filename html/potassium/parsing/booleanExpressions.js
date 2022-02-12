@@ -1,4 +1,4 @@
-import {parseLiteral, parseLiteralToken, parseWhile, parseWhileToken, tryparse} from "./basic.js"
+import {parseLiteral, parseLiteralToken, parseWhile, getToToken, parseWhileToken} from "./basic.js"
 import {pnum,typeError} from "./types.js"
 
 function parseVar(input) {
@@ -9,28 +9,32 @@ function parseVar(input) {
 
 /** Parse a Factor (Number, Subexpression or Variable) */
 function parseFactor(input) {
-    //It might be negative- try that first
-
     var [_,rem,err] = parseLiteralToken(input, "(");
-    var [expr,rem2,err] = parseMath(rem);
-	var [_,rem3,err] = parseLiteralToken(rem2, ")");
-        
-	return [{ type: "expression", val: exp[0] }, p2[1]]
-	
-    } catch {
-        console.log("no subexpression, parsing num")
-        try {
-            return parseNum(input);
-        } catch {
-            console.log("Couldn't parse number, trying var");
-            return parseVar(input)
-        }
-    }
+	if (!err) {
+   		var [expr,rem2,err] = parseMath(rem);
+		if (!err) {
+			var [_,rem3,err] = parseLiteralToken(rem2, ")");
+			if (!err) {
+				return [expr, rem3];
+			}
+		}
+	}
+
+	var [res,rem,err] = pnum(getToToken(input));
+	if (!err) {
+		return [res,rem];
+	}
+
+	var [res,rem,err] = parseVar(input)
+	if (err) {
+		return [false, rem, "Expected Number, Variable or ()."]
+	}
+	return [res,rem];
 }
 
 var math = [
 //  {Variables, number literals, and function calls}
-	{pow: "**"},
+	{pow: "**",LEFT:true},
 	{mul:"*",div:"/",mod:"%"},
 	{add:"+",sub:"-"},
 	{shl:"<<",shr:">>"},
@@ -40,9 +44,67 @@ var math = [
 	{bxor:"^"},
 	{bor:"|"},
 	{land:"and"},
-	{lor:"or"}
+	{lor:"or"},
+	{assign: "=", aAdd: "+=", aSub: "-=", aPow: "**=", aMul: "*=",aDiv: "/=",aMod:"%=",aShl:"<<=",aShr: ">>=",aBand:"&=",aBxor:"^=",aBor:"|=",aLand:"and=",aLor:"or="}
 ].reverse();
 
+var signatures = { //Type signatures for math ops
+	// [[<input-1-type>, <input-2-type>], <output-type>]
+	pow: [["num", "num" ],"num" ],
+	mul: [["num", "num" ],"num" ],
+	div: [["num", "num" ],"num" ],
+	mod: [["num", "num" ],"num" ],
+	add: [["num", "num" ],"num" ],
+	sub: [["num", "num" ],"num" ],
+	shl: [["num", "num" ],"num" ],
+	shr: [["num", "num" ],"num" ],
+	llt: [["num", "num" ],"bool"],
+	lte: [["num", "num" ],"bool"],
+	lgt: [["num", "num" ],"bool"],
+	lge: [["num", "num" ],"bool"],
+	equ: [["any", "any" ],"bool"],
+	neq: [["any", "any" ],"bool"],
+	band:[["num", "num" ],"num" ],
+	bor: [["num", "num" ],"num" ],
+	land:[["bool","bool"],"bool"],
+	lor: [["bool","bool"],"bool"],
+
+	assign: [["var","any"],""] 
+}
+
+
+var out = handleError("1 + 3 + (3 + 5)  * 1 * 3 / 5", parseMath)
+if (typeof out !== "string") {
+	console.log(`Formatted: ${printNicely(out)}`)
+	console.log(`Raw:`,out)
+} else {
+	console.log(out);
+}
+
+function printNicely(ast) {
+	if (typeof ast == "string") {
+		return ast;
+	} else if (ast.val) {
+		return ast.val;
+	}
+	return `[${printNicely(ast[0])} ${printNicely(ast[2])} ${printNicely(ast[1])}]`
+}
+function handleError(input, parseFunction) {
+	var [res,rem, err] = parseFunction(input);
+	if (err) {
+		var line = 1, col = 1;
+		for (var i=0;i<input.length - rem.length;i++) {
+			if (input[i] == "\n") {
+				line++;
+				col = 0;
+			}
+			col++;
+		}
+		return `${line}:${col} ${err}`;
+	} else {
+		return res;
+	}
+}
 
 function parseMath(input) {
 	return _recursiveParse(input,0);
@@ -55,13 +117,16 @@ function _recursiveParse(input,level) {
 
 	//Recursively parse a single term
 	var [term1,remaining,error] = _recursiveParse(input,level+1);
+	if (error) {
+		return [null, remaining, error];
+	}
 
 	//Parse some Op-Term pairs
 	var struct = term1;
 	while (true) {
 		//Try to parse an Op from the current level
 		for (var op in math[level]) {
-			var [oper, rem2, err] = parseLiteralToken(remaining,math[level][op]);
+			var [_, rem2, err] = parseLiteralToken(remaining,math[level][op]);
 			if (typeof err === "undefined") {
 				break;
 			}
@@ -70,141 +135,19 @@ function _recursiveParse(input,level) {
 		if (typeof err !== "undefined") {
 			return [struct,remaining]; 
 		}
+		//We have a valid op, but we need now need to make sure that it accepts the term we parsed
+
+
 		//Otherwise, parse another term
 		var [term2,rem3,err] = _recursiveParse(rem2,level+1);
+		if (err) {
+			return [null, rem3,err];
+		}
 
 		//Get set up to parse another Op-Term pair
 		struct = [struct, term2,op];
 		remaining = rem3;
 	}
-}
-
-/** Parse a multiplication-level operator (* or /) */
-function parseMulOp(input) {
-    try {
-        var res = parseLiteral(getToken(input), "*");
-        return [{ type: "op", val: "Mul" }, res[1]];
-    } catch {
-        try {
-            var res = parseLiteral(getToken(input), "/")
-            return [{ type: "op", val: "Div" }, res[1]]
-        } catch {
-            var res = parseLiteral(getToken(input), "%")
-            return [{ type: "op", val: "Mod" }, res[1]]
-        }
-    }
-}
-
-/** Parse a term (Factor, possibly followed by some number of mulOp-factor pairs) */
-function parseTerm(input) {
-    var factor1 = parseFactor(input);
-    console.log("Parsed Factor, trying to parse mulOp")
-    try {
-        return _parseTerm(factor1)
-    } catch (e) {
-        if (e == "Expected Number") {
-            throw e;
-        }
-        console.log("mulOp failed, returning factor")
-        return factor1
-    }
-}
-
-/** Parses some number of factor-MulOp pairs, see parseTerm */
-function _parseTerm(factor1) {
-    var mulOp = parseMulOp(factor1[1])
-    var factor2 = parseFactor(mulOp[1])
-
-    try {
-        return _parseTerm([[mulOp[0], factor1[0], factor2[0]], factor2[1]])
-    } catch (e) {
-        if (e == "Expected Number") {
-            throw e;
-        }
-        return [{ type: "expression", val: [mulOp[0], factor1[0], factor2[0]] }, factor2[1]]
-    }
-}
-
-/** Parses an addition-level operator (+ or -) */
-function parseAddOp(input) {
-    console.log("Trying to parse '+'")
-    try {
-
-        var res = parseLiteral(getToken(input), "+");
-        return [{ type: "op", val: "Add" }, res[1]];
-    } catch {
-        console.log("'+' failed, parsing '-'")
-        var res = parseLiteral(getToken(input), "-");
-        return [{ type: "op", val: "Sub" }, res[1]];
-    }
-}
-function parseShiftOp(input) {
-    try {
-        var res = parseLiteral(getToken(input), ">>");
-        return [{ type: "op", val: "ShiftR" }, res[1]];
-    } catch {
-        try {
-            var res = parseLiteral(getToken(input), "<<");
-            return [{ type: "op", val: 'ShiftL' }, res[1]];
-        } catch {
-            var res = parseLiteral(getToken(input), ">>>");
-            return [{ type: "op", val: "UShiftR" }, res[1]]
-        }
-    }
-}
-const bitwiseOps = {
-    "&": "bitand",
-    "|": "bitor",
-    "~": "bitnot",
-    "^": "bitxor"
-}
-function parseBitwiseOp(input) {
-    try {
-        var res = parseLiteral(getToken(input), "&");
-        return [{ type: "op", val: "bitand" }]
-    } catch {
-        try {
-            var res = parseLiteral(getToken(input), "|");
-            return [{ type: "op", val: "bitor" }]
-        } catch {
-            var res = parseLiteral(getToken(input), "^");
-            return [{ type: "op", val: "bitxor" }]
-        }
-    }
-}
-
-
-/** Parses a mathematical expression (A Term, possibly followed by some number of addOp-term pairs) */
-function parseExpression(input) {
-    if (input.length == 0) {
-        throw "Expected Expression"
-    }
-    var term1 = parseTerm(input);
-    console.log("Parsed Term, trying to parse AddOp")
-    try {
-        return _parseExpression(term1)
-    } catch (e) {
-        if (e == "Expected Number") {
-            throw e;
-        }
-        return term1
-    }
-}
-
-/** Parses some number of addOp-Term pairs, see parseExpression */
-function _parseExpression(term1) {
-    var addOp = parseAddOp(term1[1]);
-    var term2 = parseTerm(addOp[1]);
-
-    try {
-        return _parseExpression([{ type: "expression", val: [addOp[0], term1[0]]}, term2[0]], term2[1]);
-    } catch (e) {
-        if (e == "Expected Number") {
-            throw e;
-        }
-        return [{ type: "expression", val: [addOp[0], term1[0], term2[0]] }, term2[1]]
-    }
-
 }
 
 function parseBool(input) {

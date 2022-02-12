@@ -1,5 +1,5 @@
 import { TextIO } from "../../text-input-engine/main.js"
-import { parse } from "./booleanExpressions.js"
+import { parse } from "./parsing/booleanExpressions.js"
 import { interperet } from "./interpereter.js"
 
 function printNicely(ast) {
