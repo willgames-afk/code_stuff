@@ -38,11 +38,20 @@ function updateColorButtons() {
 		return
 	}
 }
+function generateLogin() {
+	var loginDiv = document.getElementById("login");
+	if (!loginDiv) {
+		return;
+	}
+
+	var req = document.xml
+}
 
 //LOADERS- These load external content after the rest of the page has loaded.
 function loadBlogPosts() {
-	var req = new XMLHttpRequest();
-	req.open("")
+	console.error("TODO: Load blog post cards")
+	/*var req = new XMLHttpRequest();
+	req.open("")*/
 }
 
 //HELPERS- helper functions to make everything else run smoothly
@@ -59,10 +68,12 @@ function hextorgb(hex) {
 function onDOMLoad() {
 	updateLocalhostDetector();
 	updateColorButtons();
+	generateLogin();
 }
 function onFullLoad() {
 	loadBlogPosts();
 }
+
 
 window.addEventListener("DOMContentLoaded", onDOMLoad);
 window.addEventListener("load", onFullLoad)

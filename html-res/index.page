@@ -1,9 +1,7 @@
 <head>
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css"
-		integrity="sha384-Um5gpz1odJg5Z4HAmzPtgZKdTBHZdw8S29IecapCSB31ligYPhHQZMIlWLYQGVoc" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css" crossorigin="anonymous">
 	<link rel="stylesheet" href="/resources/markdown.css">
 	<!--<link rel="stylesheet" href="/resources/index.css">-->
-	<title>Willgames</title>
 </head>
 
 <article id="content">

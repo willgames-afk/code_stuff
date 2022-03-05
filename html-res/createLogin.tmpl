@@ -1,13 +1,12 @@
-<!DOCTYPE HTML>
-<html lang='en'>
+
 <head>
 	<link href='/resources/login.css' rel='stylesheet'>
 	<title>Create Account</title>
 </head>
-<body>
+
 <h2>Create Account</h2>
 <form action='/login/createLogin/' method='POST'>
-Username <input type='text' name='username' value='$username$'><br>
+Username <input type='text' name='username' value='$?username$'><br>
 	$?usernameErr$
 Password <input type='password' name='password'><br>
 	$?passwordErr$
@@ -16,4 +15,6 @@ Confirm Password <input type='password' name='confirm_password'><br>
 	<input type='submit' value="Create Account"><br>
 	<a href="/login/login/">Log In</a>
 </form>
-</body>
+<script>
+	var loggedin = false;
+</script>

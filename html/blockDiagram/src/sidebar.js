@@ -24,7 +24,9 @@ export class Sidebar {
 			this.viewer.remove();
 			this.viewer = null;
 		}
-		this.viewer = new EditableObjectArray(this.container, this.state.currentBlock/*, this.onEdit*/);
+		console.log("CURRENT BLOCK:", this.state.currentBlock)
+		this.viewer = new EditableObjectArray( this.state.currentBlock, this.onEdit.bind(this));
+		this.container.appendChild(this.viewer)
 		this.container.style.width = Sidebar.expandedWidth;
 	}
 	close() {
@@ -32,7 +34,7 @@ export class Sidebar {
 		this.viewer.remove();
 		this.viewer = null;
 	}
-	/*onEdit(editedBlock) {
+	onEdit(editedBlock) {
 		this.state.currentBlock = editedBlock;
-	}*/
+	}
 }

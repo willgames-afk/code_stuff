@@ -1,12 +1,10 @@
-<?php session_start()?>
-<!DOCTYPE HTML>
-<html>
-	<head>
-		<link href='/resouces/login.css' rel='stylesheet'>
-		<title>Welcome!</title>
-	</head>
-	<body class="greet">
-		<p>Hello, $username$!</p><br>
-		<a href="/login/logout/">Log Out</a>
-	</body>
-</html>
+<head>
+	<link href='/resources/login.css' rel='stylesheet'>
+</head>
+
+<p class='greet'>Hello, $username$!</p><br>
+<a href="/login/logout/">Log Out</a>
+<script>
+	var loggedin = true;
+	var username = "$username$";
+</script>

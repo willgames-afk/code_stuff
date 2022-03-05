@@ -143,7 +143,7 @@ export function EditableObjectArray(object, onEdit = () => { }) {
 		if (ne) {
 			ne.appendChild(document.createTextNode(",")); //Adding comma to previous element, if any
 		}
-		console.log(object[i])
+		console.log("MAKING INPUT",i, object[i])
 
 		ne = document.createElement("li");
 

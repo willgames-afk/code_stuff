@@ -49,8 +49,8 @@ class BlockDiagram {
         this.ctx.beginPath();
         if (this.state.makingBlock) {
             //draw block
-            this.state.currentBlock.x2 = this.state.mouse.x;
-            this.state.currentBlock.y2 = this.state.mouse.y;
+            this.state.currentBlock.width = this.state.mouse.x - this.state.currentBlock.x;
+            this.state.currentBlock.height = this.state.mouse.y - this.state.currentBlock.y;
 
             const cb = this.state.currentBlock;
 

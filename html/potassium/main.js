@@ -1,8 +1,10 @@
 import { TextIO } from "../../text-input-engine/main.js"
-import { parse } from "./parsing/booleanExpressions.js"
-import { interperet } from "./interpereter.js"
+//import { parse } from "./parsing/booleanExpressions.js"
+//import { interperet } from "./interpereter.js"
+import { pInt } from "./parsing/potassium.js"
+import {dumbfunction} from "./parsing/memoryExperiments.js"
 
-function printNicely(ast) {
+/*function printNicely(ast) {
     //console.log(ast
     if (Array.isArray(ast)) {
         var s = "";
@@ -23,7 +25,7 @@ function printNicely(ast) {
             if (!variables[ast.val]) {
                 throw `Variable ${ast.val} is not defined!`
             }
-            return variables[ast.val];*/
+            return variables[ast.val];*
 
         case "assign":
             //console.log(ast.val[0].val)
@@ -60,4 +62,4 @@ new TextIO(
         return `${printNicely(ast)}\n${JSON.stringify(interperet(ast), null, "	")}\n`
 
     }, { runAuto: true }
-)
+)*/

@@ -1,4 +1,4 @@
-import {parseLiteral, parseLiteralToken, parseWhile, getToToken, parseWhileToken} from "./basic.js"
+import {parseLiteral, parseLiteralToken, parseWhile, getToToken, parseWhileToken} from "../parsing/potassium.js"
 import {pnum,typeError} from "./types.js"
 
 function parseVar(input) {
