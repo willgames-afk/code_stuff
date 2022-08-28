@@ -1,4 +1,4 @@
-from typing import Sized
+
 
 
 def xMove():
@@ -10,9 +10,10 @@ def penUp():
 def penDown():
     pass
 
-size = 10
+size = 35
 
-def __init__(xm,ym,pu,pd,s):
+
+def __init__(xm,ym,pu,pd):
     global xMove 
     global yMove
     global penUp
@@ -22,7 +23,7 @@ def __init__(xm,ym,pu,pd,s):
     yMove = ym
     penUp = pu
     penDown = pd
-    size = s
+    #size = s
     
 
 def setSize(s):
@@ -30,7 +31,7 @@ def setSize(s):
     size = s
 
 def space():
-    xMove(1)
+    xMove(size)
 
 def A():
     pass
@@ -139,8 +140,8 @@ def R():
     xMove(size)
     yMove(size/2, False)
     xMove(-size)
-    yMove(size/2, False)
-    xMove(size)
+    xMove(size, False)
+    yMove(size/2)
     penUp()
     yMove(-size)
 

@@ -1,0 +1,4 @@
+{
+	"executable": "../cc65-master/cl65",
+	"input": "main.asm"
+}

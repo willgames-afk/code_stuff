@@ -1,0 +1,21 @@
+{
+	"name": "tmpl-ext",
+	"displayName": "tmpl-ext",
+	"description": "Syntax highlighting for these strage tags I use",
+	"version": "0.0.1",
+	"contributes": {
+		"languages": [
+			{
+				"id": "template",
+				"extentions": [".tmpl"]
+			}
+		],
+		"grammars":[
+			{
+				"injectTo":["source.html"],
+				"scopeName":"source.tmpl",
+				"path": "./tmpl.tmGrammar.json"
+			}
+		]
+	}
+}

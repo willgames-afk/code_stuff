@@ -1,0 +1,12 @@
+{
+	"scopeName":"source.tmpl",
+	"patters": [
+		{"include": "#tag"}
+	],
+	"repository": {
+		"tag": {
+			"match": "\\$[a-zA-Z0-9]+\\$",
+			"name": "variable.other"
+		}
+	}
+}
