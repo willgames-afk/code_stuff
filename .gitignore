@@ -1,9 +1,9 @@
 # MacOS
-**/*.DS_Store
+.DS_Store
 
 # Internal
 php/login/users.txt
-**/comments.txt
+comments.txt
 
 # Output files
 rom.bin
@@ -17,5 +17,6 @@ node_modules/
 *.venv
 
 # Things that have their own repos
-nodejs/electronTests/electron-quick-start
-nodejs/electronTests/electron-quick-start/*
+nodejs/electronTests/electron-quick-start/
+elm/K/
+site/

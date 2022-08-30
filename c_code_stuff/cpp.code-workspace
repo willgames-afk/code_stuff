@@ -1,0 +1,14 @@
+{
+    "folders": [
+        {
+            "name": "C++ Code Stuff",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "files.associations": {
+            "iosfwd": "cpp",
+            "fstream": "cpp"
+        }
+    }
+}
