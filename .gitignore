@@ -1,9 +1,5 @@
 # MacOS
-.DS_Store
-*.DS_Store
-
-# Local organization
-*.code-workspace
+**/*.DS_Store
 
 # Internal
 php/login/users.txt
@@ -15,14 +11,11 @@ a.out
 out/
 
 # Dependancies- Just install them yourself
+**/node_modules/
 node_modules/
 
 *.venv
 
 # Things that have their own repos
-MDWebServer
-MDWebServer/*
-cpp_code_stuff
-cpp_code_stuff/*
 nodejs/electronTests/electron-quick-start
 nodejs/electronTests/electron-quick-start/*
