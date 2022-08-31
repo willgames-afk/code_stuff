@@ -1,0 +1,12 @@
+{
+  "name": "prpl",
+  "version": "0.0.1",
+  "description": "A programming language for creating programming languages.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node main.js"
+  },
+  "author": "Will Kam",
+  "license": "ISC"
+}

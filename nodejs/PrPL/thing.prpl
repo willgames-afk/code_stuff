@@ -1,0 +1,12 @@
+isafruit
+	"banana"
+	"apple"
+	"pear"
+	"lemon"
+	soft "Not a fruit!"
+
+fruits
+	[a-zA-Z]+
+		0: isafruit
+	[a-zA-Z]+ " " fruits
+		0: isafruit
